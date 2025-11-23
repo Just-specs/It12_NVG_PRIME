@@ -1,0 +1,567 @@
+@extends('layouts.app')
+
+@section('title', 'Delivery Requests')
+
+@section('content')
+<div class="container mx-auto px-4">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold text-gray-800">
+            <i class="fas fa-clipboard-list text-blue-600"></i> Delivery Requests
+        </h1>
+        <a href="{{ route('requests.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+            <i class="fas fa-plus"></i> New Request
+        </a>
+    </div>
+
+    <!-- Status Filter Tabs -->
+    @php
+        $tabs = [
+            'all' => 'All Requests',
+            'pending' => 'Pending',
+            'verified' => 'Verified',
+            'assigned' => 'Assigned',
+        ];
+    @endphp
+    <div class="mb-6">
+        <nav id="request-status-tabs" data-current-status="{{ $activeStatus ?? 'all' }}"
+            class="flex flex-wrap gap-3">
+            @foreach($tabs as $statusValue => $label)
+                @php
+                    $isActive = ($activeStatus ?? 'all') === $statusValue;
+                    $count = $counts[$statusValue] ?? 0;
+                @endphp
+                <button type="button"
+                    class="status-tab group flex items-center justify-between gap-3 rounded-full border-2 px-6 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/30 {{ $isActive ? 'bg-[#1E40AF] text-white border-[#1E40AF] shadow-lg' : 'bg-white text-[#1E40AF] border-[#1E40AF]/40 hover:border-[#1E40AF] hover:shadow-md' }}"
+                    data-status="{{ $statusValue }}"
+                    data-url="{{ $statusValue === 'all' ? route('requests.index') : route('requests.index', ['status' => $statusValue]) }}">
+                    <span>{{ $label }}</span>
+                    <span class="inline-flex min-w-[2.25rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold transition {{ $isActive ? 'bg-white text-[#1E40AF]' : 'bg-[#1E40AF]/10 text-[#1E40AF] group-hover:bg-[#1E40AF]/20' }}"
+                        data-status-count>{{ $count }}</span>
+                </button>
+            @endforeach
+        </nav>
+    </div>
+
+    <!-- Requests Table -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div id="requests-table-container" data-url="{{ route('requests.index') }}">
+            @include('dispatch.requests.partials.table', ['requests' => $requests])
+        </div>
+    </div>
+</div>
+
+<!-- Request Details Modal -->
+<div id="request-details-modal"
+    class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
+    <div class="bg-white rounded-xl shadow-2xl max-w-4xl w-full mx-4 overflow-hidden">
+        <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div>
+                <h2 class="text-2xl font-semibold text-gray-800">Request Details</h2>
+                <p id="modal-created" class="text-sm text-gray-500">Created —</p>
+            </div>
+            <button type="button" class="text-gray-500 hover:text-gray-700" id="modal-close">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="p-6 space-y-6 overflow-y-auto max-h-[70vh]">
+            <form id="modal-verify-form" method="POST" class="hidden">
+                @csrf
+            </form>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-800">
+                                <i class="fas fa-user text-blue-600"></i> Client Information
+                            </h3>
+                            <span id="modal-status"
+                                class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 capitalize">Status</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <p class="text-sm text-gray-500">Client Name</p>
+                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">—</p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-gray-500">Contact Method</p>
+                                <p class="text-base font-semibold text-gray-800">
+                                    <i id="modal-contact-icon" class="fas fa-envelope mr-2"></i>
+                                    <span id="modal-contact-method">—</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-semibold text-gray-800">
+                            <i class="fas fa-box text-blue-600"></i> Delivery Details
+                        </h3>
+                        <div class="space-y-3 text-sm text-gray-700">
+                            <div class="flex flex-wrap gap-2">
+                                <span class="w-40 text-gray-500">ATW Reference:</span>
+                                <span id="modal-atw" class="font-semibold">—</span>
+                                <span id="modal-atw-status" class="text-xs font-semibold px-2 py-1 rounded-full">—</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="w-40 text-gray-500">Container:</span>
+                                <span id="modal-container" class="font-semibold">—</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="w-40 text-gray-500">Pickup:</span>
+                                <span class="font-semibold text-gray-800">
+                                    <i class="fas fa-map-marker-alt text-green-500 mr-1"></i>
+                                    <span id="modal-pickup">—</span>
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="w-40 text-gray-500">Delivery:</span>
+                                <span class="font-semibold text-gray-800">
+                                    <i class="fas fa-flag-checkered text-red-500 mr-1"></i>
+                                    <span id="modal-delivery">—</span>
+                                </span>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="w-40 text-gray-500">Schedule:</span>
+                                <span id="modal-schedule" class="font-semibold">—</span>
+                            </div>
+                            <div class="flex flex-wrap gap-2" id="modal-notes-row" hidden>
+                                <span class="w-40 text-gray-500">Notes:</span>
+                                <span id="modal-notes" class="font-semibold text-gray-800">—</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Timeline</h4>
+                        <div class="flex items-start space-x-3">
+                            <div class="text-blue-600">
+                                <i class="fas fa-plus-circle"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-semibold text-gray-800">Request Created</p>
+                                <p id="modal-timeline" class="text-xs text-gray-500">—</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-3">Actions</h4>
+                        <div class="space-y-3">
+                            <div>
+                                <p class="text-xs text-gray-500">Viewing request #<span id="modal-request-id">—</span></p>
+                                <p class="text-xs text-gray-500">ATW Status: <span id="modal-atw-status-text" class="font-semibold">—</span></p>
+                            </div>
+                            <button id="modal-verify-atw"
+                                type="button"
+                                class="hidden w-full px-3 py-2 bg-green-600 text-white rounded-md text-sm font-semibold hover:bg-green-700 transition">
+                                Verify ATW
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Verify Confirmation Modal -->
+<div id="verify-confirm-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/40 backdrop-blur-sm px-4">
+    <div class="w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8 space-y-6">
+        <div class="space-y-2 text-center">
+            <h3 class="text-2xl font-semibold text-[#1E40AF]">Verify ATW</h3>
+            <p class="text-sm text-gray-600">Are you sure you want to verify?</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <button id="verify-confirm-no" type="button"
+                class="px-6 py-3 rounded-full text-base font-semibold text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400 transition">
+                Cancel
+            </button>
+            <button id="verify-confirm-yes" type="button"
+                class="px-6 py-3 rounded-full text-base font-semibold text-white bg-[#1E40AF] hover:bg-[#1A36A0] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1E40AF] border border-[#1E40AF] transition">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const requestsContainer = document.getElementById('requests-table-container');
+        const tabsContainer = document.getElementById('request-status-tabs');
+        const tabButtons = tabsContainer ? Array.from(tabsContainer.querySelectorAll('.status-tab')) : [];
+        const TAB_ACTIVE_CLASSES = ['bg-[#1E40AF]', 'text-white', 'border-transparent', 'shadow-xl'];
+        const TAB_INACTIVE_CLASSES = ['bg-white', 'text-[#1E40AF]', 'border-[#1E40AF]/40', 'hover:border-[#1E40AF]', 'hover:shadow-md'];
+        const BADGE_ACTIVE_CLASSES = ['bg-white', 'text-[#1E40AF]'];
+        const BADGE_INACTIVE_CLASSES = ['bg-[#1E40AF]/10', 'text-[#1E40AF]', 'group-hover:bg-[#1E40AF]/20'];
+
+        const applyClasses = (element, add = [], remove = []) => {
+            if (!element) {
+                return;
+            }
+            remove.forEach(cls => element.classList.remove(cls));
+            add.forEach(cls => element.classList.add(cls));
+        };
+
+        const setRequestsLoading = (isLoading) => {
+            if (!requestsContainer) {
+                return;
+            }
+
+            requestsContainer.classList.toggle('opacity-50', isLoading);
+            requestsContainer.classList.toggle('pointer-events-none', isLoading);
+        };
+
+        const bindRequestButtonHandlers = (root = document) => {
+            root.querySelectorAll('.view-request-btn').forEach(button => {
+                button.addEventListener('click', handleViewClick);
+            });
+
+            root.querySelectorAll('.verify-request-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    const form = event.currentTarget.closest('form');
+                    showVerifyConfirm({ form, trigger: event.currentTarget, context: 'table' });
+                });
+            });
+        };
+
+        const updateActiveTab = (status) => {
+            if (!tabsContainer) {
+                return;
+            }
+
+            tabButtons.forEach(tab => {
+                const isActive = tab.dataset.status === status;
+                applyClasses(
+                    tab,
+                    isActive ? TAB_ACTIVE_CLASSES : TAB_INACTIVE_CLASSES,
+                    isActive ? TAB_INACTIVE_CLASSES : TAB_ACTIVE_CLASSES
+                );
+
+                const badge = tab.querySelector('[data-status-count]');
+                applyClasses(
+                    badge,
+                    isActive ? BADGE_ACTIVE_CLASSES : BADGE_INACTIVE_CLASSES,
+                    isActive ? BADGE_INACTIVE_CLASSES : BADGE_ACTIVE_CLASSES
+                );
+            });
+
+            tabsContainer.dataset.currentStatus = status;
+        };
+
+        const updateCounts = (counts = {}) => {
+            tabButtons.forEach(tab => {
+                const status = tab.dataset.status;
+                const badge = tab.querySelector('[data-status-count]');
+                if (badge && Object.prototype.hasOwnProperty.call(counts, status)) {
+                    badge.textContent = counts[status];
+                }
+            });
+        };
+
+        const handleRequestsPagination = async (url, { updateTabFromResponse = false } = {}) => {
+            if (!requestsContainer) {
+                return;
+            }
+
+            try {
+                setRequestsLoading(true);
+                const response = await fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load requests page');
+                }
+
+                const data = await response.json();
+
+                if (data.html) {
+                    requestsContainer.innerHTML = data.html;
+                    bindRequestButtonHandlers(requestsContainer);
+                }
+
+                if (updateTabFromResponse && typeof data.status === 'string') {
+                    updateActiveTab(data.status);
+                }
+
+                if (data.counts) {
+                    updateCounts(data.counts);
+                }
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setRequestsLoading(false);
+            }
+        };
+
+        const modal = document.getElementById('request-details-modal');
+        const closeButton = document.getElementById('modal-close');
+        const modalCreated = document.getElementById('modal-created');
+        const modalClientName = document.getElementById('modal-client-name');
+        const modalContactMethod = document.getElementById('modal-contact-method');
+        const modalContactIcon = document.getElementById('modal-contact-icon');
+        const modalAtw = document.getElementById('modal-atw');
+        const modalAtwStatus = document.getElementById('modal-atw-status');
+        const modalAtwStatusText = document.getElementById('modal-atw-status-text');
+        const modalContainer = document.getElementById('modal-container');
+        const modalPickup = document.getElementById('modal-pickup');
+        const modalDelivery = document.getElementById('modal-delivery');
+        const modalSchedule = document.getElementById('modal-schedule');
+        const modalNotes = document.getElementById('modal-notes');
+        const modalNotesRow = document.getElementById('modal-notes-row');
+        const modalStatus = document.getElementById('modal-status');
+        const modalRequestId = document.getElementById('modal-request-id');
+        const modalTimeline = document.getElementById('modal-timeline');
+        const modalVerifyAtw = document.getElementById('modal-verify-atw');
+        const modalCloseButton = document.getElementById('modal-close-button');
+        const modalVerifyForm = document.getElementById('modal-verify-form');
+        const verifyConfirmModal = document.getElementById('verify-confirm-modal');
+        const verifyConfirmYes = document.getElementById('verify-confirm-yes');
+        const verifyConfirmNo = document.getElementById('verify-confirm-no');
+        let currentVerifyUrl = null;
+        let pendingVerifyForm = null;
+        let lastVerifyTrigger = null;
+        let pendingVerifyContext = null;
+
+        if (!modal || !closeButton) {
+            return;
+        }
+
+        const statusClasses = {
+            pending: ['bg-yellow-100', 'text-yellow-800'],
+            verified: ['bg-green-100', 'text-green-800'],
+            assigned: ['bg-blue-100', 'text-blue-800'],
+            completed: ['bg-gray-100', 'text-gray-800']
+        };
+
+        const contactIcons = {
+            mobile: 'fa-phone',
+            email: 'fa-envelope',
+            group_chat: 'fa-comments'
+        };
+
+        const showVerifyConfirm = ({ form = null, trigger = null, context = null } = {}) => {
+            if (!verifyConfirmModal) {
+                if (form) {
+                    form.submit();
+                } else if (modalVerifyForm && currentVerifyUrl) {
+                    modalVerifyForm.submit();
+                }
+                return;
+            }
+
+            pendingVerifyForm = form;
+            lastVerifyTrigger = trigger;
+            pendingVerifyContext = context;
+
+            verifyConfirmModal.classList.remove('hidden');
+            verifyConfirmModal.classList.add('flex');
+
+            if (verifyConfirmYes) {
+                verifyConfirmYes.focus({ preventScroll: true });
+            }
+        };
+
+        const hideVerifyConfirm = ({ refocus = true } = {}) => {
+            if (verifyConfirmModal) {
+                verifyConfirmModal.classList.add('hidden');
+                verifyConfirmModal.classList.remove('flex');
+            }
+
+            if (pendingVerifyContext === 'modal' && modalVerifyAtw && currentVerifyUrl) {
+                modalVerifyAtw.classList.remove('hidden');
+            }
+
+            if (refocus && lastVerifyTrigger) {
+                lastVerifyTrigger.focus({ preventScroll: true });
+            }
+
+            pendingVerifyForm = null;
+            lastVerifyTrigger = null;
+            pendingVerifyContext = null;
+        };
+
+        const toggleModal = (show) => {
+            if (show) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                hideVerifyConfirm({ refocus: false });
+            }
+        };
+
+        const updateStatusBadge = (statusElement, status) => {
+            statusElement.className = 'px-3 py-1 rounded-full text-xs font-semibold capitalize';
+            const classes = statusClasses[status] ?? ['bg-gray-100', 'text-gray-800'];
+            statusElement.classList.add(...classes);
+            statusElement.textContent = status.replace('_', ' ');
+        };
+
+        const updateAtwStatusBadge = (badgeElement, isVerified) => {
+            badgeElement.className = 'text-xs font-semibold px-2 py-1 rounded-full';
+            if (isVerified) {
+                badgeElement.classList.add('bg-green-100', 'text-green-700');
+                badgeElement.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Verified';
+            } else {
+                badgeElement.classList.add('bg-yellow-100', 'text-yellow-700');
+                badgeElement.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Pending Verification';
+            }
+        };
+
+        const handleViewClick = (event) => {
+            const button = event.currentTarget;
+
+            modalCreated.textContent = `Created ${button.dataset.created}`;
+            modalClientName.textContent = button.dataset.clientName;
+            const contactMethod = button.dataset.contactMethod;
+            modalContactMethod.textContent = button.dataset.contactMethodLabel;
+            modalContactIcon.className = `fas ${contactIcons[contactMethod] || 'fa-envelope'} mr-2`;
+            modalAtw.textContent = button.dataset.atwReference;
+            const isVerified = button.dataset.atwVerified === '1';
+            updateAtwStatusBadge(modalAtwStatus, isVerified);
+            modalAtwStatusText.textContent = isVerified ? 'Verified' : 'Pending Verification';
+            modalContainer.textContent = `${button.dataset.containerSize} - ${button.dataset.containerType}`;
+            modalPickup.textContent = button.dataset.pickup;
+            modalDelivery.textContent = button.dataset.delivery;
+            modalSchedule.textContent = `${button.dataset.scheduleDate} at ${button.dataset.scheduleTime}`;
+
+            if (button.dataset.notes) {
+                modalNotesRow.hidden = false;
+                modalNotes.textContent = button.dataset.notes;
+            } else {
+                modalNotesRow.hidden = true;
+                modalNotes.textContent = '';
+            }
+
+            updateStatusBadge(modalStatus, button.dataset.status);
+            modalRequestId.textContent = button.dataset.requestId;
+            modalTimeline.textContent = button.dataset.created;
+
+            currentVerifyUrl = button.dataset.verifyUrl || '';
+            if (modalVerifyAtw && modalVerifyForm) {
+                if (currentVerifyUrl) {
+                    modalVerifyAtw.classList.remove('hidden');
+                    hideVerifyConfirm({ refocus: false });
+                    modalVerifyForm.setAttribute('action', currentVerifyUrl);
+                } else {
+                    modalVerifyAtw.classList.add('hidden');
+                    hideVerifyConfirm({ refocus: false });
+                    modalVerifyForm.removeAttribute('action');
+                }
+            }
+
+            toggleModal(true);
+        };
+
+        if (requestsContainer) {
+            requestsContainer.addEventListener('click', (event) => {
+                const paginationLink = event.target.closest('a[data-pagination="requests"]');
+                if (!paginationLink) {
+                    return;
+                }
+
+                event.preventDefault();
+                handleRequestsPagination(paginationLink.href);
+            });
+
+            bindRequestButtonHandlers(requestsContainer);
+        }
+
+        const handleTabClick = async (event) => {
+            const { status, url } = event.currentTarget.dataset;
+
+            if (!url) {
+                return;
+            }
+
+            if (tabsContainer && tabsContainer.dataset.currentStatus === status) {
+                return;
+            }
+
+            event.preventDefault();
+            updateActiveTab(status);
+            await handleRequestsPagination(url, { updateTabFromResponse: true });
+        };
+
+        if (tabsContainer) {
+            tabButtons.forEach(tab => {
+                tab.addEventListener('click', handleTabClick);
+            });
+        }
+
+        closeButton.addEventListener('click', () => toggleModal(false));
+        if (modalCloseButton) {
+            modalCloseButton.addEventListener('click', () => toggleModal(false));
+        }
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                toggleModal(false);
+            }
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key !== 'Escape') {
+                return;
+            }
+
+            if (verifyConfirmModal && verifyConfirmModal.classList.contains('flex')) {
+                hideVerifyConfirm();
+                if (modalVerifyAtw && currentVerifyUrl) {
+                    modalVerifyAtw.focus({ preventScroll: true });
+                }
+                return;
+            }
+
+            if (!modal.classList.contains('hidden')) {
+                toggleModal(false);
+            }
+        });
+
+        if (modalVerifyAtw && modalVerifyForm) {
+            modalVerifyAtw.addEventListener('click', () => {
+                if (currentVerifyUrl) {
+                    showVerifyConfirm({ form: modalVerifyForm, trigger: modalVerifyAtw, context: 'modal' });
+                }
+            });
+        }
+
+        if (verifyConfirmYes) {
+            verifyConfirmYes.addEventListener('click', () => {
+                if (pendingVerifyForm) {
+                    const formToSubmit = pendingVerifyForm;
+                    hideVerifyConfirm({ refocus: false });
+                    formToSubmit.submit();
+                    return;
+                }
+
+                if (modalVerifyForm && currentVerifyUrl) {
+                    hideVerifyConfirm({ refocus: false });
+                    modalVerifyForm.submit();
+                }
+            });
+        }
+
+        if (verifyConfirmNo) {
+            verifyConfirmNo.addEventListener('click', () => {
+                hideVerifyConfirm();
+            });
+        }
+
+        if (verifyConfirmModal) {
+            verifyConfirmModal.addEventListener('click', (event) => {
+                if (event.target === verifyConfirmModal) {
+                    hideVerifyConfirm();
+                }
+            });
+        }
+
+    });
+</script>
+@endpush
+
+@endsection
