@@ -6,6 +6,8 @@ use App\Models\Trip;
 use App\Models\DeliveryRequest;
 use App\Models\Driver;
 use App\Models\Vehicle;
+use App\Models\Client;
+use App\Models\ClientNotification;
 use App\Services\DispatchService;
 use Illuminate\Http\Request;
 
@@ -18,19 +20,111 @@ class TripController extends Controller
         $this->dispatchService = $dispatchService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
-            ->orderBy('scheduled_time', 'desc')
-            ->get();
+        $allowedStatuses = ['scheduled', 'in-transit', 'completed', 'cancelled'];
+        $activeStatus = $request->query('status', 'all');
 
-        return view('dispatch.trips.index', compact('trips'));
+        $tripsQuery = Trip::with(['deliveryRequest.client', 'driver', 'vehicle']);
+
+        // Search functionality
+        $search = $request->query('search');
+        if ($search) {
+            $tripsQuery->where(function ($query) use ($search) {
+                $query->whereHas('deliveryRequest', function ($q) use ($search) {
+                    $q->where('atw_reference', 'like', "%{$search}%")
+                        ->orWhere('pickup_location', 'like', "%{$search}%")
+                        ->orWhere('delivery_location', 'like', "%{$search}%")
+                        ->orWhereHas('client', function ($clientQuery) use ($search) {
+                            $clientQuery->where('name', 'like', "%{$search}%");
+                        });
+                })
+                    ->orWhereHas('driver', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('vehicle', function ($q) use ($search) {
+                        $q->where('plate_number', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        if ($activeStatus !== 'all') {
+            if (in_array($activeStatus, $allowedStatuses, true)) {
+                $tripsQuery->where('status', $activeStatus);
+            } else {
+                $activeStatus = 'all';
+            }
+        }
+
+        if ($activeStatus === 'all') {
+            $tripsQuery->orderByRaw("CASE WHEN status = 'scheduled' THEN 0 WHEN status = 'in-transit' THEN 1 WHEN status = 'completed' THEN 2 ELSE 3 END");
+        }
+
+        $trips = $tripsQuery
+            ->orderByDesc('scheduled_time')
+            ->orderByDesc('created_at')
+            ->paginate(7);
+
+        $trips->withPath(route('trips.index'));
+        if ($activeStatus !== 'all') {
+            $trips->appends(['status' => $activeStatus]);
+        }
+        if ($search) {
+            $trips->appends(['search' => $search]);
+        }
+
+        $statusCounts = Trip::select('status')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->whereIn('status', $allowedStatuses)
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $counts = [
+            'all' => Trip::count(),
+        ];
+
+        foreach ($allowedStatuses as $status) {
+            $counts[$status] = $statusCounts[$status] ?? 0;
+        }
+
+        if ($request->ajax()) {
+            $html = view('dispatch.trips.partials.table', compact('trips'))->render();
+
+            return response()->json([
+                'html' => $html,
+                'status' => $activeStatus,
+                'counts' => $counts,
+            ]);
+        }
+
+        return view('dispatch.trips.index', compact('trips', 'activeStatus', 'counts'));
     }
 
     public function create(DeliveryRequest $deliveryRequest)
     {
-        $drivers = Driver::available()->get();
-        $vehicles = Vehicle::available()->get();
+        // Verify delivery request can be assigned
+        if (!in_array($deliveryRequest->status, ['pending', 'verified'])) {
+            return redirect()
+                ->route('requests.show', $deliveryRequest)
+                ->with('error', 'This request cannot be assigned. Status: ' . $deliveryRequest->status);
+        }
+
+        // Get TRULY available drivers and vehicles
+        $drivers = $this->dispatchService->getAvailableDrivers();
+        $vehicles = $this->dispatchService->getAvailableVehicles();
+
+        // Check if resources are available
+        if ($drivers->isEmpty()) {
+            return redirect()
+                ->route('requests.show', $deliveryRequest)
+                ->with('error', 'No available drivers. Please make sure drivers are set to "available" status.');
+        }
+
+        if ($vehicles->isEmpty()) {
+            return redirect()
+                ->route('requests.show', $deliveryRequest)
+                ->with('error', 'No available vehicles. Please make sure vehicles are set to "available" status.');
+        }
 
         return view('dispatch.trips.create', compact('deliveryRequest', 'drivers', 'vehicles'));
     }
@@ -45,17 +139,28 @@ class TripController extends Controller
             'route_instructions' => 'nullable|string'
         ]);
 
-        $trip = $this->dispatchService->assignTrip(
-            $validated['delivery_request_id'],
-            $validated['driver_id'],
-            $validated['vehicle_id'],
-            $validated['scheduled_time'],
-            $validated['route_instructions'] ?? null
-        );
+        try {
+            // Use dispatch service to create trip and update all statuses
+            $trip = $this->dispatchService->assignTrip(
+                $validated['delivery_request_id'],
+                $validated['driver_id'],
+                $validated['vehicle_id'],
+                $validated['scheduled_time'],
+                $validated['route_instructions'] ?? null
+            );
 
-        return redirect()
-            ->route('trips.show', $trip)
-            ->with('success', 'Trip assigned successfully. Driver has been notified.');
+            // Send assignment notification to client
+            $this->sendClientNotification($trip, 'scheduled', 'Your delivery has been scheduled.');
+
+            return redirect()
+                ->route('trips.show', $trip)
+                ->with('success', 'Trip assigned successfully. Driver has been notified.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function show(Trip $trip)
@@ -72,22 +177,35 @@ class TripController extends Controller
             'location' => 'nullable|string'
         ]);
 
-        $this->dispatchService->updateTripStatus(
-            $trip,
-            $validated['status'],
-            $validated['update_message'] ?? null,
-            $validated['location'] ?? null
-        );
+        $oldStatus = $trip->status;
 
-        return redirect()
-            ->back()
-            ->with('success', 'Trip status updated successfully.');
+        try {
+            $this->dispatchService->updateTripStatus(
+                $trip,
+                $validated['status'],
+                $validated['update_message'] ?? null,
+                $validated['location'] ?? null
+            );
+
+            // Send notifications based on status changes
+            if ($oldStatus !== $validated['status']) {
+                $this->handleStatusNotification($trip, $validated['status']);
+            }
+
+            return redirect()
+                ->back()
+                ->with('success', 'Trip status updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function addUpdate(Request $request, Trip $trip)
     {
         $validated = $request->validate([
-            'update_type' => 'required|in:status,location,delay,incident,completed',
+            'update_type' => 'required|in:status,location,delay,incident,completed,arrived',
             'message' => 'required|string',
             'location' => 'nullable|string'
         ]);
@@ -99,17 +217,29 @@ class TripController extends Controller
             'reported_by' => 'dispatcher'
         ]);
 
-        // Notify client if significant update
-        if (in_array($validated['update_type'], ['delay', 'incident', 'completed'])) {
-            $this->dispatchService->notifyClient($trip, $validated['update_type'], $validated['message']);
+        // Send notification for important updates
+        if (in_array($validated['update_type'], ['delay', 'incident', 'completed', 'arrived'])) {
+            $this->sendClientNotification($trip, $validated['update_type'], $validated['message']);
         }
 
         return redirect()->back()->with('success', 'Update added successfully.');
     }
+
     public function edit(Trip $trip)
     {
-        $drivers = \App\Models\Driver::available()->get();
-        $vehicles = \App\Models\Vehicle::available()->get();
+        // For editing, show available resources PLUS currently assigned ones
+        $drivers = $this->dispatchService->getAvailableDrivers();
+        $vehicles = $this->dispatchService->getAvailableVehicles();
+
+        // Add current driver if not in available list
+        if (!$drivers->contains('id', $trip->driver_id)) {
+            $drivers->push($trip->driver);
+        }
+
+        // Add current vehicle if not in available list
+        if (!$vehicles->contains('id', $trip->vehicle_id)) {
+            $vehicles->push($trip->vehicle);
+        }
 
         return view('dispatch.trips.edit', compact('trip', 'drivers', 'vehicles'));
     }
@@ -123,11 +253,30 @@ class TripController extends Controller
             'route_instructions' => 'nullable|string'
         ]);
 
-        $trip->update($validated);
+        try {
+            // If driver or vehicle changed, use reassignment logic
+            if (isset($validated['driver_id']) || isset($validated['vehicle_id'])) {
+                $this->dispatchService->reassignTrip(
+                    $trip,
+                    $validated['driver_id'] ?? null,
+                    $validated['vehicle_id'] ?? null
+                );
+            }
 
-        return redirect()
-            ->route('trips.show', $trip)
-            ->with('success', 'Trip updated successfully.');
+            // Update other fields
+            $trip->update(array_filter($validated, function ($key) {
+                return in_array($key, ['scheduled_time', 'route_instructions']);
+            }, ARRAY_FILTER_USE_KEY));
+
+            return redirect()
+                ->route('trips.show', $trip)
+                ->with('success', 'Trip updated successfully.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function destroy(Trip $trip)
@@ -138,11 +287,15 @@ class TripController extends Controller
                 ->with('error', 'Cannot delete trip that is in transit.');
         }
 
-        // Free up resources
-        \App\Models\Driver::where('id', $trip->driver_id)
-            ->update(['status' => 'available']);
-        \App\Models\Vehicle::where('id', $trip->vehicle_id)
-            ->update(['status' => 'available']);
+        // Free up resources before deleting
+        if ($trip->status !== 'completed' && $trip->status !== 'cancelled') {
+            Driver::where('id', $trip->driver_id)->update(['status' => 'available']);
+            Vehicle::where('id', $trip->vehicle_id)->update(['status' => 'available']);
+
+            // Reset delivery request status
+            DeliveryRequest::where('id', $trip->delivery_request_id)
+                ->update(['status' => 'verified']);
+        }
 
         $trip->delete();
 
@@ -153,69 +306,126 @@ class TripController extends Controller
 
     public function startTrip(Trip $trip)
     {
-        $trip->update([
-            'status' => 'in-transit',
-            'actual_start_time' => now()
-        ]);
+        try {
+            $this->dispatchService->updateTripStatus(
+                $trip,
+                'in-transit',
+                'Trip started by dispatcher'
+            );
 
-        $trip->updates()->create([
-            'update_type' => 'status',
-            'message' => 'Trip started',
-            'reported_by' => 'dispatcher'
-        ]);
+            // Notify client that trip has started
+            $this->sendClientNotification($trip, 'in-transit', 'Your delivery is now in transit.');
 
-        return redirect()
-            ->back()
-            ->with('success', 'Trip started successfully.');
+            return redirect()
+                ->back()
+                ->with('success', 'Trip started successfully.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
     }
 
     public function completeTrip(Trip $trip)
     {
-        $trip->update([
-            'status' => 'completed',
-            'actual_end_time' => now()
-        ]);
+        try {
+            $this->dispatchService->updateTripStatus(
+                $trip,
+                'completed',
+                'Trip completed successfully'
+            );
 
-        // Free up resources
-        \App\Models\Driver::where('id', $trip->driver_id)
-            ->update(['status' => 'available']);
-        \App\Models\Vehicle::where('id', $trip->vehicle_id)
-            ->update(['status' => 'available']);
+            // Notify client of completion
+            $this->sendClientNotification($trip, 'completed', 'Your delivery has been completed successfully.');
 
-        // Update delivery request
-        DeliveryRequest::where('id', $trip->delivery_request_id)
-            ->update(['status' => 'completed']);
+            return redirect()
+                ->back()
+                ->with('success', 'Trip completed successfully.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
+    }
 
+    public function markArrived(Trip $trip)
+    {
         $trip->updates()->create([
-            'update_type' => 'completed',
-            'message' => 'Trip completed successfully',
+            'update_type' => 'arrived',
+            'message' => 'Container has arrived at destination',
+            'location' => $trip->deliveryRequest->delivery_location,
             'reported_by' => 'dispatcher'
         ]);
 
+        // Send arrival notification
+        $this->sendClientNotification(
+            $trip,
+            'arrived',
+            "Your container has arrived at {$trip->deliveryRequest->delivery_location}. ATW Reference: {$trip->deliveryRequest->atw_reference}"
+        );
+
         return redirect()
             ->back()
-            ->with('success', 'Trip completed successfully.');
+            ->with('success', 'Arrival notification sent to client.');
     }
 
     public function cancelTrip(Trip $trip)
     {
-        $trip->update(['status' => 'cancelled']);
+        try {
+            $this->dispatchService->updateTripStatus(
+                $trip,
+                'cancelled',
+                'Trip cancelled by dispatcher'
+            );
 
-        // Free up resources
-        \App\Models\Driver::where('id', $trip->driver_id)
-            ->update(['status' => 'available']);
-        \App\Models\Vehicle::where('id', $trip->vehicle_id)
-            ->update(['status' => 'available']);
+            // Notify client of cancellation
+            $this->sendClientNotification($trip, 'cancelled', 'Your delivery has been cancelled.');
 
-        $trip->updates()->create([
-            'update_type' => 'status',
-            'message' => 'Trip cancelled',
-            'reported_by' => 'dispatcher'
+            return redirect()
+                ->back()
+                ->with('success', 'Trip cancelled.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
+                ->with('error', $e->getMessage());
+        }
+    }
+
+    // Helper method to send client notifications
+    private function sendClientNotification(Trip $trip, string $type, string $message)
+    {
+        $client = $trip->deliveryRequest->client;
+
+        ClientNotification::create([
+            'trip_id' => $trip->id,
+            'client_id' => $client->id,
+            'notification_type' => $type,
+            'message' => $message,
+            'method' => $trip->deliveryRequest->contact_method ?? 'sms',
+            'sent' => false
         ]);
 
-        return redirect()
-            ->back()
-            ->with('success', 'Trip cancelled.');
+        // Log the notification
+        \Log::info("Notification created for client: {$client->name}", [
+            'trip_id' => $trip->id,
+            'type' => $type,
+            'message' => $message
+        ]);
+    }
+
+    // Helper method to handle status-based notifications
+    private function handleStatusNotification(Trip $trip, string $newStatus)
+    {
+        $messages = [
+            'scheduled' => 'Your delivery has been scheduled.',
+            'in-transit' => 'Your delivery is now in transit.',
+            'completed' => 'Your delivery has been completed successfully.',
+            'cancelled' => 'Your delivery has been cancelled.'
+        ];
+
+        if (isset($messages[$newStatus])) {
+            $this->sendClientNotification($trip, $newStatus, $messages[$newStatus]);
+        }
     }
 
     public function getUpdates(Trip $trip)
@@ -232,7 +442,6 @@ class TripController extends Controller
 
     public function getCurrentLocation(Trip $trip)
     {
-        // Get the latest location update
         $locationUpdate = $trip->updates()
             ->where('update_type', 'location')
             ->latest()
@@ -242,38 +451,6 @@ class TripController extends Controller
             'success' => true,
             'location' => $locationUpdate ? $locationUpdate->location : null
         ]);
-    }
-
-    public function filterByDriver(Driver $driver)
-    {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
-            ->where('driver_id', $driver->id)
-            ->orderBy('scheduled_time', 'desc')
-            ->get();
-
-        return view('dispatch.trips.index', compact('trips'));
-    }
-
-    public function filterByVehicle(Vehicle $vehicle)
-    {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
-            ->where('vehicle_id', $vehicle->id)
-            ->orderBy('scheduled_time', 'desc')
-            ->get();
-
-        return view('dispatch.trips.index', compact('trips'));
-    }
-
-    public function filterByClient(Client $client)
-    {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
-            ->whereHas('deliveryRequest', function ($q) use ($client) {
-                $q->where('client_id', $client->id);
-            })
-            ->orderBy('scheduled_time', 'desc')
-            ->get();
-
-        return view('dispatch.trips.index', compact('trips'));
     }
 
     public function todayTrips()
@@ -313,60 +490,6 @@ class TripController extends Controller
         return view('dispatch.trips.print', compact('trip'));
     }
 
-    public function exportPdf()
-    {
-        return redirect()->back()->with('info', 'PDF export requires DomPDF package.');
-    }
-
-    public function calendarView()
-    {
-        return view('dispatch.trips.calendar');
-    }
-
-    public function calendarEvents(Request $request)
-    {
-        $start = $request->input('start');
-        $end = $request->input('end');
-
-        $trips = Trip::with(['deliveryRequest.client', 'driver'])
-            ->whereBetween('scheduled_time', [$start, $end])
-            ->get();
-
-        $events = $trips->map(function ($trip) {
-            return [
-                'id' => $trip->id,
-                'title' => $trip->deliveryRequest->client->name . ' - ' . $trip->driver->name,
-                'start' => $trip->scheduled_time->toIso8601String(),
-                'end' => $trip->actual_end_time ? $trip->actual_end_time->toIso8601String() : null,
-                'color' => $trip->status === 'completed' ? '#10b981' : ($trip->status === 'in-transit' ? '#3b82f6' : '#6b7280'),
-                'url' => route('trips.show', $trip)
-            ];
-        });
-
-        return response()->json($events);
-    }
-
-    public function mapView()
-    {
-        $activeTrips = Trip::with(['deliveryRequest', 'driver', 'vehicle'])
-            ->where('status', 'in-transit')
-            ->get();
-
-        return view('dispatch.trips.map', compact('activeTrips'));
-    }
-
-    public function activeTripsMap()
-    {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
-            ->where('status', 'in-transit')
-            ->get();
-
-        return response()->json([
-            'success' => true,
-            'trips' => $trips
-        ]);
-    }
-
     public function trackTrip(Trip $trip)
     {
         $trip->load(['deliveryRequest.client', 'driver', 'vehicle', 'updates']);
@@ -380,5 +503,148 @@ class TripController extends Controller
             'status' => $trip->status,
             'last_update' => $trip->updates()->latest()->first()
         ]);
+    }
+
+    // Additional Filter Methods
+    public function filterByStatus($status)
+    {
+        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->where('status', $status)
+            ->orderBy('scheduled_time', 'desc')
+            ->paginate(20);
+
+        return view('dispatch.trips.index', compact('trips'));
+    }
+
+    public function filterByDriver(Driver $driver)
+    {
+        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->where('driver_id', $driver->id)
+            ->orderBy('scheduled_time', 'desc')
+            ->paginate(20);
+
+        return view('dispatch.trips.index', compact('trips', 'driver'));
+    }
+
+    public function filterByVehicle(Vehicle $vehicle)
+    {
+        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->where('vehicle_id', $vehicle->id)
+            ->orderBy('scheduled_time', 'desc')
+            ->paginate(20);
+
+        return view('dispatch.trips.index', compact('trips', 'vehicle'));
+    }
+
+    public function filterByClient(Client $client)
+    {
+        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->whereHas('deliveryRequest', function ($query) use ($client) {
+                $query->where('client_id', $client->id);
+            })
+            ->orderBy('scheduled_time', 'desc')
+            ->paginate(20);
+
+        return view('dispatch.trips.index', compact('trips', 'client'));
+    }
+
+    public function activeTrips()
+    {
+        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->whereIn('status', ['scheduled', 'in-transit'])
+            ->orderBy('scheduled_time')
+            ->get();
+
+        return view('dispatch.trips.active', compact('trips'));
+    }
+
+    public function search(Request $request)
+    {
+        $query = $request->input('q');
+
+        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->whereHas('deliveryRequest', function ($q) use ($query) {
+                $q->where('atw_reference', 'LIKE', "%{$query}%")
+                    ->orWhereHas('client', function ($q2) use ($query) {
+                        $q2->where('name', 'LIKE', "%{$query}%");
+                    });
+            })
+            ->orWhereHas('driver', function ($q) use ($query) {
+                $q->where('name', 'LIKE', "%{$query}%");
+            })
+            ->orWhereHas('vehicle', function ($q) use ($query) {
+                $q->where('plate_number', 'LIKE', "%{$query}%");
+            })
+            ->orderBy('scheduled_time', 'desc')
+            ->paginate(20);
+
+        return view('dispatch.trips.search', compact('trips', 'query'));
+    }
+
+    public function getActiveTrips()
+    {
+        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->whereIn('status', ['scheduled', 'in-transit'])
+            ->orderBy('scheduled_time')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'trips' => $trips
+        ]);
+    }
+
+    public function exportExcel()
+    {
+        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])->get();
+
+        $filename = 'trips_' . now()->format('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function () use ($trips) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, [
+                'Trip ID',
+                'Client',
+                'ATW Reference',
+                'Driver',
+                'Vehicle',
+                'Pickup',
+                'Delivery',
+                'Scheduled Time',
+                'Status',
+                'Start Time',
+                'End Time'
+            ]);
+
+            foreach ($trips as $trip) {
+                fputcsv($file, [
+                    $trip->id,
+                    $trip->deliveryRequest->client->name,
+                    $trip->deliveryRequest->atw_reference,
+                    $trip->driver->name,
+                    $trip->vehicle->plate_number,
+                    $trip->deliveryRequest->pickup_location,
+                    $trip->deliveryRequest->delivery_location,
+                    $trip->scheduled_time->format('Y-m-d H:i'),
+                    $trip->status,
+                    $trip->actual_start_time ? $trip->actual_start_time->format('Y-m-d H:i') : '',
+                    $trip->actual_end_time ? $trip->actual_end_time->format('Y-m-d H:i') : '',
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function exportPdf()
+    {
+        return redirect()->back()->with('info', 'PDF export feature requires DomPDF package.');
     }
 }

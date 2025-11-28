@@ -5,15 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\DeliveryRequest;
 use App\Models\Client;
 use App\Services\CalendarificService;
+use App\Services\DispatchService;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class DeliveryRequestController extends Controller
 {
-    public function __construct(private readonly CalendarificService $calendarific)
-    {
-    }
+    public function __construct(
+        private readonly CalendarificService $calendarific,
+        private readonly DispatchService $dispatchService
+    ) {}
 
     public function index(Request $request)
     {
@@ -21,6 +23,19 @@ class DeliveryRequestController extends Controller
         $activeStatus = $request->query('status', 'all');
 
         $requestsQuery = DeliveryRequest::with('client');
+        // Search functionality
+        $search = $request->query('search');
+        if ($search) {
+            $requestsQuery->where(function ($query) use ($search) {
+                $query->where('atw_reference', 'like', "%{$search}%")
+                    ->orWhere('pickup_location', 'like', "%{$search}%")
+                    ->orWhere('delivery_location', 'like', "%{$search}%")
+                    ->orWhereHas('client', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
+            });
+        }
+
 
         if ($activeStatus !== 'all') {
             if (in_array($activeStatus, $allowedStatuses, true)) {
@@ -37,11 +52,14 @@ class DeliveryRequestController extends Controller
         $requests = $requestsQuery
             ->orderByDesc('preferred_schedule')
             ->orderByDesc('created_at')
-            ->paginate(5);
+            ->paginate(7);
 
         $requests->withPath(route('requests.index'));
         if ($activeStatus !== 'all') {
             $requests->appends(['status' => $activeStatus]);
+        }
+        if ($search) {
+            $requests->appends(['search' => $search]);
         }
 
         $statusCounts = DeliveryRequest::select('status')
@@ -98,7 +116,7 @@ class DeliveryRequestController extends Controller
                             'is_future' => $date?->isToday() || $date?->isFuture(),
                         ];
                     })
-                    ->filter(fn ($holiday) => $holiday['is_future'] ?? false)
+                    ->filter(fn($holiday) => $holiday['is_future'] ?? false)
                     ->sortBy('date_iso')
                     ->values()
                     ->take(5);
@@ -122,14 +140,22 @@ class DeliveryRequestController extends Controller
             'container_size' => 'required|string',
             'container_type' => 'required|string',
             'preferred_schedule' => 'required|date|after_or_equal:today',
-            'notes' => 'nullable|string'
+            'notes' => 'nullable|string',
+            'auto_assign' => 'nullable|boolean', // New field for immediate assignment
         ]);
 
-        $deliveryRequest = DeliveryRequest::create($validated);
+        $deliveryRequest = DeliveryRequest::create(array_filter($validated, function ($key) {
+            return $key !== 'auto_assign';
+        }, ARRAY_FILTER_USE_KEY));
+
+        // Check if auto-assignment is requested
+        if ($request->input('auto_assign', false)) {
+            return $this->attemptAutoAssignment($deliveryRequest);
+        }
 
         return redirect()
             ->route('requests.show', $deliveryRequest)
-            ->with('success', 'Delivery request created successfully.');
+            ->with('success', 'Delivery request created successfully. You can verify and assign it when ready.');
     }
 
     public function show(DeliveryRequest $request)
@@ -147,8 +173,118 @@ class DeliveryRequestController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', 'ATW verified successfully.');
+            ->with('success', 'ATW verified successfully. You can now assign this request to a trip.');
     }
+
+    /**
+     * Verify AND automatically assign the request to a trip
+     */
+    public function verifyAndAssign(DeliveryRequest $request)
+    {
+        // First verify
+        $request->update([
+            'atw_verified' => true,
+            'status' => 'verified'
+        ]);
+
+        // Then attempt auto-assignment
+        return $this->attemptAutoAssignment($request);
+    }
+
+    /**
+     * Auto-assign delivery request to available resources
+     */
+    public function autoAssign(DeliveryRequest $request)
+    {
+        if (!in_array($request->status, ['pending', 'verified'])) {
+            return redirect()
+                ->back()
+                ->with('error', 'This request cannot be auto-assigned. Status: ' . $request->status);
+        }
+
+        // Verify if not already verified
+        if (!$request->atw_verified) {
+            $request->update([
+                'atw_verified' => true,
+                'status' => 'verified'
+            ]);
+        }
+
+        return $this->attemptAutoAssignment($request);
+    }
+
+    /**
+     * Helper method to attempt automatic trip assignment
+     */
+    private function attemptAutoAssignment(DeliveryRequest $deliveryRequest)
+    {
+        try {
+            // Get available resources
+            $drivers = $this->dispatchService->getAvailableDrivers();
+            $vehicles = $this->dispatchService->getAvailableVehicles();
+
+            // Check if resources are available
+            if ($drivers->isEmpty()) {
+                return redirect()
+                    ->route('requests.show', $deliveryRequest)
+                    ->with('warning', 'Delivery request created, but no drivers are currently available. Please assign manually when resources become available.');
+            }
+
+            if ($vehicles->isEmpty()) {
+                return redirect()
+                    ->route('requests.show', $deliveryRequest)
+                    ->with('warning', 'Delivery request created, but no vehicles are currently available. Please assign manually when resources become available.');
+            }
+
+            // Auto-select first available driver and vehicle
+            $selectedDriver = $drivers->first();
+            $selectedVehicle = $vehicles->first();
+
+            // Create trip using dispatch service
+            $trip = $this->dispatchService->assignTrip(
+                $deliveryRequest->id,
+                $selectedDriver->id,
+                $selectedVehicle->id,
+                $deliveryRequest->preferred_schedule,
+                "Auto-assigned by system"
+            );
+
+            // Send notification
+            $this->sendClientNotification($trip, 'scheduled', 'Your delivery has been scheduled.');
+
+            return redirect()
+                ->route('trips.show', $trip)
+                ->with('success', "Delivery request assigned successfully! Driver: {$selectedDriver->name}, Vehicle: {$selectedVehicle->plate_number}");
+        } catch (\Exception $e) {
+            return redirect()
+                ->route('requests.show', $deliveryRequest)
+                ->with('error', 'Auto-assignment failed: ' . $e->getMessage() . '. Please assign manually.');
+        }
+    }
+
+    /**
+     * Helper to send client notification
+     */
+    private function sendClientNotification($trip, string $type, string $message)
+    {
+        $client = $trip->deliveryRequest->client;
+
+        \App\Models\ClientNotification::create([
+            'trip_id' => $trip->id,
+            'client_id' => $client->id,
+            'notification_type' => $type,
+            'message' => $message,
+            'method' => $trip->deliveryRequest->contact_method ?? 'sms',
+            'sent' => false
+        ]);
+
+        \Log::info("Notification created for client: {$client->name}", [
+            'trip_id' => $trip->id,
+            'type' => $type,
+            'message' => $message
+        ]);
+    }
+
     public function edit(DeliveryRequest $request)
     {
         $clients = \App\Models\Client::orderBy('name')->get();
@@ -217,7 +353,7 @@ class DeliveryRequestController extends Controller
         $requests = DeliveryRequest::with('client')
             ->where('status', $status)
             ->orderBy('created_at', 'desc')
-            ->paginate(5);
+            ->paginate(10);
 
         return view('dispatch.requests.index', compact('requests'));
     }
@@ -290,10 +426,7 @@ class DeliveryRequestController extends Controller
 
     public function exportPdf()
     {
-        // Implement PDF export using Laravel DomPDF or similar
         $requests = DeliveryRequest::with('client')->get();
-
-        // For now, return info message
         return redirect()->back()->with('info', 'PDF export feature requires DomPDF package.');
     }
 
@@ -308,7 +441,6 @@ class DeliveryRequestController extends Controller
             'file' => 'required|mimes:csv,txt|max:2048'
         ]);
 
-        // Implement CSV import logic
         return redirect()
             ->route('requests.index')
             ->with('info', 'Import feature coming soon.');

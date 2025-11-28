@@ -4,9 +4,13 @@
 
 @push('styles')
 <style>
+    body {
+        overflow: hidden;
+    }
+
     body.bg-\[\#38B7F7\] {
         position: relative;
-        background: #A5DFF9 url('{{ asset('Img/BCO.655ce4cc-cb22-4b9e-ae5d-867a0e717d60.png') }}') center/cover no-repeat;
+        background: #A5DFF9 url('{{ asset("img/BCO.655ce4cc-cb22-4b9e-ae5d-867a0e717d60.png") }}') center/cover no-repeat;
     }
 
     body.bg-\[\#38B7F7\]:before {
@@ -26,7 +30,7 @@
         <div class="overflow-hidden rounded-3xl border border-blue-500/20 bg-white/70 text-blue-900 shadow-xl shadow-blue-900/10">
             <div class="px-8 pt-10 text-center">
                 <img
-                    src="{{ asset('Img/rvg-removebg-preview (1).png') }}"
+                    src="{{ asset('Img/NVG_LOGO org.png') }}"
                     alt="RVG Prime Movers logo"
                     class="mx-auto mb-4 h-20 w-auto drop-shadow-lg" />
                 <h2 class="text-3xl font-semibold tracking-tight">

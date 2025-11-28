@@ -42,6 +42,30 @@
         </nav>
     </div>
 
+    <!-- Search Section -->
+    <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Search Requests</h3>
+        <div class="flex items-center gap-2">
+            <div class="relative" style="width: 300px;">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text" 
+                       name="search" 
+                       id="search-input" 
+                       class="w-full pl-10 pr-4 py-2 border border-blue-500 rounded-md bg-white placeholder-gray-400 focus:outline-none focus:ring-blue-400 focus:border-blue-600 transition duration-150 sm:text-sm" 
+                       placeholder="Search..." 
+                       value="{{ request('search') }}"
+                       autocomplete="off">
+            </div>
+            <button type="button" 
+                    id="clear-search" 
+                    class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none border border-gray-300 rounded-md {{ !request('search') ? 'hidden' : '' }}">
+                Clear
+            </button>
+        </div>
+    </div>
+
     <!-- Requests Table -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <div id="requests-table-container" data-url="{{ route('requests.index') }}">
@@ -559,6 +583,91 @@
                 }
             });
         }
+
+            // Search functionality
+        const searchInput = document.getElementById('search-input');
+        const clearSearchBtn = document.getElementById('clear-search');
+        
+        // Debounce function
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Toggle clear button visibility
+        function toggleClearButton(value) {
+            if (clearSearchBtn) {
+                clearSearchBtn.classList.toggle('hidden', !value);
+            }
+        }
+        
+        // Fetch requests with search
+        function fetchRequests(search) {
+            const currentStatus = tabsContainer ? tabsContainer.dataset.currentStatus : 'all';
+            let url = requestsContainer.dataset.url || '{{ route("requests.index") }}';
+            const params = new URLSearchParams();
+            
+            if (currentStatus && currentStatus !== 'all') {
+                params.append('status', currentStatus);
+            }
+            if (search) {
+                params.append('search', search);
+            }
+            
+            const fullUrl = params.toString() ? `${url}?${params.toString()}` : url;
+            handleRequestsPagination(fullUrl, { updateTabFromResponse: true });
+            
+            // Update URL without page reload
+            const newUrl = new URL(window.location.href);
+            if (search) {
+                newUrl.searchParams.set('search', search);
+            } else {
+                newUrl.searchParams.delete('search');
+            }
+            if (currentStatus && currentStatus !== 'all') {
+                newUrl.searchParams.set('status', currentStatus);
+            }
+            window.history.pushState({}, '', newUrl);
+        }
+        
+        // Handle search input with debounce
+        if (searchInput) {
+            searchInput.addEventListener('input', debounce(function(e) {
+                const searchValue = e.target.value.trim();
+                if (searchValue.length === 0 || searchValue.length >= 2) {
+                    fetchRequests(searchValue);
+                }
+                toggleClearButton(searchValue);
+            }, 300));
+        }
+        
+        // Handle clear search
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                fetchRequests('');
+                toggleClearButton('');
+                searchInput.focus();
+            });
+        }
+        
+        // Handle browser back/forward buttons
+        window.addEventListener('popstate', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const searchParam = urlParams.get('search') || '';
+            if (searchInput) {
+                searchInput.value = searchParam;
+                toggleClearButton(searchParam);
+                fetchRequests(searchParam);
+            }
+        });
 
     });
 </script>

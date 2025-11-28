@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -44,7 +44,7 @@
         <!-- Logo -->
         <div class="p-4 border-b border-blue-700 flex justify-center">
             <a href="{{ route('dashboard') }}" class="flex items-center justify-center hover:opacity-80 transition">
-                <img src="{{ asset('img/NVG_LOGO.png') }}" alt="NVG Prime Movers logo" class="h-16 w-auto" />
+                <img src="{{ asset('img/NVG_LOGO org.png') }}" alt="NVG Prime Movers logo" class="h-16 w-auto" />
             </a>
         </div>
 
@@ -193,13 +193,17 @@
             const showModal = () => {
                 modal.classList.remove('hidden');
                 modal.classList.add('flex');
-                confirmButton.focus({ preventScroll: true });
+                confirmButton.focus({
+                    preventScroll: true
+                });
             };
 
             const hideModal = () => {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-                logoutButton.focus({ preventScroll: true });
+                logoutButton.focus({
+                    preventScroll: true
+                });
             };
 
             logoutButton.addEventListener('click', (event) => {

@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,24 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // Blade directive to check if user is head of dispatch
+        Blade::if('headDispatch', function () {
+            return auth()->check() && auth()->user()->isHeadDispatch();
+        });
+
+        // Blade directive to check if user is dispatch officer
+        Blade::if('dispatch', function () {
+            return auth()->check() && auth()->user()->isDispatch();
+        });
+
+        // Blade directive to check if user is admin (head of dispatch)
+        Blade::if('admin', function () {
+            return auth()->check() && auth()->user()->isAdmin();
+        });
+
+        // Blade directive to check specific role
+        Blade::if('role', function ($role) {
+            return auth()->check() && auth()->user()->role === $role;
+        });
     }
 }

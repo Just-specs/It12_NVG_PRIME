@@ -8,10 +8,68 @@ use App\Models\Driver;
 
 class DriverController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $drivers = Driver::withCount('trips')->get();
-        return view('dispatch.drivers.index', compact('drivers'));
+        $allowedStatuses = ['available', 'on-trip', 'off-duty'];
+        $activeStatus = $request->query('status', 'all');
+
+        $driversQuery = Driver::withCount('trips');
+
+        // Search functionality
+        $search = $request->query('search');
+        if ($search) {
+            $driversQuery->where(function ($query) use ($search) {
+                $query->where('name', 'like', "%{$search}%")
+                    ->orWhere('license_number', 'like', "%{$search}%")
+                    ->orWhere('mobile', 'like', "%{$search}%");
+            });
+        }
+
+        if ($activeStatus !== 'all') {
+            if (in_array($activeStatus, $allowedStatuses, true)) {
+                $driversQuery->where('status', $activeStatus);
+            } else {
+                $activeStatus = 'all';
+            }
+        }
+
+        $drivers = $driversQuery
+            ->orderBy('name')
+            ->paginate(7);
+
+        $drivers->withPath(route('drivers.index'));
+        if ($activeStatus !== 'all') {
+            $drivers->appends(['status' => $activeStatus]);
+        }
+        if ($search) {
+            $drivers->appends(['search' => $search]);
+        }
+
+        $statusCounts = Driver::select('status')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->whereIn('status', $allowedStatuses)
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $counts = [
+            'all' => Driver::count(),
+        ];
+
+        foreach ($allowedStatuses as $status) {
+            $counts[$status] = $statusCounts[$status] ?? 0;
+        }
+
+        if ($request->ajax()) {
+            $html = view('dispatch.drivers.partials.table', compact('drivers'))->render();
+
+            return response()->json([
+                'html' => $html,
+                'status' => $activeStatus,
+                'counts' => $counts,
+            ]);
+        }
+
+        return view('dispatch.drivers.index', compact('drivers', 'activeStatus', 'counts'));
     }
 
     public function show(Driver $driver)

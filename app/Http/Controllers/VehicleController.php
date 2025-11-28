@@ -8,22 +8,70 @@ use Illuminate\Http\Request;
 
 class VehicleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $vehicles = Vehicle::withCount(['trips' => function ($query) {
-            $query->where('status', 'completed');
-        }])
-            ->orderBy('plate_number')
-            ->get();
+        $allowedStatuses = ['available', 'in-use', 'maintenance'];
+        $activeStatus = $request->query('status', 'all');
 
-        $stats = [
-            'total' => $vehicles->count(),
-            'available' => $vehicles->where('status', 'available')->count(),
-            'in_use' => $vehicles->where('status', 'in-use')->count(),
-            'maintenance' => $vehicles->where('status', 'maintenance')->count(),
+        $vehiclesQuery = Vehicle::withCount(['trips' => function ($query) {
+            $query->where('status', 'completed');
+        }]);
+
+        // Search functionality
+        $search = $request->query('search');
+        if ($search) {
+            $vehiclesQuery->where(function ($query) use ($search) {
+                $query->where('plate_number', 'like', "%{$search}%")
+                    ->orWhere('vehicle_type', 'like', "%{$search}%")
+                    ->orWhere('trailer_type', 'like', "%{$search}%");
+            });
+        }
+
+        if ($activeStatus !== 'all') {
+            if (in_array($activeStatus, $allowedStatuses, true)) {
+                $vehiclesQuery->where('status', $activeStatus);
+            } else {
+                $activeStatus = 'all';
+            }
+        }
+
+        $vehicles = $vehiclesQuery
+            ->orderBy('plate_number')
+            ->paginate(7);
+
+        $vehicles->withPath(route('vehicles.index'));
+        if ($activeStatus !== 'all') {
+            $vehicles->appends(['status' => $activeStatus]);
+        }
+        if ($search) {
+            $vehicles->appends(['search' => $search]);
+        }
+
+        $statusCounts = Vehicle::select('status')
+            ->selectRaw('COUNT(*) as aggregate')
+            ->whereIn('status', $allowedStatuses)
+            ->groupBy('status')
+            ->pluck('aggregate', 'status');
+
+        $counts = [
+            'all' => Vehicle::count(),
         ];
 
-        return view('dispatch.vehicles.index', compact('vehicles', 'stats'));
+        foreach ($allowedStatuses as $status) {
+            $counts[$status] = $statusCounts[$status] ?? 0;
+        }
+
+        if ($request->ajax()) {
+            $html = view('dispatch.vehicles.partials.table', compact('vehicles'))->render();
+
+            return response()->json([
+                'html' => $html,
+                'status' => $activeStatus,
+                'counts' => $counts,
+            ]);
+        }
+
+        return view('dispatch.vehicles.index', compact('vehicles', 'activeStatus', 'counts'));
     }
 
     public function create()
@@ -167,7 +215,8 @@ class VehicleController extends Controller
         $vehicles = Vehicle::where('status', $status)
             ->withCount('trips')
             ->orderBy('plate_number')
-            ->get();
+            ->paginate(12)
+            ->withQueryString();
 
         $stats = [
             'total' => Vehicle::count(),
@@ -181,7 +230,7 @@ class VehicleController extends Controller
 
     public function availableVehicles()
     {
-        $vehicles = Vehicle::available()->get();
+        $vehicles = Vehicle::available()->orderBy('plate_number')->paginate(12)->withQueryString();
         return view('dispatch.vehicles.available', compact('vehicles'));
     }
 
@@ -189,7 +238,9 @@ class VehicleController extends Controller
     {
         $vehicles = Vehicle::where('status', 'maintenance')
             ->withCount('trips')
-            ->get();
+            ->orderBy('plate_number')
+            ->paginate(12)
+            ->withQueryString();
 
         return view('dispatch.vehicles.maintenance', compact('vehicles'));
     }
@@ -197,12 +248,13 @@ class VehicleController extends Controller
     public function search(Request $request)
     {
         $query = $request->input('q');
-
         $vehicles = Vehicle::where('plate_number', 'LIKE', "%{$query}%")
             ->orWhere('vehicle_type', 'LIKE', "%{$query}%")
             ->orWhere('trailer_type', 'LIKE', "%{$query}%")
             ->withCount('trips')
-            ->get();
+            ->orderBy('plate_number')
+            ->paginate(12)
+            ->withQueryString();
 
         return view('dispatch.vehicles.search', compact('vehicles', 'query'));
     }

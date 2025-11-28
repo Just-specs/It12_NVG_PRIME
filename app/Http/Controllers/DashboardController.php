@@ -6,6 +6,7 @@ use App\Models\DeliveryRequest;
 use App\Models\Trip;
 use App\Models\Driver;
 use App\Models\Vehicle;
+use App\Models\Client;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -119,7 +120,7 @@ class DashboardController extends Controller
     public function updateSettings(Request $request)
     {
         // Implement settings update logic
-        return redirect()->back()->with('success', 'Settings updated successfully.');
+        return redirect()->route('utils.settings')->with('success', 'Settings updated successfully.');
     }
 
     public function clearCache()
@@ -129,14 +130,15 @@ class DashboardController extends Controller
         \Artisan::call('config:clear');
         \Artisan::call('view:clear');
 
-        return redirect()->back()->with('success', 'Cache cleared successfully.');
+        return redirect()->route('utils.settings')->with('success', 'Cache cleared successfully.');
     }
 
     public function backupDatabase()
     {
         // Implement database backup logic
-        return redirect()->back()->with('info', 'Database backup feature coming soon.');
+        return redirect()->route('utils.settings')->with('info', 'Database backup feature coming soon.');
     }
 
     public function exportAllData() {}
 }
+

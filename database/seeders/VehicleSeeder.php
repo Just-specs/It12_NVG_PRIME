@@ -13,83 +13,18 @@ class VehicleSeeder extends Seeder
      */
     public function run(): void
     {
-        $vehicles = [
-            [
-                'plate_number' => 'TRUCK-001',
-                'vehicle_type' => 'Container Truck',
-                'trailer_type' => '20ft Container',
-                'status' => 'available',
-            ],
-            [
-                'plate_number' => 'TRUCK-002',
-                'vehicle_type' => 'Container Truck',
-                'trailer_type' => '40ft Container',
-                'status' => 'available',
-            ],
-            [
-                'plate_number' => 'TRUCK-003',
-                'vehicle_type' => 'Flatbed Truck',
-                'trailer_type' => 'Flatbed',
-                'status' => 'in-use',
-            ],
-            [
-                'plate_number' => 'TRUCK-004',
-                'vehicle_type' => 'Container Truck',
-                'trailer_type' => '20ft Container',
-                'status' => 'available',
-            ],
-            [
-                'plate_number' => 'TRUCK-005',
-                'vehicle_type' => 'Refrigerated Truck',
-                'trailer_type' => '20ft Reefer',
-                'status' => 'maintenance',
-            ],
-            [
-                'plate_number' => 'TRUCK-006',
-                'vehicle_type' => 'Container Truck',
-                'trailer_type' => '40ft Container',
-                'status' => 'available',
-            ],
-            [
-                'plate_number' => 'TRUCK-007',
-                'vehicle_type' => 'Tanker Truck',
-                'trailer_type' => 'Liquid Tanker',
-                'status' => 'in-use',
-            ],
-            [
-                'plate_number' => 'TRUCK-008',
-                'vehicle_type' => 'Container Truck',
-                'trailer_type' => '20ft Container',
-                'status' => 'available',
-            ],
-            [
-                'plate_number' => 'TRUCK-009',
-                'vehicle_type' => 'Flatbed Truck',
-                'trailer_type' => 'Flatbed',
-                'status' => 'available',
-            ],
-            [
-                'plate_number' => 'TRUCK-010',
-                'vehicle_type' => 'Container Truck',
-                'trailer_type' => '40ft Container',
-                'status' => 'maintenance',
-            ],
-            [
-                'plate_number' => 'TRUCK-011',
-                'vehicle_type' => 'Box Truck',
-                'trailer_type' => 'Enclosed Box',
-                'status' => 'available',
-            ],
-            [
-                'plate_number' => 'TRUCK-012',
-                'vehicle_type' => 'Container Truck',
-                'trailer_type' => '20ft Container',
-                'status' => 'available',
-            ],
-        ];
-
-        foreach ($vehicles as $vehicle) {
-            Vehicle::create($vehicle);
+        $faker = \Faker\Factory::create();
+        $types = ['Container Truck', 'Flatbed Truck', 'Refrigerated Truck', 'Tanker Truck', 'Box Truck'];
+        $trailers = ['20ft Container', '40ft Container', 'Flatbed', '20ft Reefer', 'Liquid Tanker', 'Enclosed Box'];
+        $statuses = ['available', 'in-use', 'maintenance'];
+        for ($i = 0; $i < 36; $i++) {
+            Vehicle::updateOrCreate([
+                'plate_number' => $faker->unique()->regexify('TRUCK-[0-9]{3}')
+            ], [
+                'vehicle_type' => $faker->randomElement($types),
+                'trailer_type' => $faker->randomElement($trailers),
+                'status' => $faker->randomElement($statuses),
+            ]);
         }
     }
 }

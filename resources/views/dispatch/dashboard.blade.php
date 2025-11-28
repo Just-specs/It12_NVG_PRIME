@@ -15,7 +15,8 @@
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Pending Requests Card -->
+        <a href="{{ route('requests.index', ['status' => 'pending']) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Pending Requests</p>
@@ -23,9 +24,10 @@
                 </div>
                 <i class="fas fa-hourglass-half text-4xl text-yellow-500"></i>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Active Trips Card -->
+        <a href="{{ route('trips.index', ['status' => 'in-transit']) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Active Trips</p>
@@ -33,9 +35,10 @@
                 </div>
                 <i class="fas fa-truck-moving text-4xl text-blue-500"></i>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Available Drivers Card -->
+        <a href="{{ route('drivers.index', ['status' => 'available']) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Available Drivers</p>
@@ -43,9 +46,10 @@
                 </div>
                 <i class="fas fa-user-check text-4xl text-green-500"></i>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Available Vehicles Card -->
+        <a href="{{ route('vehicles.index', ['status' => 'available']) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Available Vehicles</p>
@@ -53,9 +57,10 @@
                 </div>
                 <i class="fas fa-truck text-4xl text-purple-500"></i>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Today's Trips Card -->
+        <a href="{{ route('trips.index', ['date' => now()->format('Y-m-d')]) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Today's Trips</p>
@@ -63,9 +68,10 @@
                 </div>
                 <i class="fas fa-calendar-day text-4xl text-indigo-500"></i>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white p-6 rounded-lg shadow-md">
+        <!-- Completed Today Card -->
+        <a href="{{ route('trips.index', ['status' => 'completed', 'date' => now()->format('Y-m-d')]) }}" class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 transform hover:-translate-y-1 cursor-pointer">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-gray-500 text-sm">Completed Today</p>
@@ -73,7 +79,7 @@
                 </div>
                 <i class="fas fa-check-circle text-4xl text-teal-500"></i>
             </div>
-        </div>
+        </a>
     </div>
 
     <!-- Today's Schedule -->

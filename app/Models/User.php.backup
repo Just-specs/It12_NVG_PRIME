@@ -46,35 +46,27 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is admin or head of dispatch (full access).
+     * Check if user is head of dispatch (admin).
+     */
+    public function isHeadDispatch(): bool
+    {
+        return $this->role === 'head_dispatch';
+    }
+
+    /**
+     * Check if user is dispatch officer.
+     */
+    public function isDispatch(): bool
+    {
+        return $this->role === 'dispatch';
+    }
+
+    /**
+     * Check if user has admin privileges.
      */
     public function isAdmin(): bool
     {
-        return in_array($this->role, ['admin', 'head-of-dispatch']);
-    }
-
-    /**
-     * Check if user is head of dispatch.
-     */
-    public function isHeadOfDispatch(): bool
-    {
-        return $this->role === 'head-of-dispatch';
-    }
-
-    /**
-     * Check if user is dispatch user.
-     */
-    public function isDispatchUser(): bool
-    {
-        return $this->role === 'dispatch-user';
-    }
-
-    /**
-     * Check if user has full access (admin or head of dispatch).
-     */
-    public function hasFullAccess(): bool
-    {
-        return $this->isAdmin();
+        return $this->isHeadDispatch();
     }
 
     /**
@@ -83,15 +75,46 @@ class User extends Authenticatable
     public function getRoleNameAttribute(): string
     {
         return match ($this->role) {
-            'admin' => 'Administrator',
-            'head-of-dispatch' => 'Head of Dispatch',
-            'dispatch-user' => 'Dispatch User',
+            'head_dispatch' => 'Head of Dispatch',
+            'dispatch' => 'Dispatch Officer',
             default => 'User',
         };
     }
 
     /**
-     * Check if user can access a specific resource.
+     * Check if user is admin
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    /**
+     * Check if user is head of dispatch
+     */
+    public function isHeadOfDispatch(): bool
+    {
+        return $this->role === 'head-of-dispatch';
+    }
+
+    /**
+     * Check if user is dispatch user
+     */
+    public function isDispatchUser(): bool
+    {
+        return $this->role === 'dispatch-user';
+    }
+
+    /**
+     * Check if user has full access (admin or head of dispatch)
+     */
+    public function hasFullAccess(): bool
+    {
+        return in_array($this->role, ['admin', 'head-of-dispatch']);
+    }
+
+    /**
+     * Check if user can access a specific resource
      */
     public function canAccess(string $resource): bool
     {
