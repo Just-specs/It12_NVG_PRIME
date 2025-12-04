@@ -87,7 +87,9 @@
                         </form>
                         @endif
                         @if($request->status === 'verified')
-                        <a href="{{ route('trips.create', ['delivery_request' => $request->id]) }}" class="text-purple-600 hover:text-purple-800" title="Assign Driver">
+                        <a href="{{ route('trips.create', $request) }}"
+                            class="text-purple-600 hover:text-purple-800"
+                            title="Assign Driver">
                             <i class="fas fa-user-plus"></i>
                         </a>
                         @endif

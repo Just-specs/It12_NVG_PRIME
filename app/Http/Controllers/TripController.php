@@ -460,6 +460,12 @@ class TripController extends Controller
             ->orderBy('scheduled_time')
             ->get();
 
+        $activeTrips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->whereIn('status', ['scheduled', 'in-transit'])
+            ->orderBy('scheduled_time')
+            ->limit(5)
+            ->get();
+
         return view('dispatch.trips.today', compact('trips'));
     }
 
@@ -580,6 +586,7 @@ class TripController extends Controller
 
         return view('dispatch.trips.search', compact('trips', 'query'));
     }
+
 
     public function getActiveTrips()
     {

@@ -10,8 +10,8 @@ class ClientNotification extends Model
         'trip_id',
         'client_id',
         'notification_type',
+        'mobile',
         'message',
-        'method',
         'sent'
     ];
 

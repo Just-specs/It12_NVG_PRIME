@@ -31,7 +31,7 @@
             {{ optional($request->preferred_schedule)->format('M d, Y h:i A') ?? 'No schedule' }}
         </p>
         <a href="{{ route('requests.show', $request) }}"
-           class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-full shadow-sm transition hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-blue-300">
+            class="inline-flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-[#2563EB] rounded-full shadow-sm transition hover:bg-[#1D4ED8] focus:outline-none focus:ring-2 focus:ring-blue-300">
             View Details <i class="fas fa-arrow-right"></i>
         </a>
     </div>
@@ -44,17 +44,17 @@
 <div class="mt-4 flex flex-col items-center gap-2">
     <div class="flex items-center gap-2">
         @if($recentRequests->onFirstPage())
-        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed text-sm font-medium">Previous</span>
+        <span class="px-3 py-1 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed text-sm font-medium">Previous</span>
         @else
         <a href="{{ $recentRequests->previousPageUrl() }}" data-pagination="client-recent-requests"
-           class="px-4 py-2 rounded-md bg-[#2563EB] text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+            class="px-4 py-2 rounded-md bg-[#2563EB] text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
             Previous
         </a>
         @endif
 
         @if($recentRequests->hasMorePages())
         <a href="{{ $recentRequests->nextPageUrl() }}" data-pagination="client-recent-requests"
-           class="px-4 py-2 rounded-md bg-[#2563EB] text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+            class="px-4 py-2 rounded-md bg-[#2563EB] text-white text-sm font-medium shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
             Next
         </a>
         @else

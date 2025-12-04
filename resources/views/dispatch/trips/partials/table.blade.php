@@ -106,7 +106,7 @@
                             </button>
                         </form>
                         @endif
-                        @if($trip->status === 'in-transit')
+                        @if($trip->status === 'completed')
                         <form method="POST" action="{{ route('trips.complete', $trip) }}" class="inline">
                             @csrf
                             <button type="button" class="text-purple-600 hover:text-purple-800 complete-trip-btn" title="Complete">

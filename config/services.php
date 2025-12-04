@@ -39,5 +39,10 @@ return [
         'key' => env('CALENDARIFIC_API_KEY'),
         'base' => env('CALENDARIFIC_BASE_URL', 'https://calendarific.com/api/v2'),
     ],
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
 
 ];

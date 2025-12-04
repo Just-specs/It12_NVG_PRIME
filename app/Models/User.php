@@ -1,107 +1,52 @@
 <?php
+// app/Models/User.php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'google_id',
+        'avatar',
         'role',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password' => 'hashed',
+    ];
+
+    // Role checking methods
+    public function isAdmin()
     {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
+        return $this->role === 'admin';
     }
 
-    /**
-     * Check if user is admin or head of dispatch (full access).
-     */
-    public function isAdmin(): bool
+    public function isDispatcher()
     {
-        return in_array($this->role, ['admin', 'head-of-dispatch']);
+        return $this->role === 'dispatcher';
     }
 
-    /**
-     * Check if user is head of dispatch.
-     */
-    public function isHeadOfDispatch(): bool
+    public function isUser()
     {
-        return $this->role === 'head-of-dispatch';
+        return $this->role === 'user';
     }
 
-    /**
-     * Check if user is dispatch user.
-     */
-    public function isDispatchUser(): bool
+    public function hasRole($role)
     {
-        return $this->role === 'dispatch-user';
-    }
-
-    /**
-     * Check if user has full access (admin or head of dispatch).
-     */
-    public function hasFullAccess(): bool
-    {
-        return $this->isAdmin();
-    }
-
-    /**
-     * Get the user's role display name.
-     */
-    public function getRoleNameAttribute(): string
-    {
-        return match ($this->role) {
-            'admin' => 'Administrator',
-            'head-of-dispatch' => 'Head of Dispatch',
-            'dispatch-user' => 'Dispatch User',
-            default => 'User',
-        };
-    }
-
-    /**
-     * Check if user can access a specific resource.
-     */
-    public function canAccess(string $resource): bool
-    {
-        // Admin and head-of-dispatch have full access
-        if ($this->hasFullAccess()) {
-            return true;
-        }
-
-        // Dispatch user can only access: requests, trips, notifications
-        $allowedResources = ['requests', 'trips', 'notifications', 'dashboard', 'profile'];
-        return in_array($resource, $allowedResources);
+        return $this->role === $role;
     }
 }

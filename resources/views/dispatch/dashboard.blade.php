@@ -154,7 +154,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- Recent Requests -->
-        <div class="bg-white rounded-lg shadow-md">
+        <div class="bg-white rounded-md shadow-md">
             <div class="p-6 border-b border-gray-200">
                 <div class="flex justify-between items-center">
                     <h2 class="text-xl font-bold text-gray-800">

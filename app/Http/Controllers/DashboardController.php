@@ -125,10 +125,7 @@ class DashboardController extends Controller
 
     public function clearCache()
     {
-        \Artisan::call('cache:clear');
-        \Artisan::call('route:clear');
-        \Artisan::call('config:clear');
-        \Artisan::call('view:clear');
+
 
         return redirect()->route('utils.settings')->with('success', 'Cache cleared successfully.');
     }
@@ -141,4 +138,3 @@ class DashboardController extends Controller
 
     public function exportAllData() {}
 }
-

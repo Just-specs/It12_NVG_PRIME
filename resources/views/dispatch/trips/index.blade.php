@@ -13,11 +13,11 @@
     <!-- Status Filter Tabs -->
     @php
     $tabs = [
-        'all' => 'All Trips',
-        'scheduled' => 'Scheduled',
-        'in-transit' => 'In Transit',
-        'completed' => 'Completed',
-        'cancelled' => 'Cancelled',
+    'all' => 'All Trips',
+    'scheduled' => 'Scheduled',
+    'in-transit' => 'In Transit',
+    'completed' => 'Completed',
+    'cancelled' => 'Cancelled',
     ];
     @endphp
     <div class="mb-6">
@@ -575,10 +575,10 @@
                 toggleModal(false);
             }
         });
-            // Search functionality
+        // Search functionality
         const searchInput = document.getElementById('search-input');
         const clearSearchBtn = document.getElementById('clear-search');
-        
+
         // Debounce function
         function debounce(func, wait) {
             let timeout;
@@ -591,30 +591,32 @@
                 timeout = setTimeout(later, wait);
             };
         }
-        
+
         // Toggle clear button visibility
         function toggleClearButton(value) {
             if (clearSearchBtn) {
                 clearSearchBtn.classList.toggle('hidden', !value);
             }
         }
-        
+
         // Fetch trips with search
         function fetchTrips(search) {
             const currentStatus = tabsContainer ? tabsContainer.dataset.currentStatus : 'all';
             let url = tripsContainer.dataset.url || '{{ route("trips.index") }}';
             const params = new URLSearchParams();
-            
+
             if (currentStatus && currentStatus !== 'all') {
                 params.append('status', currentStatus);
             }
             if (search) {
                 params.append('search', search);
             }
-            
+
             const fullUrl = params.toString() ? `${url}?${params.toString()}` : url;
-            handleTripsPagination(fullUrl, { updateTabFromResponse: true });
-            
+            handleTripsPagination(fullUrl, {
+                updateTabFromResponse: true
+            });
+
             // Update URL without page reload
             const newUrl = new URL(window.location.href);
             if (search) {
@@ -627,7 +629,7 @@
             }
             window.history.pushState({}, '', newUrl);
         }
-        
+
         // Handle search input with debounce
         if (searchInput) {
             searchInput.addEventListener('input', debounce(function(e) {
@@ -638,7 +640,7 @@
                 toggleClearButton(searchValue);
             }, 300));
         }
-        
+
         // Handle clear search
         if (clearSearchBtn) {
             clearSearchBtn.addEventListener('click', function() {
@@ -648,7 +650,7 @@
                 searchInput.focus();
             });
         }
-        
+
         // Handle browser back/forward buttons
         window.addEventListener('popstate', function() {
             const urlParams = new URLSearchParams(window.location.search);

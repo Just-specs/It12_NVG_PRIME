@@ -22,6 +22,10 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
+
+    // Google OAuth Routes
+    Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.redirect');
+    Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -64,6 +68,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('trips')->name('trips.')->group(function () {
         Route::get('/', [TripController::class, 'index'])->name('index');
         Route::get('/create/{deliveryRequest}', [TripController::class, 'create'])->name('create');
+        Route::get('/{create}', [TripController::class, 'create'])->name('create');
         Route::post('/', [TripController::class, 'store'])->name('store');
         Route::get('/{trip}', [TripController::class, 'show'])->name('show');
         Route::post('/{trip}/start', [TripController::class, 'startTrip'])->name('start');
@@ -110,83 +115,84 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/password', [ProfileController::class, 'updatePassword'])->name('update-password');
     });
 
-    // ADMIN & HEAD OF DISPATCH ONLY
-    Route::middleware([CheckRole::class . ':admin,head-of-dispatch'])->group(function () {
+    //Reports
+    Route::prefix('reports')->name('reports.')->group(function () {
+        // Main reports page
+        Route::get('/', [ReportController::class, 'index'])->name('index');
 
-        // DRIVERS
-        Route::prefix('drivers')->name('drivers.')->group(function () {
-            Route::get('/', [DriverController::class, 'index'])->name('index');
-            Route::get('/create', [DriverController::class, 'create'])->name('create');
-            Route::post('/', [DriverController::class, 'store'])->name('store');
-            Route::get('/{driver}', [DriverController::class, 'show'])->name('show');
-            Route::get('/{driver}/edit', [DriverController::class, 'edit'])->name('edit');
-            Route::put('/{driver}', [DriverController::class, 'update'])->name('update');
-            Route::delete('/{driver}', [DriverController::class, 'destroy'])->name('destroy');
-            Route::post('/{driver}/update-status', [DriverController::class, 'updateStatus'])->name('update-status');
-        });
+        // Time-based reports
+        Route::get('/daily', [ReportController::class, 'dailyReport'])->name('daily');
+        Route::get('/weekly', [ReportController::class, 'weeklyReport'])->name('weekly');
+        Route::get('/monthly', [ReportController::class, 'monthlyReport'])->name('monthly');
+        Route::get('/yearly', [ReportController::class, 'yearlyReport'])->name('yearly');
+        Route::get('/custom', [ReportController::class, 'customReport'])->name('custom');
 
-        // VEHICLES
-        Route::prefix('vehicles')->name('vehicles.')->group(function () {
-            Route::get('/', [VehicleController::class, 'index'])->name('index');
-            Route::get('/create', [VehicleController::class, 'create'])->name('create');
-            Route::post('/', [VehicleController::class, 'store'])->name('store');
-            Route::get('/{vehicle}', [VehicleController::class, 'show'])->name('show');
-            Route::get('/{vehicle}/edit', [VehicleController::class, 'edit'])->name('edit');
-            Route::put('/{vehicle}', [VehicleController::class, 'update'])->name('update');
-            Route::delete('/{vehicle}', [VehicleController::class, 'destroy'])->name('destroy');
-            Route::post('/{vehicle}/set-available', [VehicleController::class, 'setAvailable'])->name('set-available');
-            Route::post('/{vehicle}/set-maintenance', [VehicleController::class, 'setMaintenance'])->name('set-maintenance');
-        });
+        // Performance reports
+        Route::get('/driver-performance', [ReportController::class, 'driverPerformance'])->name('driver-performance');
+        Route::get('/vehicle-utilization', [ReportController::class, 'vehicleUtilization'])->name('vehicle-utilization');
+        Route::get('/client-activity', [ReportController::class, 'clientActivity'])->name('client-activity');
+        Route::get('/on-time-delivery', [ReportController::class, 'onTimeDelivery'])->name('on-time-delivery');
+        Route::get('/trip-summary', [ReportController::class, 'tripSummary'])->name('trip-summary');
 
-        // CLIENTS
-        Route::prefix('clients')->name('clients.')->group(function () {
-            Route::get('/', [ClientController::class, 'index'])->name('index');
-            Route::get('/create', [ClientController::class, 'create'])->name('create');
-            Route::get('/export/excel', [ClientController::class, 'exportExcel'])->name('export-excel');
-            Route::get('/export/pdf', [ClientController::class, 'exportPdf'])->name('export-pdf');
-            Route::post('/', [ClientController::class, 'store'])->name('store');
-            Route::get('/{client}', [ClientController::class, 'show'])->name('show');
-            Route::get('/{client}/requests', [ClientController::class, 'requests'])->name('requests');
-            Route::get('/{client}/recent-requests', [ClientController::class, 'recentRequests'])->name('recent-requests');
-            Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
-            Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-            Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
-        });
+        // Dispatch sheet
+        Route::get('/dispatch-sheet', [ReportController::class, 'dispatchSheet'])->name('dispatch-sheet');
+        Route::post('/dispatch-sheet/generate', [ReportController::class, 'generateDispatchSheet'])->name('dispatch-sheet.generate');
 
-        // REPORTS
-        Route::prefix('reports')->name('reports.')->group(function () {
-            // Main reports page
-            Route::get('/', [ReportController::class, 'index'])->name('index');
+        // Export routes
+        Route::get('/export/daily', [ReportController::class, 'exportDaily'])->name('export-daily');
+        Route::get('/export/weekly', [ReportController::class, 'exportWeekly'])->name('export-weekly');
+        Route::get('/export/monthly', [ReportController::class, 'exportMonthly'])->name('export-monthly');
+        Route::get('/export/custom', [ReportController::class, 'exportCustom'])->name('export-custom');
 
-            // Time-based reports
-            Route::get('/daily', [ReportController::class, 'dailyReport'])->name('daily');
-            Route::get('/weekly', [ReportController::class, 'weeklyReport'])->name('weekly');
-            Route::get('/monthly', [ReportController::class, 'monthlyReport'])->name('monthly');
-            Route::get('/yearly', [ReportController::class, 'yearlyReport'])->name('yearly');
-            Route::get('/custom', [ReportController::class, 'customReport'])->name('custom');
-
-            // Performance reports
-            Route::get('/driver-performance', [ReportController::class, 'driverPerformance'])->name('driver-performance');
-            Route::get('/vehicle-utilization', [ReportController::class, 'vehicleUtilization'])->name('vehicle-utilization');
-            Route::get('/client-activity', [ReportController::class, 'clientActivity'])->name('client-activity');
-            Route::get('/on-time-delivery', [ReportController::class, 'onTimeDelivery'])->name('on-time-delivery');
-            Route::get('/trip-summary', [ReportController::class, 'tripSummary'])->name('trip-summary');
-
-            // Dispatch sheet
-            Route::get('/dispatch-sheet', [ReportController::class, 'dispatchSheet'])->name('dispatch-sheet');
-            Route::post('/dispatch-sheet/generate', [ReportController::class, 'generateDispatchSheet'])->name('dispatch-sheet.generate');
-
-            // Export routes
-            Route::get('/export/daily', [ReportController::class, 'exportDaily'])->name('export-daily');
-            Route::get('/export/weekly', [ReportController::class, 'exportWeekly'])->name('export-weekly');
-            Route::get('/export/monthly', [ReportController::class, 'exportMonthly'])->name('export-monthly');
-            Route::get('/export/custom', [ReportController::class, 'exportCustom'])->name('export-custom');
-
-            // Google Sheets integration
-            Route::post('/google-sheets/sync', [ReportController::class, 'syncToGoogleSheets'])->name('google-sheets.sync');
-            Route::post('/google-sheets/export', [ReportController::class, 'exportToGoogleSheets'])->name('google-sheets.export');
-        });
+        // Google Sheets integration
+        Route::post('/google-sheets/sync', [ReportController::class, 'syncToGoogleSheets'])->name('google-sheets.sync');
+        Route::post('/google-sheets/export', [ReportController::class, 'exportToGoogleSheets'])->name('google-sheets.export');
     });
+});
+
+// ADMIN & HEAD OF DISPATCH ONLY
+Route::middleware([CheckRole::class . ':admin,head-of-dispatch'])->group(function () {
+
+    // DRIVERS
+    Route::prefix('drivers')->name('drivers.')->group(function () {
+        Route::get('/', [DriverController::class, 'index'])->name('index');
+        Route::get('/create', [DriverController::class, 'create'])->name('create');
+        Route::post('/', [DriverController::class, 'store'])->name('store');
+        Route::get('/{driver}', [DriverController::class, 'show'])->name('show');
+        Route::get('/{driver}/edit', [DriverController::class, 'edit'])->name('edit');
+        Route::put('/{driver}', [DriverController::class, 'update'])->name('update');
+        Route::delete('/{driver}', [DriverController::class, 'destroy'])->name('destroy');
+        Route::post('/{driver}/update-status', [DriverController::class, 'updateStatus'])->name('update-status');
+    });
+
+    // VEHICLES
+    Route::prefix('vehicles')->name('vehicles.')->group(function () {
+        Route::get('/', [VehicleController::class, 'index'])->name('index');
+        Route::get('/create', [VehicleController::class, 'create'])->name('create');
+        Route::post('/', [VehicleController::class, 'store'])->name('store');
+        Route::get('/{vehicle}', [VehicleController::class, 'show'])->name('show');
+        Route::get('/{vehicle}/edit', [VehicleController::class, 'edit'])->name('edit');
+        Route::put('/{vehicle}', [VehicleController::class, 'update'])->name('update');
+        Route::delete('/{vehicle}', [VehicleController::class, 'destroy'])->name('destroy');
+        Route::post('/{vehicle}/set-available', [VehicleController::class, 'setAvailable'])->name('set-available');
+        Route::post('/{vehicle}/set-maintenance', [VehicleController::class, 'setMaintenance'])->name('set-maintenance');
+    });
+
+    // CLIENTS
+    Route::prefix('clients')->name('clients.')->group(function () {
+        Route::get('/', [ClientController::class, 'index'])->name('index');
+        Route::get('/create', [ClientController::class, 'create'])->name('create');
+        Route::get('/export/excel', [ClientController::class, 'exportExcel'])->name('export-excel');
+        Route::get('/export/pdf', [ClientController::class, 'exportPdf'])->name('export-pdf');
+        Route::post('/', [ClientController::class, 'store'])->name('store');
+        Route::get('/{client}', [ClientController::class, 'show'])->name('show');
+        Route::get('/{client}/requests', [ClientController::class, 'requests'])->name('requests');
+        Route::get('/{client}/recent-requests', [ClientController::class, 'recentRequests'])->name('recent-requests');
+        Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
+        Route::put('/{client}', [ClientController::class, 'update'])->name('update');
+        Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+    });
+
 
     // ADMIN ONLY
     Route::middleware([CheckRole::class . ':admin'])->group(function () {
