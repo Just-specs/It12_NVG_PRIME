@@ -10,6 +10,7 @@ use App\Models\Client;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class ReportController extends Controller
 {
@@ -24,7 +25,51 @@ class ReportController extends Controller
             'total_clients' => Client::count(),
         ];
 
-        return view('dispatch.reports.index', compact('stats'));
+        // Status distribution for pie chart
+        $statusData = [
+            'completed' => Trip::where('status', 'completed')->count(),
+            'in_transit' => Trip::where('status', 'in-transit')->count(),
+            'scheduled' => Trip::where('status', 'scheduled')->count(),
+            'cancelled' => Trip::where('status', 'cancelled')->count(),
+        ];
+
+        // Weekly trips for bar chart (last 7 days)
+        $weeklyTripsData = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $weeklyTripsData[] = [
+                'date' => $date->format('M d'),
+                'count' => Trip::whereDate('scheduled_time', $date)->count(),
+            ];
+        }
+
+        // Monthly trips for bar chart (last 6 months)
+        $monthlyTripsData = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $monthlyTripsData[] = [
+                'month' => $month->format('M Y'),
+                'count' => Trip::whereMonth('scheduled_time', $month->month)
+                    ->whereYear('scheduled_time', $month->year)
+                    ->count(),
+            ];
+        }
+
+        // Driver performance top 5
+        $topDrivers = Driver::withCount(['trips as completed_trips' => function ($query) {
+            $query->where('status', 'completed');
+        }])
+            ->orderByDesc('completed_trips')
+            ->limit(5)
+            ->get()
+            ->map(function ($driver) {
+                return [
+                    'name' => $driver->name,
+                    'completed' => $driver->completed_trips,
+                ];
+            });
+
+        return view('dispatch.reports.index', compact('stats', 'statusData', 'weeklyTripsData', 'monthlyTripsData', 'topDrivers'));
     }
 
     public function dailyReport(Request $request)
@@ -44,7 +89,30 @@ class ReportController extends Controller
             'cancelled' => $trips->where('status', 'cancelled')->count(),
         ];
 
-        return view('dispatch.reports.daily', compact('trips', 'stats', 'date'));
+        // Chart data for status distribution
+        $statusChartData = [
+            'labels' => ['Completed', 'In Transit', 'Scheduled', 'Cancelled'],
+            'data' => [
+                $stats['completed'],
+                $stats['in_transit'],
+                $stats['scheduled'],
+                $stats['cancelled'],
+            ],
+            'colors' => ['#10b981', '#3b82f6', '#6b7280', '#ef4444'],
+        ];
+
+        // Hourly distribution for bar chart
+        $hourlyData = [];
+        for ($hour = 0; $hour < 24; $hour++) {
+            $hourlyData[] = [
+                'hour' => $hour . ':00',
+                'count' => $trips->filter(function ($trip) use ($hour) {
+                    return $trip->scheduled_time->hour == $hour;
+                })->count(),
+            ];
+        }
+
+        return view('dispatch.reports.daily', compact('trips', 'stats', 'date', 'statusChartData', 'hourlyData'));
     }
 
     public function weeklyReport(Request $request)
@@ -70,7 +138,31 @@ class ReportController extends Controller
             return $trip->scheduled_time->format('Y-m-d');
         });
 
-        return view('dispatch.reports.weekly', compact('trips', 'stats', 'startDate', 'endDate', 'tripsByDay'));
+        // Chart data
+        $statusChartData = [
+            'labels' => ['Completed', 'In Transit', 'Scheduled', 'Cancelled'],
+            'data' => [
+                $stats['completed'],
+                $stats['in_transit'],
+                $stats['scheduled'],
+                $stats['cancelled'],
+            ],
+            'colors' => ['#10b981', '#3b82f6', '#6b7280', '#ef4444'],
+        ];
+
+        // Daily distribution for bar chart
+        $dailyData = [];
+        $currentDate = $startDate->copy();
+        while ($currentDate <= $endDate) {
+            $dateKey = $currentDate->format('Y-m-d');
+            $dailyData[] = [
+                'date' => $currentDate->format('M d'),
+                'count' => $tripsByDay->get($dateKey, collect())->count(),
+            ];
+            $currentDate->addDay();
+        }
+
+        return view('dispatch.reports.weekly', compact('trips', 'stats', 'startDate', 'endDate', 'tripsByDay', 'statusChartData', 'dailyData'));
     }
 
     public function monthlyReport(Request $request)
@@ -97,7 +189,37 @@ class ReportController extends Controller
             return $trip->scheduled_time->weekOfYear;
         });
 
-        return view('dispatch.reports.monthly', compact('trips', 'stats', 'month', 'tripsByWeek'));
+        // Chart data
+        $statusChartData = [
+            'labels' => ['Completed', 'In Transit', 'Scheduled', 'Cancelled'],
+            'data' => [
+                $stats['completed'],
+                $stats['in_transit'],
+                $stats['scheduled'],
+                $stats['cancelled'],
+            ],
+            'colors' => ['#10b981', '#3b82f6', '#6b7280', '#ef4444'],
+        ];
+
+        // Weekly distribution for bar chart
+        $weeklyData = [];
+        $currentWeek = $startDate->copy()->startOfWeek();
+        while ($currentWeek <= $endDate) {
+            $weekEnd = $currentWeek->copy()->endOfWeek();
+            if ($weekEnd > $endDate) {
+                $weekEnd = $endDate;
+            }
+            $weekTrips = $trips->filter(function ($trip) use ($currentWeek, $weekEnd) {
+                return $trip->scheduled_time >= $currentWeek && $trip->scheduled_time <= $weekEnd;
+            });
+            $weeklyData[] = [
+                'week' => 'Week ' . $currentWeek->weekOfYear . ' (' . $currentWeek->format('M d') . ')',
+                'count' => $weekTrips->count(),
+            ];
+            $currentWeek->addWeek();
+        }
+
+        return view('dispatch.reports.monthly', compact('trips', 'stats', 'month', 'tripsByWeek', 'statusChartData', 'weeklyData'));
     }
 
     public function yearlyReport(Request $request)
@@ -321,7 +443,7 @@ class ReportController extends Controller
         return view('dispatch.reports.dispatch-sheet', compact('trips', 'date'));
     }
 
-    // Export Functions
+    // Export Functions - PDF
     public function exportDaily(Request $request)
     {
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
@@ -330,7 +452,15 @@ class ReportController extends Controller
             ->orderBy('scheduled_time')
             ->get();
 
-        return $this->exportTripsToCSV($trips, 'daily_report_' . $date->format('Y-m-d'));
+        $stats = [
+            'total_trips' => $trips->count(),
+            'completed' => $trips->where('status', 'completed')->count(),
+            'in_transit' => $trips->where('status', 'in-transit')->count(),
+            'scheduled' => $trips->where('status', 'scheduled')->count(),
+            'cancelled' => $trips->where('status', 'cancelled')->count(),
+        ];
+
+        return $this->exportTripsToPDF($trips, 'daily_report_' . $date->format('Y-m-d'), $date->format('F d, Y'), $stats);
     }
 
     public function exportWeekly(Request $request)
@@ -343,7 +473,16 @@ class ReportController extends Controller
             ->orderBy('scheduled_time')
             ->get();
 
-        return $this->exportTripsToCSV($trips, 'weekly_report_' . $startDate->format('Y-m-d'));
+        $stats = [
+            'total_trips' => $trips->count(),
+            'completed' => $trips->where('status', 'completed')->count(),
+            'in_transit' => $trips->where('status', 'in-transit')->count(),
+            'scheduled' => $trips->where('status', 'scheduled')->count(),
+            'cancelled' => $trips->where('status', 'cancelled')->count(),
+        ];
+
+        $period = $startDate->format('M d') . ' - ' . $endDate->format('M d, Y');
+        return $this->exportTripsToPDF($trips, 'weekly_report_' . $startDate->format('Y-m-d'), $period, $stats);
     }
 
     public function exportMonthly(Request $request)
@@ -355,7 +494,15 @@ class ReportController extends Controller
             ->orderBy('scheduled_time')
             ->get();
 
-        return $this->exportTripsToCSV($trips, 'monthly_report_' . $month->format('Y-m'));
+        $stats = [
+            'total_trips' => $trips->count(),
+            'completed' => $trips->where('status', 'completed')->count(),
+            'in_transit' => $trips->where('status', 'in-transit')->count(),
+            'scheduled' => $trips->where('status', 'scheduled')->count(),
+            'cancelled' => $trips->where('status', 'cancelled')->count(),
+        ];
+
+        return $this->exportTripsToPDF($trips, 'monthly_report_' . $month->format('Y-m'), $month->format('F Y'), $stats);
     }
 
     public function exportCustom(Request $request)
@@ -368,58 +515,44 @@ class ReportController extends Controller
             ->orderBy('scheduled_time')
             ->get();
 
-        return $this->exportTripsToCSV($trips, 'custom_report_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d'));
-    }
-
-    private function exportTripsToCSV($trips, $filename)
-    {
-        $filename = $filename . '.csv';
-
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        $stats = [
+            'total_trips' => $trips->count(),
+            'completed' => $trips->where('status', 'completed')->count(),
+            'in_transit' => $trips->where('status', 'in-transit')->count(),
+            'scheduled' => $trips->where('status', 'scheduled')->count(),
+            'cancelled' => $trips->where('status', 'cancelled')->count(),
         ];
 
-        $callback = function () use ($trips) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, [
-                'Trip ID',
-                'Date',
-                'Time',
-                'Client',
-                'ATW Reference',
-                'Driver',
-                'Vehicle',
-                'Pickup',
-                'Delivery',
-                'Container',
-                'Status',
-                'Start Time',
-                'End Time'
-            ]);
+        $period = $startDate->format('M d, Y') . ' - ' . $endDate->format('M d, Y');
+        return $this->exportTripsToPDF($trips, 'custom_report_' . $startDate->format('Y-m-d') . '_to_' . $endDate->format('Y-m-d'), $period, $stats);
+    }
 
-            foreach ($trips as $trip) {
-                fputcsv($file, [
-                    $trip->id,
-                    $trip->scheduled_time->format('Y-m-d'),
-                    $trip->scheduled_time->format('H:i'),
-                    $trip->deliveryRequest->client->name,
-                    $trip->deliveryRequest->atw_reference,
-                    $trip->driver->name,
-                    $trip->vehicle->plate_number,
-                    $trip->deliveryRequest->pickup_location,
-                    $trip->deliveryRequest->delivery_location,
-                    $trip->deliveryRequest->container_size . ' - ' . $trip->deliveryRequest->container_type,
-                    $trip->status,
-                    $trip->actual_start_time ? $trip->actual_start_time->format('H:i') : '',
-                    $trip->actual_end_time ? $trip->actual_end_time->format('H:i') : '',
+    private function exportTripsToPDF($trips, $filename, $period, $stats)
+    {
+        // Check if DomPDF is available
+        if (class_exists('\Barryvdh\DomPDF\Facade\Pdf')) {
+            try {
+                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dispatch.reports.pdf.trips-report', [
+                    'trips' => $trips,
+                    'period' => $period,
+                    'stats' => $stats,
+                    'generated_at' => Carbon::now()->format('F d, Y h:i A'),
                 ]);
+
+                return $pdf->download($filename . '.pdf');
+            } catch (\Exception $e) {
+                \Log::error('PDF generation failed: ' . $e->getMessage());
             }
+        }
 
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        // Fallback: Return HTML view that can be printed as PDF
+        // User can use browser's "Print to PDF" functionality
+        return view('dispatch.reports.pdf.trips-report', [
+            'trips' => $trips,
+            'period' => $period,
+            'stats' => $stats,
+            'generated_at' => Carbon::now()->format('F d, Y h:i A'),
+        ])->with('print_pdf', true);
     }
 
     public function syncToGoogleSheets()

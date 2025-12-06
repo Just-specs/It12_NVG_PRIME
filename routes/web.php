@@ -26,6 +26,19 @@ Route::middleware('guest')->group(function () {
     // Google OAuth Routes
     Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.redirect');
     Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
+
+    // ADD THESE PASSWORD RESET ROUTES:
+    Route::get('forgot-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])
+        ->name('password.request');
+
+    Route::post('forgot-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'sendResetLinkEmail'])
+        ->name('password.email');
+
+    Route::get('reset-password/{token}', [App\Http\Controllers\Auth\ResetPasswordController::class, 'showResetForm'])
+        ->name('password.reset');
+
+    Route::post('reset-password', [App\Http\Controllers\Auth\ResetPasswordController::class, 'reset'])
+        ->name('password.update');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout')->middleware('auth');
@@ -39,6 +52,8 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard AJAX routes
     Route::prefix('dashboard')->name('dashboard.')->group(function () {
         Route::get('/recent-requests', [DashboardController::class, 'recentRequests'])->name('recent-requests');
+        Route::get('/active-trips', [DashboardController::class, 'activeTrips'])->name('active-trips');
+        Route::get('/today-schedule', [DashboardController::class, 'todaySchedule'])->name('today-schedule');
         Route::get('/stats', [DashboardController::class, 'getStats'])->name('stats');
         Route::get('/search', [DashboardController::class, 'globalSearch'])->name('search');
     });

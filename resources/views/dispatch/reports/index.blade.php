@@ -95,6 +95,41 @@
         </div>
     </div>
 
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <!-- Status Distribution Pie Chart -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Trip Status Distribution</h3>
+            <div style="height: 300px; position: relative;">
+                <canvas id="statusPieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Weekly Trips Bar Chart -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Last 7 Days Trips</h3>
+            <div style="height: 300px; position: relative;">
+                <canvas id="weeklyBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Trends Chart -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Monthly Trends (Last 6 Months)</h3>
+        <div style="height: 400px; position: relative;">
+            <canvas id="monthlyBarChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Top Drivers Performance -->
+    <div class="bg-white rounded-lg shadow-lg p-6 mb-8">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4">Top 5 Drivers Performance</h3>
+        <div style="height: 400px; position: relative;">
+            <canvas id="driversBarChart"></canvas>
+        </div>
+    </div>
+
     <!-- Report Categories -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <!-- Daily Reports -->
@@ -158,4 +193,224 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script src="{{ asset('js/chart.min.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Wait a bit for Chart.js to load
+        setTimeout(function() {
+            // Check if Chart.js is loaded
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js library failed to load');
+                alert('Chart.js library failed to load. Please check your internet connection.');
+                return;
+            }
+
+            console.log('Chart.js loaded successfully');
+
+            // Status Distribution Pie Chart
+            const statusCtx = document.getElementById('statusPieChart');
+            if (statusCtx) {
+                try {
+                    new Chart(statusCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['Completed', 'In Transit', 'Scheduled', 'Cancelled'],
+                            datasets: [{
+                                data: [{
+                                        {
+                                            $statusData['completed'] ?? 0
+                                        }
+                                    },
+                                    {
+                                        {
+                                            $statusData['in_transit'] ?? 0
+                                        }
+                                    },
+                                    {
+                                        {
+                                            $statusData['scheduled'] ?? 0
+                                        }
+                                    },
+                                    {
+                                        {
+                                            $statusData['cancelled'] ?? 0
+                                        }
+                                    }
+                                ],
+                                backgroundColor: [
+                                    '#10b981',
+                                    '#3b82f6',
+                                    '#6b7280',
+                                    '#ef4444'
+                                ],
+                                borderWidth: 2,
+                                borderColor: '#fff'
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    position: 'bottom',
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            let label = context.label || '';
+                                            if (label) {
+                                                label += ': ';
+                                            }
+                                            label += context.parsed + ' trips';
+                                            return label;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    });
+                    console.log('Status pie chart created');
+                } catch (error) {
+                    console.error('Error creating status pie chart:', error);
+                }
+            }
+
+            // Weekly Trips Bar Chart
+            const weeklyCtx = document.getElementById('weeklyBarChart');
+            if (weeklyCtx) {
+                try {
+                    new Chart(weeklyCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: {
+                                !!json_encode(array_column($weeklyTripsData, 'date')) !!
+                            },
+                            datasets: [{
+                                label: 'Trips',
+                                data: {
+                                    !!json_encode(array_column($weeklyTripsData, 'count')) !!
+                                },
+                                backgroundColor: '#3b82f6',
+                                borderColor: '#2563eb',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                    console.log('Weekly bar chart created');
+                } catch (error) {
+                    console.error('Error creating weekly bar chart:', error);
+                }
+            }
+
+            // Monthly Trends Bar Chart
+            const monthlyCtx = document.getElementById('monthlyBarChart');
+            if (monthlyCtx) {
+                try {
+                    new Chart(monthlyCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: {
+                                !!json_encode(array_column($monthlyTripsData, 'month')) !!
+                            },
+                            datasets: [{
+                                label: 'Trips',
+                                data: {
+                                    !!json_encode(array_column($monthlyTripsData, 'count')) !!
+                                },
+                                backgroundColor: '#8b5cf6',
+                                borderColor: '#7c3aed',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                    console.log('Monthly bar chart created');
+                } catch (error) {
+                    console.error('Error creating monthly bar chart:', error);
+                }
+            }
+
+            // Top Drivers Bar Chart
+            const driversCtx = document.getElementById('driversBarChart');
+            if (driversCtx) {
+                try {
+                    new Chart(driversCtx, {
+                        type: 'bar',
+                        data: {
+                            labels: {
+                                !!json_encode(array_column($topDrivers - > toArray(), 'name')) !!
+                            },
+                            datasets: [{
+                                label: 'Completed Trips',
+                                data: {
+                                    !!json_encode(array_column($topDrivers - > toArray(), 'completed')) !!
+                                },
+                                backgroundColor: '#10b981',
+                                borderColor: '#059669',
+                                borderWidth: 1
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            indexAxis: 'y',
+                            scales: {
+                                x: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        stepSize: 1
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            }
+                        }
+                    });
+                    console.log('Drivers bar chart created');
+                } catch (error) {
+                    console.error('Error creating drivers bar chart:', error);
+                }
+            }
+        }, 100);
+    });
+</script>
+@endpush
 @endsection

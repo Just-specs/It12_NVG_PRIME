@@ -15,11 +15,11 @@
             <form action="{{ route('reports.export-daily') }}" method="GET" class="inline">
                 <input type="hidden" name="date" value="{{ $date->format('Y-m-d') }}">
                 <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
-                    Export CSV
+                    <i class="fas fa-file-pdf"></i> Export PDF
                 </button>
             </form>
             <button onclick="window.print()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
-                Print Report
+                <i class="fas fa-print"></i> Print Report
             </button>
         </div>
     </div>
@@ -59,6 +59,25 @@
         <div class="bg-red-50 rounded-lg shadow p-6">
             <p class="text-red-700 text-sm font-medium">Cancelled</p>
             <p class="text-3xl font-bold text-red-700">{{ $stats['cancelled'] }}</p>
+        </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Status Distribution Pie Chart -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Status Distribution</h3>
+            <div style="height: 300px; position: relative;">
+                <canvas id="statusPieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Hourly Distribution Bar Chart -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Hourly Trip Distribution</h3>
+            <div style="height: 300px; position: relative;">
+                <canvas id="hourlyBarChart"></canvas>
+            </div>
         </div>
     </div>
 
@@ -196,4 +215,106 @@
         }
     </style>
 </div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Check if Chart.js is loaded
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js library failed to load');
+            return;
+        }
+
+        // Status Distribution Pie Chart
+        const statusCtx = document.getElementById('statusPieChart');
+        if (statusCtx) {
+            new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: {
+                        !!json_encode($statusChartData['labels']) !!
+                    },
+                    datasets: [{
+                        data: {
+                            !!json_encode($statusChartData['data']) !!
+                        },
+                        backgroundColor: {
+                            !!json_encode($statusChartData['colors']) !!
+                        },
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    label += context.parsed + ' trips';
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Hourly Distribution Bar Chart
+        const hourlyCtx = document.getElementById('hourlyBarChart');
+        if (hourlyCtx) {
+            new Chart(hourlyCtx, {
+                type: 'bar',
+                data: {
+                    labels: {
+                        !!json_encode(array_column($hourlyData, 'hour')) !!
+                    },
+                    datasets: [{
+                        label: 'Trips',
+                        data: {
+                            !!json_encode(array_column($hourlyData, 'count')) !!
+                        },
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#2563eb',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+@endpush
 @endsection

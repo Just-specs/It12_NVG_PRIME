@@ -384,18 +384,28 @@
         };
 
         const showCompleteConfirm = (form) => {
+            if (!form) {
+                console.error('Complete trip form not found');
+                return;
+            }
+
             if (!completeConfirmModal) {
+                // If modal doesn't exist, submit directly
                 form.submit();
                 return;
             }
 
             pendingCompleteForm = form;
-            completeNotes.value = '';
+            if (completeNotes) {
+                completeNotes.value = '';
+            }
             completeConfirmModal.classList.remove('hidden');
             completeConfirmModal.classList.add('flex');
-            completeConfirmYes.focus({
-                preventScroll: true
-            });
+            if (completeConfirmYes) {
+                completeConfirmYes.focus({
+                    preventScroll: true
+                });
+            }
         };
 
         const hideCompleteConfirm = () => {
@@ -537,19 +547,43 @@
         }
 
         if (completeConfirmYes) {
-            completeConfirmYes.addEventListener('click', () => {
-                if (pendingCompleteForm) {
-                    const notesValue = completeNotes.value.trim();
-                    if (notesValue) {
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'update_message';
-                        input.value = notesValue;
-                        pendingCompleteForm.appendChild(input);
-                    }
+            completeConfirmYes.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (!pendingCompleteForm) {
+                    console.error('No pending form to submit');
                     hideCompleteConfirm();
-                    pendingCompleteForm.submit();
+                    return;
                 }
+
+                const notesValue = completeNotes ? completeNotes.value.trim() : '';
+
+                // Remove existing update_message input if any
+                const existingInput = pendingCompleteForm.querySelector('input[name="update_message"]');
+                if (existingInput) {
+                    existingInput.remove();
+                }
+
+                if (notesValue) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'update_message';
+                    input.value = notesValue;
+                    pendingCompleteForm.appendChild(input);
+                }
+
+                hideCompleteConfirm();
+
+                // Submit the form - use setTimeout to ensure modal is closed first
+                setTimeout(() => {
+                    if (pendingCompleteForm) {
+                        // Verify form has action and method
+                        if (!pendingCompleteForm.action) {
+                            console.error('Form has no action attribute');
+                            return;
+                        }
+                        pendingCompleteForm.submit();
+                    }
+                }, 100);
             });
         }
 

@@ -105,7 +105,7 @@ class TripController extends Controller
         // Verify delivery request can be assigned
         if (!in_array($deliveryRequest->status, ['pending', 'verified'])) {
             return redirect()
-                ->route('requests.show', $deliveryRequest)
+                ->route('trips.show', $deliveryRequest->id)
                 ->with('error', 'This request cannot be assigned. Status: ' . $deliveryRequest->status);
         }
 
@@ -326,24 +326,30 @@ class TripController extends Controller
         }
     }
 
-    public function completeTrip(Trip $trip)
+    public function completeTrip(Request $request, Trip $trip)
     {
         try {
+            $updateMessage = $request->input('update_message');
+            $message = $updateMessage ?: 'Trip completed successfully';
+
             $this->dispatchService->updateTripStatus(
                 $trip,
                 'completed',
-                'Trip completed successfully'
+                $message
             );
 
             // Notify client of completion
             $this->sendClientNotification($trip, 'completed', 'Your delivery has been completed successfully.');
 
-            return redirect()
-                ->back()
+            // Redirect to trips index, showing completed trips or the referrer page
+            $redirectUrl = $request->header('Referer') ?: route('trips.index', ['status' => 'completed']);
+
+            return redirect($redirectUrl)
                 ->with('success', 'Trip completed successfully.');
         } catch (\Exception $e) {
-            return redirect()
-                ->back()
+            $redirectUrl = $request->header('Referer') ?: route('trips.index');
+
+            return redirect($redirectUrl)
                 ->with('error', $e->getMessage());
         }
     }

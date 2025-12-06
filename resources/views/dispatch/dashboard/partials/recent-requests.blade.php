@@ -6,7 +6,7 @@
             <i class="fas fa-file-alt"></i> {{ $request->atw_reference }}
         </p>
         <p class="text-xs text-gray-500 mt-1">
-            <i class="fas fa-map-marker-alt"></i> {{ Str::limit($request->pickup_location, 30) }}
+            <i class="fas fa-map-marker-alt"></i> {{ Str::limit($request->pickup_location, 5) }}
         </p>
     </div>
     <div class="text-right ml-4">

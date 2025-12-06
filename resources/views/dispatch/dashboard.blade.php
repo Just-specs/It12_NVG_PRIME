@@ -89,70 +89,12 @@
                 <i class="fas fa-calendar-check text-blue-600"></i> Today's Schedule
             </h2>
         </div>
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Time</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Driver</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Vehicle</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Client</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Route</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Actions</th>
-                    </tr>
-                </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
-                    @forelse($todaySchedule as $trip)
-                    <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <i class="far fa-clock text-gray-400"></i> {{ $trip->scheduled_time->format('h:i A') }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm font-medium text-gray-900">{{ $trip->driver->name }}</div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                            {{ $trip->vehicle->plate_number }}
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $trip->deliveryRequest->client->name }}
-                        </td>
-                        <td class="px-6 py-4 text-sm text-gray-600">
-                            <div class="max-w-xs">
-                                <i class="fas fa-map-marker-alt text-green-500"></i>
-                                {{ Str::limit($trip->deliveryRequest->pickup_location, 20) }}
-                                <br>
-                                <i class="fas fa-flag-checkered text-red-500"></i>
-                                {{ Str::limit($trip->deliveryRequest->delivery_location, 20) }}
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold
-                                {{ $trip->status === 'scheduled' ? 'bg-gray-100 text-gray-800' : '' }}
-                                {{ $trip->status === 'in-transit' ? 'bg-blue-100 text-blue-800' : '' }}
-                                {{ $trip->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}">
-                                {{ ucfirst($trip->status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                            <a href="{{ route('trips.show', $trip) }}" class="text-blue-600 hover:text-blue-800">
-                                <i class="fas fa-eye"></i> View
-                            </a>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-gray-500">
-                            No trips scheduled for today
-                        </td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+        <div id="today-schedule-container">
+            @include('dispatch.dashboard.partials.today-schedule', ['todaySchedule' => $todaySchedule])
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
         <!-- Recent Requests -->
         <div class="bg-white rounded-md shadow-md">
             <div class="p-6 border-b border-gray-200">
@@ -182,28 +124,8 @@
                     </a>
                 </div>
             </div>
-            <div class="p-6">
-                @forelse($activeTrips as $trip)
-                <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
-                    <div class="flex-1">
-                        <p class="font-semibold text-gray-800">{{ $trip->driver->name }}</p>
-                        <p class="text-sm text-gray-600">
-                            <i class="fas fa-truck"></i> {{ $trip->vehicle->plate_number }}
-                        </p>
-                        <p class="text-xs text-gray-500 mt-1">
-                            Client: {{ $trip->deliveryRequest->client->name }}
-                        </p>
-                    </div>
-                    <div class="text-right ml-4">
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">
-                            <i class="fas fa-circle animate-pulse"></i> In Transit
-                        </span>
-                        <p class="text-xs text-gray-500 mt-1">{{ $trip->scheduled_time->format('h:i A') }}</p>
-                    </div>
-                </div>
-                @empty
-                <p class="text-gray-500 text-center py-4">No active trips</p>
-                @endforelse
+            <div class="p-6" id="active-trips-container">
+                @include('dispatch.dashboard.partials.active-trips', ['activeTrips' => $activeTrips])
             </div>
         </div>
     </div>
@@ -213,49 +135,134 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const container = document.querySelector('#recent-requests-container');
-        if (!container) {
-            return;
+        // Recent Requests Pagination
+        const recentRequestsContainer = document.querySelector('#recent-requests-container');
+        if (recentRequestsContainer) {
+            const setLoadingState = (container, isLoading) => {
+                container.classList.toggle('opacity-50', isLoading);
+                container.classList.toggle('pointer-events-none', isLoading);
+            };
+
+            const loadRecentRequests = async (url) => {
+                try {
+                    setLoadingState(recentRequestsContainer, true);
+                    const response = await fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const data = await response.json();
+                    if (data.html) {
+                        recentRequestsContainer.innerHTML = data.html;
+                    }
+                } catch (error) {
+                    console.error('Failed to load recent requests:', error);
+                } finally {
+                    setLoadingState(recentRequestsContainer, false);
+                }
+            };
+
+            recentRequestsContainer.addEventListener('click', (event) => {
+                const paginationLink = event.target.closest('a[data-pagination="recent-requests"]');
+                if (!paginationLink) {
+                    return;
+                }
+
+                event.preventDefault();
+                loadRecentRequests(paginationLink.href);
+            });
         }
 
-        const setLoadingState = (isLoading) => {
-            container.classList.toggle('opacity-50', isLoading);
-            container.classList.toggle('pointer-events-none', isLoading);
-        };
+        // Active Trips Pagination
+        const activeTripsContainer = document.querySelector('#active-trips-container');
+        if (activeTripsContainer) {
+            const setLoadingState = (container, isLoading) => {
+                container.classList.toggle('opacity-50', isLoading);
+                container.classList.toggle('pointer-events-none', isLoading);
+            };
 
-        const loadRecentRequests = async (url) => {
-            try {
-                setLoadingState(true);
-                const response = await fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
+            const loadActiveTrips = async (url) => {
+                try {
+                    setLoadingState(activeTripsContainer, true);
+                    const response = await fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
                     }
-                });
 
-                if (!response.ok) {
-                    throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    if (data.html) {
+                        activeTripsContainer.innerHTML = data.html;
+                    }
+                } catch (error) {
+                    console.error('Failed to load active trips:', error);
+                } finally {
+                    setLoadingState(activeTripsContainer, false);
+                }
+            };
+
+            activeTripsContainer.addEventListener('click', (event) => {
+                const paginationLink = event.target.closest('a[data-pagination="active-trips"]');
+                if (!paginationLink) {
+                    return;
                 }
 
-                const data = await response.json();
-                if (data.html) {
-                    container.innerHTML = data.html;
+                event.preventDefault();
+                loadActiveTrips(paginationLink.href);
+            });
+        }
+
+        // Today's Schedule Pagination
+        const todayScheduleContainer = document.querySelector('#today-schedule-container');
+        if (todayScheduleContainer) {
+            const setLoadingState = (container, isLoading) => {
+                container.classList.toggle('opacity-50', isLoading);
+                container.classList.toggle('pointer-events-none', isLoading);
+            };
+
+            const loadTodaySchedule = async (url) => {
+                try {
+                    setLoadingState(todayScheduleContainer, true);
+                    const response = await fetch(url, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+
+                    const data = await response.json();
+                    if (data.html) {
+                        todayScheduleContainer.innerHTML = data.html;
+                    }
+                } catch (error) {
+                    console.error('Failed to load today schedule:', error);
+                } finally {
+                    setLoadingState(todayScheduleContainer, false);
                 }
-            } catch (error) {
-                console.error('Failed to load recent requests:', error);
-            } finally {
-                setLoadingState(false);
-            }
-        };
+            };
 
-        container.addEventListener('click', (event) => {
-            const paginationLink = event.target.closest('a[data-pagination="recent-requests"]');
-            if (!paginationLink) {
-                return;
-            }
+            todayScheduleContainer.addEventListener('click', (event) => {
+                const paginationLink = event.target.closest('a[data-pagination="today-schedule"]');
+                if (!paginationLink) {
+                    return;
+                }
 
-            event.preventDefault();
-            loadRecentRequests(paginationLink.href);
-        });
+                event.preventDefault();
+                loadTodaySchedule(paginationLink.href);
+            });
+        }
     });
 </script>
 @endpush

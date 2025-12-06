@@ -31,14 +31,18 @@ class DashboardController extends Controller
             ->simplePaginate(3, ['*'], 'recent_page')
             ->withPath(route('dashboard.recent-requests'));
 
+
         $activeTrips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->where('status', 'in-transit')
-            ->get();
+            ->orderBy('scheduled_time', 'desc')
+            ->simplePaginate(3, ['*'], 'active_page')
+            ->withPath(route('dashboard.active-trips'));
 
         $todaySchedule = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereDate('scheduled_time', $today)
             ->orderBy('scheduled_time')
-            ->get();
+            ->simplePaginate(3, ['*'], 'schedule_page')
+            ->withPath(route('dashboard.today-schedule'));
 
         return view('dispatch.dashboard', compact('stats', 'recentRequests', 'activeTrips', 'todaySchedule'));
     }
@@ -52,6 +56,42 @@ class DashboardController extends Controller
 
         if ($request->ajax()) {
             $html = view('dispatch.dashboard.partials.recent-requests', compact('recentRequests'))->render();
+
+            return response()->json(['html' => $html]);
+        }
+
+        return redirect()->route('dashboard');
+    }
+
+    public function activeTrips(Request $request)
+    {
+        $activeTrips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->where('status', 'in-transit')
+            ->orderBy('scheduled_time', 'desc')
+            ->simplePaginate(5, ['*'], 'active_page')
+            ->withPath(route('dashboard.active-trips'));
+
+        if ($request->ajax()) {
+            $html = view('dispatch.dashboard.partials.active-trips', compact('activeTrips'))->render();
+
+            return response()->json(['html' => $html]);
+        }
+
+        return redirect()->route('dashboard');
+    }
+
+    public function todaySchedule(Request $request)
+    {
+        $today = Carbon::today();
+
+        $todaySchedule = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->whereDate('scheduled_time', $today)
+            ->orderBy('scheduled_time')
+            ->simplePaginate(3, ['*'], 'schedule_page')
+            ->withPath(route('dashboard.today-schedule'));
+
+        if ($request->ajax()) {
+            $html = view('dispatch.dashboard.partials.today-schedule', compact('todaySchedule'))->render();
 
             return response()->json(['html' => $html]);
         }

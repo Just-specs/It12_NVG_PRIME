@@ -11,7 +11,7 @@ return [
     |
     */
     'emails' => [
-        'j.sayson.546917@gmail.com',
+
         'justin.sayson123@gmail.com'
         // Add more admin emails here
     ],
