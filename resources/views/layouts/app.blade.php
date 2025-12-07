@@ -16,9 +16,14 @@
         }
 
         .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            height: 100vh;
             transition: all 0.3s ease;
             width: 250px;
             overflow-y: auto;
+            z-index: 40;
         }
 
         .sidebar.collapsed {
@@ -28,6 +33,7 @@
         .main-content {
             transition: all 0.3s ease;
             flex: 1;
+            margin-left: 250px;
         }
 
         .main-content.expanded {
@@ -53,6 +59,39 @@
                 margin-left: 0 !important;
                 width: 100%;
             }
+        }
+
+        /* Toast Animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast-notification {
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .toast-notification.hiding {
+            animation: slideOut 0.3s ease-in forwards;
         }
     </style>
     @stack('styles')
@@ -238,48 +277,56 @@
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Flash Messages -->
-        @if(session('success'))
-        <div class="container mx-auto px-4 mt-4">
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative flex items-center justify-between" role="alert">
+        <!-- Toast Notifications Container -->
+        <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2" style="max-width: 400px;">
+            @if(session('success'))
+            <div class="toast-notification bg-green-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-between transform transition-all duration-300 ease-in-out" style="animation: slideIn 0.3s ease-out;">
                 <div class="flex items-center">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    <span class="block sm:inline">{{ session('success') }}</span>
+                    <i class="fas fa-check-circle text-2xl mr-3"></i>
+                    <span class="font-medium">{{ session('success') }}</span>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-green-700 hover:text-green-900">
-                    <i class="fas fa-times"></i>
+                <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
-        </div>
-        @endif
+            @endif
 
-        @if(session('error'))
-        <div class="container mx-auto px-4 mt-4">
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative flex items-center justify-between" role="alert">
+            @if(session('error'))
+            <div class="toast-notification bg-red-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-between transform transition-all duration-300 ease-in-out" style="animation: slideIn 0.3s ease-out;">
                 <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle mr-2"></i>
-                    <span class="block sm:inline">{{ session('error') }}</span>
+                    <i class="fas fa-exclamation-circle text-2xl mr-3"></i>
+                    <span class="font-medium">{{ session('error') }}</span>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-red-700 hover:text-red-900">
-                    <i class="fas fa-times"></i>
+                <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
-        </div>
-        @endif
+            @endif
 
-        @if(session('info'))
-        <div class="container mx-auto px-4 mt-4">
-            <div class="bg-blue-100 border border-blue-400 text-blue-700 px-4 py-3 rounded relative flex items-center justify-between" role="alert">
+            @if(session('info'))
+            <div class="toast-notification bg-blue-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-between transform transition-all duration-300 ease-in-out" style="animation: slideIn 0.3s ease-out;">
                 <div class="flex items-center">
-                    <i class="fas fa-info-circle mr-2"></i>
-                    <span class="block sm:inline">{{ session('info') }}</span>
+                    <i class="fas fa-info-circle text-2xl mr-3"></i>
+                    <span class="font-medium">{{ session('info') }}</span>
                 </div>
-                <button onclick="this.parentElement.remove()" class="text-blue-700 hover:text-blue-900">
-                    <i class="fas fa-times"></i>
+                <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-lg"></i>
                 </button>
             </div>
+            @endif
+
+            @if(session('warning'))
+            <div class="toast-notification bg-yellow-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-between transform transition-all duration-300 ease-in-out" style="animation: slideIn 0.3s ease-out;">
+                <div class="flex items-center">
+                    <i class="fas fa-exclamation-triangle text-2xl mr-3"></i>
+                    <span class="font-medium">{{ session('warning') }}</span>
+                </div>
+                <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200 transition">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+            </div>
+            @endif
         </div>
-        @endif
 
         <!-- Main Content Area -->
         <main class="py-6">
@@ -310,6 +357,18 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // Auto-dismiss toast notifications
+            const toasts = document.querySelectorAll('.toast-notification');
+            toasts.forEach(toast => {
+                // Auto-dismiss after 5 seconds
+                setTimeout(() => {
+                    toast.classList.add('hiding');
+                    setTimeout(() => {
+                        toast.remove();
+                    }, 300); // Wait for animation to complete
+                }, 5000);
+            });
+
             // Logout confirmation
             const logoutForm = document.getElementById('logout-form');
             const logoutButton = document.getElementById('logout-button');
@@ -382,3 +441,4 @@
 </body>
 
 </html>
+

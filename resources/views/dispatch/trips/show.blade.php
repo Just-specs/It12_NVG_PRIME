@@ -183,26 +183,25 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions</h3>
 
                 @if($trip->status === 'scheduled')
-                <form method="POST" action="{{ route('trips.start', $trip) }}" class="mb-3">
-                    @csrf
-                    <button type="submit"
-                        class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-                        onclick="return confirm('Start this trip?')">
-                        <i class="fas fa-play"></i> Start Trip
-                    </button>
-                </form>
+                <button type="button" id="open-start-modal"
+                    class="flex items-center justify-center gap-2 w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors mb-3">
+                    <i class="fas fa-play"></i>
+                    <span>Start Trip</span>
+                </button>
                 @endif
 
                 @if($trip->status === 'in-transit')
                 <button type="button" id="open-complete-modal"
-                    class="w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors mb-3">
-                    <i class="fas fa-check-circle"></i> Complete Trip
+                    class="flex items-center justify-center gap-2 w-full px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors mb-3">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Complete Trip</span>
                 </button>
                 @endif
 
                 <a href="{{ route('requests.show', $trip->deliveryRequest) }}"
-                    class="block w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-center mb-3 transition-colors">
-                    <i class="fas fa-file-alt"></i> View Request
+                    class="flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 mb-3 transition-colors">
+                    <i class="fas fa-eye"></i>
+                    <span>View Request</span>
                 </a>
 
                 <!-- Timeline -->
@@ -249,36 +248,106 @@
     </div>
 </div>
 
+<!-- Start Trip Modal -->
+@if($trip->status === 'scheduled')
+<div id="start-trip-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="mb-6 text-center">
+            <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-play text-green-600 text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Start Trip?</h3>
+            <p class="text-gray-600">Are you ready to start this trip? The driver and client will be notified.</p>
+        </div>
+
+        <div class="bg-blue-50 rounded-lg p-4 mb-6">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Driver:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->driver->name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Vehicle:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->vehicle->plate_number }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Client:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->client->name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('trips.start', $trip) }}">
+            @csrf
+            <div class="flex gap-3">
+                <button type="button" id="cancel-start"
+                    class="flex-1 px-6 py-3 rounded-full bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
+                    Cancel
+                </button>
+                <button type="submit"
+                    class="flex-1 px-6 py-3 rounded-full bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors shadow-lg">
+                    <i class="fas fa-play mr-2"></i>Start Now
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+@endif
+
 <!-- Complete Trip Modal -->
 @if($trip->status === 'in-transit')
 <div id="complete-trip-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <div class="mb-4">
-            <h3 class="text-xl font-semibold text-gray-800 mb-2">Complete Trip</h3>
-            <p class="text-sm text-gray-600">Are you sure you want to complete this trip?</p>
+        <div class="mb-6 text-center">
+            <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check-circle text-purple-600 text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Complete Trip?</h3>
+            <p class="text-gray-600">Mark this trip as completed. The client will be notified.</p>
         </div>
 
-        <form method="POST" action="{{ route('trips.complete', $trip) }}" id="complete-trip-form">
+        <div class="bg-purple-50 rounded-lg p-4 mb-6">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Driver:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->driver->name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Vehicle:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->vehicle->plate_number }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Client:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->client->name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">ATW Reference:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->atw_reference }}</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('trips.complete', $trip) }}" id="complete-trip-form" onsubmit="console.log('Form submitting...'); return true;">
             @csrf
-            <div class="mb-4">
+            <div class="mb-6">
                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Completion Notes (optional)
+                    <i class="fas fa-sticky-note text-gray-400"></i> Completion Notes (optional)
                 </label>
                 <textarea
                     name="update_message"
                     rows="3"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                     placeholder="Add any notes about the delivery completion..."></textarea>
             </div>
 
             <div class="flex gap-3">
                 <button type="button" id="cancel-complete"
-                    class="flex-1 px-4 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors">
+                    class="flex-1 px-6 py-3 rounded-full bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
                     Cancel
                 </button>
-                <button type="submit"
-                    class="flex-1 px-4 py-2 rounded-full bg-[#2563EB] text-white font-semibold hover:bg-blue-700 transition-colors">
-                    Confirm
+                <button type="submit" id="submit-complete-trip"
+                    class="flex-1 px-6 py-3 rounded-full bg-purple-600 text-white font-semibold hover:bg-purple-700 transition-colors shadow-lg">
+                    <i class="fas fa-check-circle mr-2"></i>Complete Now
                 </button>
             </div>
         </form>
@@ -286,10 +355,11 @@
 </div>
 
 <script>
-    const initCompleteModal = () => {
-        const openButton = document.getElementById('open-complete-modal');
-        const modal = document.getElementById('complete-trip-modal');
-        const cancelButton = document.getElementById('cancel-complete');
+    // Start Trip Modal
+    const initStartModal = () => {
+        const openButton = document.getElementById('open-start-modal');
+        const modal = document.getElementById('start-trip-modal');
+        const cancelButton = document.getElementById('cancel-start');
 
         if (!openButton || !modal || !cancelButton) return;
 
@@ -317,9 +387,69 @@
         });
     };
 
+    // Complete Trip Modal
+    const initCompleteModal = () => {
+        const openButton = document.getElementById('open-complete-modal');
+        const modal = document.getElementById('complete-trip-modal');
+        const cancelButton = document.getElementById('cancel-complete');
+        const form = document.getElementById('complete-trip-form');
+
+        if (!openButton || !modal || !cancelButton || !form) {
+            console.log('Complete modal elements missing:', {
+                openButton: !!openButton,
+                modal: !!modal,
+                cancelButton: !!cancelButton,
+                form: !!form
+            });
+            return;
+        }
+
+        const showModal = () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            console.log('Complete modal opened');
+        };
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            console.log('Complete modal closed');
+        };
+
+        openButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            showModal();
+        });
+
+        cancelButton.addEventListener('click', hideModal);
+
+        // Don't close on backdrop click - only cancel button
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) hideModal();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideModal();
+            }
+        });
+
+        // Log form submission (allow default behavior)
+        form.addEventListener('submit', (e) => {
+            console.log('Complete trip form submitting...');
+            console.log('Form action:', form.action);
+            console.log('Form method:', form.method);
+            // Don't prevent default - let it submit normally
+        });
+    };
+
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initCompleteModal);
+        document.addEventListener('DOMContentLoaded', () => {
+            initStartModal();
+            initCompleteModal();
+        });
     } else {
+        initStartModal();
         initCompleteModal();
     }
 </script>

@@ -12,7 +12,7 @@ class NotificationController extends Controller
     {
         $notifications = ClientNotification::with(['trip.deliveryRequest.client', 'client'])
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate(3);
 
         $stats = [
             'total' => ClientNotification::count(),

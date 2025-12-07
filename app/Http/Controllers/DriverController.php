@@ -72,6 +72,33 @@ class DriverController extends Controller
         return view('dispatch.drivers.index', compact('drivers', 'activeStatus', 'counts'));
     }
 
+
+    public function create()
+    {
+        return view('dispatch.drivers.create');
+    }
+
+    public function store(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'mobile' => 'required|string|max:20',
+            'license_number' => 'required|string|max:50|unique:drivers,license_number',
+            'status' => 'sometimes|in:available,on-trip,off-duty'
+        ]);
+
+        // Set default status if not provided
+        if (!isset($validated['status'])) {
+            $validated['status'] = 'available';
+        }
+
+        $driver = Driver::create($validated);
+
+        return redirect()
+            ->route('drivers.show', $driver)
+            ->with('success', 'Driver added successfully.');
+    }
+
     public function show(Driver $driver)
     {
         $driver->load(['trips' => function ($query) {

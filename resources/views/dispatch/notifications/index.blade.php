@@ -153,8 +153,31 @@
 
         <!-- Pagination -->
         @if($notifications->hasPages())
-        <div class="px-6 py-4 border-t border-gray-200">
-            {{ $notifications->links() }}
+        <div class="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
+            <span class="text-sm text-gray-700">
+                Showing <span class="font-semibold">{{ $notifications->firstItem() }}</span>
+                to <span class="font-semibold">{{ $notifications->lastItem() }}</span>
+                of <span class="font-semibold">{{ $notifications->total() }}</span> notifications
+            </span>
+            <div class="flex gap-3">
+                @if($notifications->onFirstPage())
+                <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">Previous</span>
+                @else
+                <a href="{{ $notifications->previousPageUrl() }}"
+                    class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    Previous
+                </a>
+                @endif
+
+                @if($notifications->hasMorePages())
+                <a href="{{ $notifications->nextPageUrl() }}"
+                    class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+                    Next
+                </a>
+                @else
+                <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">Next</span>
+                @endif
+            </div>
         </div>
         @endif
     </div>

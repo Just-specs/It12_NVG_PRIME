@@ -88,6 +88,25 @@
         </div>
     </div>
 
+
+    <!-- Charts Section -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Status Distribution Pie Chart -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Status Distribution</h3>
+            <div style="height: 300px; position: relative;">
+                <canvas id="statusPieChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Weekly Trend Line Chart -->
+        <div class="bg-white rounded-lg shadow-lg p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Weekly Trend</h3>
+            <div style="height: 300px; position: relative;">
+                <canvas id="weeklyTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
     <!-- Trips by Week -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -155,4 +174,102 @@
         @endif
     </div>
 </div>
+
+@push('scripts')
+<script src="{{ asset('js/chart.min.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Monthly report charts loading...');
+
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js not loaded!');
+            return;
+        }
+
+        // Status Pie Chart
+        const statusCtx = document.getElementById('statusPieChart');
+        if (statusCtx) {
+            try {
+                new Chart(statusCtx, {
+                    type: 'pie',
+                    data: {
+                        labels: {!! json_encode($statusChartData['labels']) !!},
+                        datasets: [{
+                            data: {!! json_encode($statusChartData['data']) !!},
+                            backgroundColor: {!! json_encode($statusChartData['colors']) !!},
+                            borderWidth: 2,
+                            borderColor: '#fff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom'
+                            }
+                        }
+                    }
+                });
+                console.log('Status pie chart created');
+            } catch (e) {
+                console.error('Status chart error:', e);
+            }
+        }
+
+        // Weekly Trend Line Chart
+        const weeklyCtx = document.getElementById('weeklyTrendChart');
+        if (weeklyCtx) {
+            try {
+                const weeklyData = {!! json_encode($weeklyData) !!};
+                new Chart(weeklyCtx, {
+                    type: 'line',
+                    data: {
+                        labels: weeklyData.map(d => d.week),
+                        datasets: [{
+                            label: 'Trips',
+                            data: weeklyData.map(d => d.count),
+                            borderColor: '#8b5cf6',
+                            backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 6,
+                            pointBackgroundColor: '#8b5cf6',
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    stepSize: 1
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+                console.log('Weekly trend chart created');
+            } catch (e) {
+                console.error('Weekly trend chart error:', e);
+            }
+        }
+    });
+</script>
+@endpush
 @endsection
+
+
+
+
+
+

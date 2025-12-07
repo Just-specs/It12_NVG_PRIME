@@ -105,7 +105,7 @@ class TripController extends Controller
         // Verify delivery request can be assigned
         if (!in_array($deliveryRequest->status, ['pending', 'verified'])) {
             return redirect()
-                ->route('trips.show', $deliveryRequest->id)
+                ->route('requests.show', $deliveryRequest)
                 ->with('error', 'This request cannot be assigned. Status: ' . $deliveryRequest->status);
         }
 
@@ -342,7 +342,7 @@ class TripController extends Controller
             $this->sendClientNotification($trip, 'completed', 'Your delivery has been completed successfully.');
 
             // Redirect to trips index, showing completed trips or the referrer page
-            $redirectUrl = $request->header('Referer') ?: route('trips.index', ['status' => 'completed']);
+            $redirectUrl = route('trips.index', ['status' => 'all']);
 
             return redirect($redirectUrl)
                 ->with('success', 'Trip completed successfully.');

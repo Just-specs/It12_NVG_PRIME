@@ -8,36 +8,36 @@
         <h1 class="text-3xl font-bold text-gray-800">
             <i class="fas fa-clipboard-list text-blue-600"></i> Delivery Requests
         </h1>
-        <a href="{{ route('requests.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+        <button type="button" id="open-create-request-modal" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
             <i class="fas fa-plus"></i> New Request
-        </a>
+        </button>
     </div>
 
     <!-- Status Filter Tabs -->
     @php
-        $tabs = [
-            'all' => 'All Requests',
-            'pending' => 'Pending',
-            'verified' => 'Verified',
-            'assigned' => 'Assigned',
-        ];
+    $tabs = [
+    'all' => 'All Requests',
+    'pending' => 'Pending',
+    'verified' => 'Verified',
+    'assigned' => 'Assigned',
+    ];
     @endphp
     <div class="mb-6">
         <nav id="request-status-tabs" data-current-status="{{ $activeStatus ?? 'all' }}"
             class="flex flex-wrap gap-3">
             @foreach($tabs as $statusValue => $label)
-                @php
-                    $isActive = ($activeStatus ?? 'all') === $statusValue;
-                    $count = $counts[$statusValue] ?? 0;
-                @endphp
-                <button type="button"
-                    class="status-tab group flex items-center justify-between gap-3 rounded-full border-2 px-6 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/30 {{ $isActive ? 'bg-[#1E40AF] text-white border-[#1E40AF] shadow-lg' : 'bg-white text-[#1E40AF] border-[#1E40AF]/40 hover:border-[#1E40AF] hover:shadow-md' }}"
-                    data-status="{{ $statusValue }}"
-                    data-url="{{ $statusValue === 'all' ? route('requests.index') : route('requests.index', ['status' => $statusValue]) }}">
-                    <span>{{ $label }}</span>
-                    <span class="inline-flex min-w-[2.25rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold transition {{ $isActive ? 'bg-white text-[#1E40AF]' : 'bg-[#1E40AF]/10 text-[#1E40AF] group-hover:bg-[#1E40AF]/20' }}"
-                        data-status-count>{{ $count }}</span>
-                </button>
+            @php
+            $isActive = ($activeStatus ?? 'all') === $statusValue;
+            $count = $counts[$statusValue] ?? 0;
+            @endphp
+            <button type="button"
+                class="status-tab group flex items-center justify-between gap-3 rounded-full border-2 px-6 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-[#1E40AF]/30 {{ $isActive ? 'bg-[#1E40AF] text-white border-[#1E40AF] shadow-lg' : 'bg-white text-[#1E40AF] border-[#1E40AF]/40 hover:border-[#1E40AF] hover:shadow-md' }}"
+                data-status="{{ $statusValue }}"
+                data-url="{{ $statusValue === 'all' ? route('requests.index') : route('requests.index', ['status' => $statusValue]) }}">
+                <span>{{ $label }}</span>
+                <span class="inline-flex min-w-[2.25rem] items-center justify-center rounded-full px-2 py-0.5 text-xs font-bold transition {{ $isActive ? 'bg-white text-[#1E40AF]' : 'bg-[#1E40AF]/10 text-[#1E40AF] group-hover:bg-[#1E40AF]/20' }}"
+                    data-status-count>{{ $count }}</span>
+            </button>
             @endforeach
         </nav>
     </div>
@@ -50,17 +50,17 @@
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <i class="fas fa-search text-gray-400"></i>
                 </div>
-                <input type="text" 
-                       name="search" 
-                       id="search-input" 
-                       class="w-full pl-10 pr-4 py-2 border border-blue-500 rounded-md bg-white placeholder-gray-400 focus:outline-none focus:ring-blue-400 focus:border-blue-600 transition duration-150 sm:text-sm" 
-                       placeholder="Search..." 
-                       value="{{ request('search') }}"
-                       autocomplete="off">
+                <input type="text"
+                    name="search"
+                    id="search-input"
+                    class="w-full pl-10 pr-4 py-2 border border-blue-500 rounded-md bg-white placeholder-gray-400 focus:outline-none focus:ring-blue-400 focus:border-blue-600 transition duration-150 sm:text-sm"
+                    placeholder="Search..."
+                    value="{{ request('search') }}"
+                    autocomplete="off">
             </div>
-            <button type="button" 
-                    id="clear-search" 
-                    class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none border border-gray-300 rounded-md {{ !request('search') ? 'hidden' : '' }}">
+            <button type="button"
+                id="clear-search"
+                class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none border border-gray-300 rounded-md {{ !request('search') ? 'hidden' : '' }}">
                 Clear
             </button>
         </div>
@@ -81,7 +81,7 @@
         <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
                 <h2 class="text-2xl font-semibold text-gray-800">Request Details</h2>
-                <p id="modal-created" class="text-sm text-gray-500">Created —</p>
+                <p id="modal-created" class="text-sm text-gray-500">Created â€”</p>
             </div>
             <button type="button" class="text-gray-500 hover:text-gray-700" id="modal-close">
                 <i class="fas fa-times text-xl"></i>
@@ -104,13 +104,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <p class="text-sm text-gray-500">Client Name</p>
-                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">—</p>
+                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">â€”</p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Contact Method</p>
                                 <p class="text-base font-semibold text-gray-800">
                                     <i id="modal-contact-icon" class="fas fa-envelope mr-2"></i>
-                                    <span id="modal-contact-method">—</span>
+                                    <span id="modal-contact-method">â€”</span>
                                 </p>
                             </div>
                         </div>
@@ -123,34 +123,34 @@
                         <div class="space-y-3 text-sm text-gray-700">
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">ATW Reference:</span>
-                                <span id="modal-atw" class="font-semibold">—</span>
-                                <span id="modal-atw-status" class="text-xs font-semibold px-2 py-1 rounded-full">—</span>
+                                <span id="modal-atw" class="font-semibold">â€”</span>
+                                <span id="modal-atw-status" class="text-xs font-semibold px-2 py-1 rounded-full">â€”</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Container:</span>
-                                <span id="modal-container" class="font-semibold">—</span>
+                                <span id="modal-container" class="font-semibold">â€”</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Pickup:</span>
                                 <span class="font-semibold text-gray-800">
                                     <i class="fas fa-map-marker-alt text-green-500 mr-1"></i>
-                                    <span id="modal-pickup">—</span>
+                                    <span id="modal-pickup">â€”</span>
                                 </span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Delivery:</span>
                                 <span class="font-semibold text-gray-800">
                                     <i class="fas fa-flag-checkered text-red-500 mr-1"></i>
-                                    <span id="modal-delivery">—</span>
+                                    <span id="modal-delivery">â€”</span>
                                 </span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Schedule:</span>
-                                <span id="modal-schedule" class="font-semibold">—</span>
+                                <span id="modal-schedule" class="font-semibold">â€”</span>
                             </div>
                             <div class="flex flex-wrap gap-2" id="modal-notes-row" hidden>
                                 <span class="w-40 text-gray-500">Notes:</span>
-                                <span id="modal-notes" class="font-semibold text-gray-800">—</span>
+                                <span id="modal-notes" class="font-semibold text-gray-800">â€”</span>
                             </div>
                         </div>
                     </div>
@@ -165,7 +165,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-gray-800">Request Created</p>
-                                <p id="modal-timeline" class="text-xs text-gray-500">—</p>
+                                <p id="modal-timeline" class="text-xs text-gray-500">â€”</p>
                             </div>
                         </div>
                     </div>
@@ -173,8 +173,8 @@
                         <h4 class="text-sm font-semibold text-gray-700 mb-3">Actions</h4>
                         <div class="space-y-3">
                             <div>
-                                <p class="text-xs text-gray-500">Viewing request #<span id="modal-request-id">—</span></p>
-                                <p class="text-xs text-gray-500">ATW Status: <span id="modal-atw-status-text" class="font-semibold">—</span></p>
+                                <p class="text-xs text-gray-500">Viewing request #<span id="modal-request-id">â€”</span></p>
+                                <p class="text-xs text-gray-500">ATW Status: <span id="modal-atw-status-text" class="font-semibold">â€”</span></p>
                             </div>
                             <button id="modal-verify-atw"
                                 type="button"
@@ -245,7 +245,11 @@
             root.querySelectorAll('.verify-request-btn').forEach(button => {
                 button.addEventListener('click', (event) => {
                     const form = event.currentTarget.closest('form');
-                    showVerifyConfirm({ form, trigger: event.currentTarget, context: 'table' });
+                    showVerifyConfirm({
+                        form,
+                        trigger: event.currentTarget,
+                        context: 'table'
+                    });
                 });
             });
         };
@@ -284,7 +288,9 @@
             });
         };
 
-        const handleRequestsPagination = async (url, { updateTabFromResponse = false } = {}) => {
+        const handleRequestsPagination = async (url, {
+            updateTabFromResponse = false
+        } = {}) => {
             if (!requestsContainer) {
                 return;
             }
@@ -368,7 +374,11 @@
             group_chat: 'fa-comments'
         };
 
-        const showVerifyConfirm = ({ form = null, trigger = null, context = null } = {}) => {
+        const showVerifyConfirm = ({
+            form = null,
+            trigger = null,
+            context = null
+        } = {}) => {
             if (!verifyConfirmModal) {
                 if (form) {
                     form.submit();
@@ -386,11 +396,15 @@
             verifyConfirmModal.classList.add('flex');
 
             if (verifyConfirmYes) {
-                verifyConfirmYes.focus({ preventScroll: true });
+                verifyConfirmYes.focus({
+                    preventScroll: true
+                });
             }
         };
 
-        const hideVerifyConfirm = ({ refocus = true } = {}) => {
+        const hideVerifyConfirm = ({
+            refocus = true
+        } = {}) => {
             if (verifyConfirmModal) {
                 verifyConfirmModal.classList.add('hidden');
                 verifyConfirmModal.classList.remove('flex');
@@ -401,7 +415,9 @@
             }
 
             if (refocus && lastVerifyTrigger) {
-                lastVerifyTrigger.focus({ preventScroll: true });
+                lastVerifyTrigger.focus({
+                    preventScroll: true
+                });
             }
 
             pendingVerifyForm = null;
@@ -416,7 +432,9 @@
             } else {
                 modal.classList.add('hidden');
                 modal.classList.remove('flex');
-                hideVerifyConfirm({ refocus: false });
+                hideVerifyConfirm({
+                    refocus: false
+                });
             }
         };
 
@@ -471,11 +489,15 @@
             if (modalVerifyAtw && modalVerifyForm) {
                 if (currentVerifyUrl) {
                     modalVerifyAtw.classList.remove('hidden');
-                    hideVerifyConfirm({ refocus: false });
+                    hideVerifyConfirm({
+                        refocus: false
+                    });
                     modalVerifyForm.setAttribute('action', currentVerifyUrl);
                 } else {
                     modalVerifyAtw.classList.add('hidden');
-                    hideVerifyConfirm({ refocus: false });
+                    hideVerifyConfirm({
+                        refocus: false
+                    });
                     modalVerifyForm.removeAttribute('action');
                 }
             }
@@ -498,7 +520,10 @@
         }
 
         const handleTabClick = async (event) => {
-            const { status, url } = event.currentTarget.dataset;
+            const {
+                status,
+                url
+            } = event.currentTarget.dataset;
 
             if (!url) {
                 return;
@@ -510,7 +535,9 @@
 
             event.preventDefault();
             updateActiveTab(status);
-            await handleRequestsPagination(url, { updateTabFromResponse: true });
+            await handleRequestsPagination(url, {
+                updateTabFromResponse: true
+            });
         };
 
         if (tabsContainer) {
@@ -536,7 +563,9 @@
             if (verifyConfirmModal && verifyConfirmModal.classList.contains('flex')) {
                 hideVerifyConfirm();
                 if (modalVerifyAtw && currentVerifyUrl) {
-                    modalVerifyAtw.focus({ preventScroll: true });
+                    modalVerifyAtw.focus({
+                        preventScroll: true
+                    });
                 }
                 return;
             }
@@ -549,7 +578,11 @@
         if (modalVerifyAtw && modalVerifyForm) {
             modalVerifyAtw.addEventListener('click', () => {
                 if (currentVerifyUrl) {
-                    showVerifyConfirm({ form: modalVerifyForm, trigger: modalVerifyAtw, context: 'modal' });
+                    showVerifyConfirm({
+                        form: modalVerifyForm,
+                        trigger: modalVerifyAtw,
+                        context: 'modal'
+                    });
                 }
             });
         }
@@ -558,13 +591,17 @@
             verifyConfirmYes.addEventListener('click', () => {
                 if (pendingVerifyForm) {
                     const formToSubmit = pendingVerifyForm;
-                    hideVerifyConfirm({ refocus: false });
+                    hideVerifyConfirm({
+                        refocus: false
+                    });
                     formToSubmit.submit();
                     return;
                 }
 
                 if (modalVerifyForm && currentVerifyUrl) {
-                    hideVerifyConfirm({ refocus: false });
+                    hideVerifyConfirm({
+                        refocus: false
+                    });
                     modalVerifyForm.submit();
                 }
             });
@@ -584,10 +621,10 @@
             });
         }
 
-            // Search functionality
+        // Search functionality
         const searchInput = document.getElementById('search-input');
         const clearSearchBtn = document.getElementById('clear-search');
-        
+
         // Debounce function
         function debounce(func, wait) {
             let timeout;
@@ -600,30 +637,32 @@
                 timeout = setTimeout(later, wait);
             };
         }
-        
+
         // Toggle clear button visibility
         function toggleClearButton(value) {
             if (clearSearchBtn) {
                 clearSearchBtn.classList.toggle('hidden', !value);
             }
         }
-        
+
         // Fetch requests with search
         function fetchRequests(search) {
             const currentStatus = tabsContainer ? tabsContainer.dataset.currentStatus : 'all';
             let url = requestsContainer.dataset.url || '{{ route("requests.index") }}';
             const params = new URLSearchParams();
-            
+
             if (currentStatus && currentStatus !== 'all') {
                 params.append('status', currentStatus);
             }
             if (search) {
                 params.append('search', search);
             }
-            
+
             const fullUrl = params.toString() ? `${url}?${params.toString()}` : url;
-            handleRequestsPagination(fullUrl, { updateTabFromResponse: true });
-            
+            handleRequestsPagination(fullUrl, {
+                updateTabFromResponse: true
+            });
+
             // Update URL without page reload
             const newUrl = new URL(window.location.href);
             if (search) {
@@ -636,7 +675,7 @@
             }
             window.history.pushState({}, '', newUrl);
         }
-        
+
         // Handle search input with debounce
         if (searchInput) {
             searchInput.addEventListener('input', debounce(function(e) {
@@ -647,7 +686,7 @@
                 toggleClearButton(searchValue);
             }, 300));
         }
-        
+
         // Handle clear search
         if (clearSearchBtn) {
             clearSearchBtn.addEventListener('click', function() {
@@ -657,7 +696,7 @@
                 searchInput.focus();
             });
         }
-        
+
         // Handle browser back/forward buttons
         window.addEventListener('popstate', function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -671,6 +710,169 @@
 
     });
 </script>
+<!-- Create Request Modal -->
+<div id="create-request-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-plus-circle text-blue-600"></i> New Delivery Request
+            </h2>
+            <button type="button" id="close-create-modal" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form id="modal-create-request-form" method="POST" action="{{ route('requests.store') }}">
+                @csrf
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Client -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Client <span class="text-red-500">*</span>
+                        </label>
+                        <select name="client_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Client</option>
+                            @foreach(\App\Models\Client::all() as $client)
+                            <option value="{{ $client->id }}">{{ $client->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Contact Method -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Contact Method <span class="text-red-500">*</span>
+                        </label>
+                        <select name="contact_method" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="mobile">Mobile Call</option>
+                            <option value="group_chat">Group Chat</option>
+                            <option value="email">Email</option>
+                        </select>
+                    </div>
+
+                    <!-- ATW Reference -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ATW Reference <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="atw_reference" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter ATW reference number">
+                    </div>
+
+                    <!-- Pickup Location -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Pickup Location <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="pickup_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter pickup location">
+                    </div>
+
+                    <!-- Delivery Location -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Delivery Location <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="delivery_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter delivery location">
+                    </div>
+
+                    <!-- Container Size -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Container Size <span class="text-red-500">*</span>
+                        </label>
+                        <select name="container_size" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="20ft">20ft</option>
+                            <option value="40ft">40ft</option>
+                            <option value="40ft HC">40ft HC</option>
+                        </select>
+                    </div>
+
+                    <!-- Container Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Container Type <span class="text-red-500">*</span>
+                        </label>
+                        <select name="container_type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="standard">Standard</option>
+                            <option value="refrigerated">Refrigerated</option>
+                            <option value="open_top">Open Top</option>
+                            <option value="flat_rack">Flat Rack</option>
+                        </select>
+                    </div>
+
+                    <!-- Preferred Schedule -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Preferred Schedule <span class="text-red-500">*</span>
+                        </label>
+                        <input type="datetime-local" name="preferred_schedule" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Additional Notes
+                        </label>
+                        <textarea name="notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Any special instructions or notes"></textarea>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+                    <button type="button" id="cancel-create-request" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                        <i class="fas fa-save mr-2"></i>Create Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const openModalBtn = document.getElementById('open-create-request-modal');
+        const modal = document.getElementById('create-request-modal');
+        const closeModalBtn = document.getElementById('close-create-modal');
+        const cancelBtn = document.getElementById('cancel-create-request');
+        const form = document.getElementById('modal-create-request-form');
+
+        if (!openModalBtn || !modal) return;
+
+        const showModal = () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            form.reset();
+        };
+
+        openModalBtn.addEventListener('click', showModal);
+        closeModalBtn?.addEventListener('click', hideModal);
+        cancelBtn?.addEventListener('click', hideModal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideModal();
+            }
+        });
+    });
+</script>
+
 @endpush
 
 @endsection

@@ -40,8 +40,9 @@ class DashboardController extends Controller
 
         $todaySchedule = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereDate('scheduled_time', $today)
+            ->whereIn('status', ['scheduled', 'in-transit', 'completed'])
             ->orderBy('scheduled_time')
-            ->simplePaginate(3, ['*'], 'schedule_page')
+            ->simplePaginate(5, ['*'], 'schedule_page')
             ->withPath(route('dashboard.today-schedule'));
 
         return view('dispatch.dashboard', compact('stats', 'recentRequests', 'activeTrips', 'todaySchedule'));
@@ -86,8 +87,9 @@ class DashboardController extends Controller
 
         $todaySchedule = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereDate('scheduled_time', $today)
+            ->whereIn('status', ['scheduled', 'in-transit', 'completed'])
             ->orderBy('scheduled_time')
-            ->simplePaginate(3, ['*'], 'schedule_page')
+            ->simplePaginate(5, ['*'], 'schedule_page')
             ->withPath(route('dashboard.today-schedule'));
 
         if ($request->ajax()) {

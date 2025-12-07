@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
@@ -6,7 +6,7 @@
     <div class="flex justify-between items-center mb-6">
         <div>
             <a href="{{ route('reports.index') }}" class="text-blue-600 hover:text-blue-800 mb-2 inline-block">
-                â† Back to Reports
+                ← Back to Reports
             </a>
             <h1 class="text-3xl font-bold text-gray-800">Daily Report</h1>
             <p class="text-gray-600 mt-1">{{ $date->format('l, F d, Y') }}</p>
@@ -63,26 +63,18 @@
     </div>
 
     <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Status Distribution Pie Chart -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Status Distribution</h3>
             <div style="height: 300px; position: relative;">
                 <canvas id="statusPieChart"></canvas>
             </div>
         </div>
 
-        <!-- Hourly Trend Line Chart -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Hourly Trend</h3>
-            <div style="height: 300px; position: relative;">
-                <canvas id="hourlyLineChart"></canvas>
-            </div>
-        </div>
-
         <!-- Hourly Distribution Bar Chart -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Hourly Distribution</h3>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Hourly Trip Distribution</h3>
             <div style="height: 300px; position: relative;">
                 <canvas id="hourlyBarChart"></canvas>
             </div>
@@ -225,7 +217,7 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('js/chart.min.js') }}"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Check if Chart.js is loaded
@@ -240,10 +232,16 @@
             new Chart(statusCtx, {
                 type: 'pie',
                 data: {
-                    labels: {!! json_encode($statusChartData['labels']) !!},
+                    labels: {
+                        !!json_encode($statusChartData['labels']) !!
+                    },
                     datasets: [{
-                        data: {!! json_encode($statusChartData['data']) !!},
-                        backgroundColor: {!! json_encode($statusChartData['colors']) !!},
+                        data: {
+                            !!json_encode($statusChartData['data']) !!
+                        },
+                        backgroundColor: {
+                            !!json_encode($statusChartData['colors']) !!
+                        },
                         borderWidth: 2,
                         borderColor: '#fff'
                     }]
@@ -278,10 +276,14 @@
             new Chart(hourlyCtx, {
                 type: 'bar',
                 data: {
-                    labels: {!! json_encode(array_column($hourlyData, 'hour')) !!},
+                    labels: {
+                        !!json_encode(array_column($hourlyData, 'hour')) !!
+                    },
                     datasets: [{
                         label: 'Trips',
-                        data: {!! json_encode(array_column($hourlyData, 'count')) !!},
+                        data: {
+                            !!json_encode(array_column($hourlyData, 'count')) !!
+                        },
                         backgroundColor: '#3b82f6',
                         borderColor: '#2563eb',
                         borderWidth: 1

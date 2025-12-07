@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryRequestController;
@@ -83,7 +83,6 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('trips')->name('trips.')->group(function () {
         Route::get('/', [TripController::class, 'index'])->name('index');
         Route::get('/create/{deliveryRequest}', [TripController::class, 'create'])->name('create');
-        Route::get('/{create}', [TripController::class, 'create'])->name('create');
         Route::post('/', [TripController::class, 'store'])->name('store');
         Route::get('/{trip}', [TripController::class, 'show'])->name('show');
         Route::post('/{trip}/start', [TripController::class, 'startTrip'])->name('start');
