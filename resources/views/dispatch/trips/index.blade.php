@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Trips')
 
@@ -39,6 +39,30 @@
             @endforeach
         </nav>
     </div>
+    <!-- Search Section -->
+    <div class="mb-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-2">Search Trips</h3>
+        <div class="flex items-center gap-2">
+            <div class="relative" style="width: 300px;">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input type="text"
+                    name="search"
+                    id="search-input"
+                    class="w-full pl-10 pr-4 py-2 border border-blue-500 rounded-md bg-white placeholder-gray-400 focus:outline-none focus:ring-blue-400 focus:border-blue-600 transition duration-150 sm:text-sm"
+                    placeholder="Search trips..."
+                    value="{{ request('search') }}"
+                    autocomplete="off">
+            </div>
+            <button type="button"
+                id="clear-search"
+                class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 focus:outline-none border border-gray-300 rounded-md {{ !request('search') ? 'hidden' : '' }}">
+                Clear
+            </button>
+        </div>
+    </div>
+
 
     <!-- Trips Table -->
     <div class="bg-white rounded-lg shadow-md overflow-hidden">
@@ -55,7 +79,7 @@
         <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
                 <h2 class="text-2xl font-semibold text-gray-800">Trip Details</h2>
-                <p id="modal-trip-number" class="text-sm text-gray-500">Trip #Ã¢â‚¬â€</p>
+                <p id="modal-trip-number" class="text-sm text-gray-500">Trip #â€”</p>
             </div>
             <button type="button" class="text-gray-500 hover:text-gray-700" id="modal-close">
                 <i class="fas fa-times text-xl"></i>
@@ -81,11 +105,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <p class="text-sm text-gray-500">Client</p>
-                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">Ã¢â‚¬â€</p>
+                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">â€”</p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">ATW Reference</p>
-                                <p id="modal-atw" class="text-base font-mono font-semibold text-purple-600">Ã¢â‚¬â€</p>
+                                <p id="modal-atw" class="text-base font-mono font-semibold text-purple-600">â€”</p>
                             </div>
                         </div>
                     </div>
@@ -97,13 +121,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="p-3 bg-blue-50 rounded-lg">
                                 <p class="text-xs text-gray-500 mb-1">Driver</p>
-                                <p id="modal-driver-name" class="font-semibold text-gray-800">Ã¢â‚¬â€</p>
-                                <p id="modal-driver-mobile" class="text-xs text-gray-600 mt-1">Ã¢â‚¬â€</p>
+                                <p id="modal-driver-name" class="font-semibold text-gray-800">â€”</p>
+                                <p id="modal-driver-mobile" class="text-xs text-gray-600 mt-1">â€”</p>
                             </div>
                             <div class="p-3 bg-purple-50 rounded-lg">
                                 <p class="text-xs text-gray-500 mb-1">Vehicle</p>
-                                <p id="modal-vehicle-plate" class="font-semibold text-gray-800">Ã¢â‚¬â€</p>
-                                <p id="modal-vehicle-type" class="text-xs text-gray-600 mt-1">Ã¢â‚¬â€</p>
+                                <p id="modal-vehicle-plate" class="font-semibold text-gray-800">â€”</p>
+                                <p id="modal-vehicle-type" class="text-xs text-gray-600 mt-1">â€”</p>
                             </div>
                         </div>
                     </div>
@@ -115,29 +139,29 @@
                         <div class="space-y-3 text-sm text-gray-700">
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Container:</span>
-                                <span id="modal-container" class="font-semibold">Ã¢â‚¬â€</span>
+                                <span id="modal-container" class="font-semibold">â€”</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Pickup:</span>
                                 <span class="font-semibold text-gray-800">
                                     <i class="fas fa-map-marker-alt text-green-500 mr-1"></i>
-                                    <span id="modal-pickup">Ã¢â‚¬â€</span>
+                                    <span id="modal-pickup">â€”</span>
                                 </span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Delivery:</span>
                                 <span class="font-semibold text-gray-800">
                                     <i class="fas fa-flag-checkered text-red-500 mr-1"></i>
-                                    <span id="modal-delivery">Ã¢â‚¬â€</span>
+                                    <span id="modal-delivery">â€”</span>
                                 </span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Scheduled Time:</span>
-                                <span id="modal-scheduled" class="font-semibold">Ã¢â‚¬â€</span>
+                                <span id="modal-scheduled" class="font-semibold">â€”</span>
                             </div>
                             <div class="flex flex-wrap gap-2" id="modal-route-row" hidden>
                                 <span class="w-40 text-gray-500">Route Instructions:</span>
-                                <span id="modal-route" class="font-semibold text-gray-800">Ã¢â‚¬â€</span>
+                                <span id="modal-route" class="font-semibold text-gray-800">â€”</span>
                             </div>
                         </div>
                     </div>
@@ -153,7 +177,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Trip Created</p>
-                                    <p id="modal-created-time" class="text-xs text-gray-500">Ã¢â‚¬â€</p>
+                                    <p id="modal-created-time" class="text-xs text-gray-500">â€”</p>
                                 </div>
                             </div>
                             <div id="modal-start-timeline" class="flex items-start space-x-3 hidden">
@@ -162,7 +186,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Trip Started</p>
-                                    <p id="modal-start-time" class="text-xs text-gray-500">Ã¢â‚¬â€</p>
+                                    <p id="modal-start-time" class="text-xs text-gray-500">â€”</p>
                                 </div>
                             </div>
                             <div id="modal-complete-timeline" class="flex items-start space-x-3 hidden">
@@ -171,7 +195,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Trip Completed</p>
-                                    <p id="modal-complete-time" class="text-xs text-gray-500">Ã¢â‚¬â€</p>
+                                    <p id="modal-complete-time" class="text-xs text-gray-500">â€”</p>
                                 </div>
                             </div>
                         </div>
@@ -707,3 +731,4 @@
 @endpush
 
 @endsection
+

@@ -48,17 +48,36 @@ class AuthController extends Controller
     }
 
     /**
-     * Redirect to Google OAuth page.
+     * Redirect to Google OAuth page for LOGIN (existing users only).
      */
-    public function redirectToGoogle()
+    public function redirectToGoogleLogin()
     {
-        return Socialite::driver('google')->redirect();
+        // Store in session that this is a login flow
+        session(['google_oauth_flow' => 'login']);
+        
+        return Socialite::driver('google')
+            ->with(['prompt' => 'select_account'])
+            ->redirect();
     }
 
     /**
-     * Handle Google OAuth callback.
+     * Redirect to Google OAuth page for REGISTER (new users).
      */
-    public function handleGoogleCallback()
+    public function redirectToGoogleRegister()
+    {
+        // Store in session that this is a register flow
+        session(['google_oauth_flow' => 'register']);
+        
+        return Socialite::driver('google')
+            ->with(['prompt' => 'select_account'])
+            ->redirect();
+    }
+
+    /**
+     * Handle Google OAuth callback - works for both LOGIN and REGISTER flows.
+     * Determines the flow based on which route was used (login or register).
+     */
+    public function handleGoogleCallback(Request $request)
     {
         try {
             // Get user info from Google
@@ -69,29 +88,65 @@ class AuthController extends Controller
                 ->orWhere('email', $googleUser->getEmail())
                 ->first();
 
-            if ($user) {
-                // Update existing user with Google info
-                $user->update([
-                    'google_id' => $googleUser->getId(),
-                    'avatar' => $googleUser->getAvatar(),
-                    'email_verified_at' => $user->email_verified_at ?? now(),
-                ]);
-            } else {
-                // Create new user
-                $user = User::create([
+            // Determine if this is a login or register attempt based on the referrer
+            $referrer = $request->session()->get('google_oauth_flow', 'login');
+            
+            // LOGIN FLOW - User clicked "Sign in with Google" from login page
+            if ($referrer === 'login') {
+                if (!$user) {
+                    // User doesn't exist - redirect to login with toast message
+                    return redirect()->route('login')
+                        ->with('error', 'This Google account is not registered yet. Please register first.');
+                }
+
+                // Update existing user with Google info if not already set
+                if (!$user->google_id) {
+                    $user->update([
+                        'google_id' => $googleUser->getId(),
+                        'avatar' => $googleUser->getAvatar(),
+                        'email_verified_at' => $user->email_verified_at ?? now(),
+                    ]);
+                }
+
+                // Log the user in
+                Auth::login($user, true);
+
+                // Clear the session flag
+                $request->session()->forget('google_oauth_flow');
+
+                return redirect()->route('dashboard')->with('success', 'Successfully logged in with Google!');
+            }
+
+            // REGISTER FLOW - User clicked "Sign up with Google" from register page
+            if ($referrer === 'register') {
+                if ($user) {
+                    // User already exists - redirect to login
+                    return redirect()->route('login')
+                        ->with('error', 'An account with this email already exists. Please login instead.');
+                }
+
+                // Create new user with default 'user' role
+                $newUser = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
                     'avatar' => $googleUser->getAvatar(),
                     'password' => Hash::make(uniqid()), // Random password for OAuth users
+                    'role' => 'user', // Set default role
                     'email_verified_at' => now(), // Auto-verify Google users
                 ]);
+
+                // Clear the session flag
+                $request->session()->forget('google_oauth_flow');
+
+                // DO NOT auto-login - redirect to login page
+                return redirect()->route('login')
+                    ->with('success', 'Account created successfully with Google! Please login to continue.');
             }
 
-            // Log the user in
-            Auth::login($user, true);
+            // Default fallback - shouldn't reach here
+            return redirect()->route('login')->with('error', 'Something went wrong. Please try again.');
 
-            return redirect()->route('dashboard')->with('success', 'Successfully logged in with Google!');
         } catch (Exception $e) {
             return redirect()->route('login')->with('error', 'Failed to authenticate with Google. Please try again.');
         }
@@ -125,17 +180,16 @@ class AuthController extends Controller
             'password.confirmed' => 'Passwords do not match',
         ]);
 
-        // Create new user
+        // Create new user with default 'user' role
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+            'role' => 'user', // Set default role to 'user'
         ]);
 
-        // Authenticate the newly created user
-        Auth::login($user);
-
-        return redirect()->route('dashboard')->with('success', 'Account created successfully!');
+        // DO NOT auto-login the user - redirect to login page instead
+        return redirect()->route('login')->with('success', 'Registration successful! Please login with your credentials.');
     }
 
     /**

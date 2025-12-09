@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryRequestController;
@@ -23,8 +23,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
-    // Google OAuth Routes
-    Route::get('auth/google', [AuthController::class, 'redirectToGoogle'])->name('google.redirect');
+    // Google OAuth Routes - Single callback for both login and register
+    Route::get('auth/google/login', [AuthController::class, 'redirectToGoogleLogin'])->name('google.login');
+    Route::get('auth/google/register', [AuthController::class, 'redirectToGoogleRegister'])->name('google.register');
     Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 
     // ADD THESE PASSWORD RESET ROUTES:
@@ -217,3 +218,4 @@ Route::middleware([CheckRole::class . ':admin,head-of-dispatch'])->group(functio
         });
     });
 });
+

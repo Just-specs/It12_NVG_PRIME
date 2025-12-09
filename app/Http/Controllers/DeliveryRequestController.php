@@ -144,6 +144,20 @@ class DeliveryRequestController extends Controller
             'auto_assign' => 'nullable|boolean', // New field for immediate assignment
         ]);
 
+        // Check for duplicate schedule - see if there's already a request with same schedule for same client
+        $preferredSchedule = Carbon::parse($validated['preferred_schedule']);
+        $duplicateRequest = DeliveryRequest::where('client_id', $validated['client_id'])
+            ->where('preferred_schedule', $preferredSchedule)
+            ->whereIn('status', ['pending', 'verified', 'assigned'])
+            ->exists();
+
+        if ($duplicateRequest) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Duplicate schedule detected: This client already has a delivery request scheduled at ' . $preferredSchedule->format('Y-m-d H:i') . '. Please choose a different time.');
+        }
+
         $deliveryRequest = DeliveryRequest::create(array_filter($validated, function ($key) {
             return $key !== 'auto_assign';
         }, ARRAY_FILTER_USE_KEY));
@@ -240,7 +254,7 @@ class DeliveryRequestController extends Controller
             $selectedDriver = $drivers->first();
             $selectedVehicle = $vehicles->first();
 
-            // Create trip using dispatch service
+            // Create trip using dispatch service (this will now check for duplicate schedules)
             $trip = $this->dispatchService->assignTrip(
                 $deliveryRequest->id,
                 $selectedDriver->id,
@@ -304,6 +318,21 @@ class DeliveryRequestController extends Controller
             'preferred_schedule' => 'required|date',
             'notes' => 'nullable|string'
         ]);
+
+        // Check for duplicate schedule when updating (exclude current request)
+        $preferredSchedule = Carbon::parse($validated['preferred_schedule']);
+        $duplicateRequest = DeliveryRequest::where('client_id', $validated['client_id'])
+            ->where('preferred_schedule', $preferredSchedule)
+            ->where('id', '!=', $request->id)
+            ->whereIn('status', ['pending', 'verified', 'assigned'])
+            ->exists();
+
+        if ($duplicateRequest) {
+            return redirect()
+                ->back()
+                ->withInput()
+                ->with('error', 'Duplicate schedule detected: This client already has another delivery request scheduled at ' . $preferredSchedule->format('Y-m-d H:i') . '. Please choose a different time.');
+        }
 
         $request->update($validated);
 

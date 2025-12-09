@@ -4,18 +4,20 @@
 
 @push('styles')
 <style>
+    /* Override body flex from layout */
     body {
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
-        min-height: 100vh;
+        display: block !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: auto !important;
+        min-height: 100vh !important;
     }
 
     body.bg-\[\#38B7F7\] {
         position: relative;
         background: #A5DFF9 url('{{ asset("img/BCO.655ce4cc-cb22-4b9e-ae5d-867a0e717d60.png") }}') center/cover no-repeat;
         min-height: 100vh;
-        display: flex;
+        display: flex !important;
         align-items: center;
         justify-content: center;
     }
@@ -26,6 +28,17 @@
         inset: 0;
         background: rgba(56, 183, 247, 0.45);
         z-index: 0;
+    }
+
+    /* Hide sidebar and main-content wrapper on login page */
+    .sidebar,
+    #mobile-sidebar-toggle {
+        display: none !important;
+    }
+
+    .main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
     }
 </style>
 @endpush
@@ -52,11 +65,9 @@
             <!-- Form Content -->
             <div class="space-y-6 px-8 pb-8">
 
-
-
                 <!-- Google Sign In Button -->
                 <div>
-                    <a href="{{ route('google.redirect') }}" class="group relative inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white border-2 border-blue-300 px-4 py-3 text-sm font-semibold text-blue-900 shadow-lg shadow-blue-900/15 transition hover:scale-[1.02] hover:border-blue-400 hover:shadow-xl hover:shadow-blue-900/20 focus:outline-none focus:ring-4 focus:ring-blue-200/60">
+                    <a href="{{ route('google.login') }}" class="group relative inline-flex w-full items-center justify-center gap-3 overflow-hidden rounded-2xl bg-white border-2 border-blue-300 px-4 py-3 text-sm font-semibold text-blue-900 shadow-lg shadow-blue-900/15 transition hover:scale-[1.02] hover:border-blue-400 hover:shadow-xl hover:shadow-blue-900/20 focus:outline-none focus:ring-4 focus:ring-blue-200/60">
                         <svg class="h-5 w-5" viewBox="0 0 24 24">
                             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -168,3 +179,4 @@
     </div>
 </div>
 @endsection
+

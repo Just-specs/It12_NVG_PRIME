@@ -37,12 +37,16 @@ class DispatchService
             throw new \Exception("Delivery request is not available for assignment.");
         }
 
+        // Check for duplicate schedules
+        $scheduledDateTime = Carbon::parse($scheduledTime);
+        $this->checkDuplicateSchedule($driverId, $vehicleId, $scheduledDateTime);
+
         // Create the trip
         $trip = Trip::create([
             'delivery_request_id' => $deliveryRequestId,
             'driver_id' => $driverId,
             'vehicle_id' => $vehicleId,
-            'scheduled_time' => Carbon::parse($scheduledTime),
+            'scheduled_time' => $scheduledDateTime,
             'route_instructions' => $routeInstructions,
             'status' => 'scheduled',
         ]);
@@ -64,6 +68,34 @@ class DispatchService
         ]);
 
         return $trip->fresh(['deliveryRequest.client', 'driver', 'vehicle']);
+    }
+
+    /**
+     * Check for duplicate schedules for driver or vehicle
+     */
+    private function checkDuplicateSchedule(int $driverId, int $vehicleId, Carbon $scheduledTime): void
+    {
+        // Check if driver already has a trip at the same time
+        $driverConflict = Trip::where('driver_id', $driverId)
+            ->whereIn('status', ['scheduled', 'in-transit'])
+            ->where('scheduled_time', $scheduledTime)
+            ->exists();
+
+        if ($driverConflict) {
+            $driver = Driver::find($driverId);
+            throw new \Exception("Duplicate schedule detected: Driver '{$driver->name}' already has a trip scheduled at " . $scheduledTime->format('Y-m-d H:i'));
+        }
+
+        // Check if vehicle already has a trip at the same time
+        $vehicleConflict = Trip::where('vehicle_id', $vehicleId)
+            ->whereIn('status', ['scheduled', 'in-transit'])
+            ->where('scheduled_time', $scheduledTime)
+            ->exists();
+
+        if ($vehicleConflict) {
+            $vehicle = Vehicle::find($vehicleId);
+            throw new \Exception("Duplicate schedule detected: Vehicle '{$vehicle->plate_number}' already has a trip scheduled at " . $scheduledTime->format('Y-m-d H:i'));
+        }
     }
 
     /**
