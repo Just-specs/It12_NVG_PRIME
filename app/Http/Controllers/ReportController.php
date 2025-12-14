@@ -529,30 +529,15 @@ class ReportController extends Controller
 
     private function exportTripsToPDF($trips, $filename, $period, $stats)
     {
-        // Check if DomPDF is available
-        if (class_exists('\Barryvdh\DomPDF\Facade\Pdf')) {
-            try {
-                $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('dispatch.reports.pdf.trips-report', [
-                    'trips' => $trips,
-                    'period' => $period,
-                    'stats' => $stats,
-                    'generated_at' => Carbon::now()->format('F d, Y h:i A'),
-                ]);
-
-                return $pdf->download($filename . '.pdf');
-            } catch (\Exception $e) {
-                \Log::error('PDF generation failed: ' . $e->getMessage());
-            }
-        }
-
-        // Fallback: Return HTML view that can be printed as PDF
-        // User can use browser's "Print to PDF" functionality
-        return view('dispatch.reports.pdf.trips-report', [
+        // Return HTML view optimized for browser print-to-PDF
+        // This works natively in all modern browsers without external dependencies
+        return response()->view('dispatch.reports.pdf.trips-report', [
             'trips' => $trips,
             'period' => $period,
             'stats' => $stats,
             'generated_at' => Carbon::now()->format('F d, Y h:i A'),
-        ])->with('print_pdf', true);
+            'print_pdf' => true,
+        ])->header('Content-Type', 'text/html');
     }
 
     public function syncToGoogleSheets()

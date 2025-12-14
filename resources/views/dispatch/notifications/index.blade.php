@@ -124,7 +124,7 @@
                         @if(!$notification->sent)
                         <form action="{{ route('notifications.mark-read', $notification) }}" method="POST">
                             @csrf
-                            @method('PATCH')
+                            
                             <button type="submit" class="text-green-600 hover:text-green-800 px-3 py-1 text-sm font-medium">
                                 Mark Read
                             </button>

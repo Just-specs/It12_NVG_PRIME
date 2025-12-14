@@ -81,7 +81,51 @@
                     @enderror
                 </div>
 
-                <!-- Container Size -->
+                
+                <!-- EIR Number -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        EIR Number
+                    </label>
+                    <input type="text" name="eir_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Equipment Interchange Receipt number">
+                    @error('eir_number')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Booking Number -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Booking Number
+                    </label>
+                    <input type="text" name="booking_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Shipping booking reference">
+                    @error('booking_number')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Container Number -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Container Number
+                    </label>
+                    <input type="text" name="container_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., WHSU 816908-2">
+                    @error('container_number')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Seal Number -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Seal Number
+                    </label>
+                    <input type="text" name="seal_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Security seal number">
+                    @error('seal_number')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+<!-- Container Size -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Container Size <span class="text-red-500">*</span>

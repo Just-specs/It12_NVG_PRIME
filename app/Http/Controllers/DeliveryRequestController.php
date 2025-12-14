@@ -9,6 +9,7 @@ use App\Services\DispatchService;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Validation\ValidationException;
 
 class DeliveryRequestController extends Controller
 {
@@ -19,10 +20,19 @@ class DeliveryRequestController extends Controller
 
     public function index(Request $request)
     {
+        // Add 'archived' status for admin users only
         $allowedStatuses = ['pending', 'verified', 'assigned'];
+        if (auth()->user()->role === 'admin') {
+            $allowedStatuses[] = 'archived';
+        }
         $activeStatus = $request->query('status', 'all');
 
-        $requestsQuery = DeliveryRequest::with('client');
+        // For archived status, use archived() scope instead of active()
+        if ($request->query('status') === 'archived' && auth()->user()->role === 'admin') {
+            $requestsQuery = DeliveryRequest::archived()->with('client');
+        } else {
+            $requestsQuery = DeliveryRequest::active()->with('client');
+        }
         // Search functionality
         $search = $request->query('search');
         if ($search) {
@@ -62,14 +72,14 @@ class DeliveryRequestController extends Controller
             $requests->appends(['search' => $search]);
         }
 
-        $statusCounts = DeliveryRequest::select('status')
+        $statusCounts = DeliveryRequest::active()->select('status')
             ->selectRaw('COUNT(*) as aggregate')
             ->whereIn('status', $allowedStatuses)
             ->groupBy('status')
             ->pluck('aggregate', 'status');
 
         $counts = [
-            'all' => DeliveryRequest::count(),
+            'all' => DeliveryRequest::active()->count(),
         ];
 
         foreach ($allowedStatuses as $status) {
@@ -91,7 +101,7 @@ class DeliveryRequestController extends Controller
 
     public function create()
     {
-        $clients = Client::all();
+        $clients = Client::orderBy('name')->get();
 
         $holidays = collect();
         $calendarificError = null;
@@ -141,26 +151,38 @@ class DeliveryRequestController extends Controller
             'container_type' => 'required|string',
             'preferred_schedule' => 'required|date|after_or_equal:today',
             'notes' => 'nullable|string',
-            'auto_assign' => 'nullable|boolean', // New field for immediate assignment
+            'auto_assign' => 'nullable|boolean',
         ]);
 
-        // Check for duplicate schedule - see if there's already a request with same schedule for same client
+        // Check for duplicate schedule
         $preferredSchedule = Carbon::parse($validated['preferred_schedule']);
-        $duplicateRequest = DeliveryRequest::where('client_id', $validated['client_id'])
+        $duplicateRequest = DeliveryRequest::active()->where('client_id', $validated['client_id'])
             ->where('preferred_schedule', $preferredSchedule)
             ->whereIn('status', ['pending', 'verified', 'assigned'])
             ->exists();
 
         if ($duplicateRequest) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Duplicate schedule detected: This client already has a delivery request scheduled at ' . $preferredSchedule->format('Y-m-d H:i') . '. Please choose a different time.');
+            throw ValidationException::withMessages([
+                'preferred_schedule' => 'This client already has a delivery request scheduled at ' . $preferredSchedule->format('Y-m-d H:i') . '. Please choose a different time.',
+            ]);
         }
 
-        $deliveryRequest = DeliveryRequest::create(array_filter($validated, function ($key) {
-            return $key !== 'auto_assign';
-        }, ARRAY_FILTER_USE_KEY));
+        $deliveryRequest = DeliveryRequest::create([
+            'client_id' => $validated['client_id'],
+            'contact_method' => $validated['contact_method'],
+            'atw_reference' => $validated['atw_reference'],
+            'eir_number' => $request->input('eir_number'),
+            'booking_number' => $request->input('booking_number'),
+            'container_number' => $request->input('container_number'),
+            'seal_number' => $request->input('seal_number'),
+            'pickup_location' => $validated['pickup_location'],
+            'delivery_location' => $validated['delivery_location'],
+            'preferred_schedule' => $validated['preferred_schedule'],
+            'container_size' => $validated['container_size'],
+            'container_type' => $validated['container_type'],
+            'notes' => $validated['notes'] ?? '',
+            'status' => 'pending',
+        ]);
 
         // Check if auto-assignment is requested
         if ($request->input('auto_assign', false)) {
@@ -180,6 +202,11 @@ class DeliveryRequestController extends Controller
 
     public function verify(DeliveryRequest $request)
     {
+        // Authorization: Only admin and head-of-dispatch can verify
+        if (!auth()->user()->canVerifyRequests()) {
+            abort(403, 'Only Admin can verify delivery requests.');
+        }
+
         $request->update([
             'atw_verified' => true,
             'status' => 'verified'
@@ -187,7 +214,7 @@ class DeliveryRequestController extends Controller
 
         return redirect()
             ->back()
-            ->with('success', 'ATW verified successfully. You can now assign this request to a trip.');
+            ->with('success', 'ATW verified successfully. Dispatchers can now assign this request to a trip.');
     }
 
     /**
@@ -195,6 +222,11 @@ class DeliveryRequestController extends Controller
      */
     public function verifyAndAssign(DeliveryRequest $request)
     {
+        // Authorization: Only admin and head-of-dispatch can verify
+        if (!auth()->user()->canVerifyRequests()) {
+            abort(403, 'Only Admin can verify delivery requests.');
+        }
+
         // First verify
         $request->update([
             'atw_verified' => true,
@@ -210,6 +242,11 @@ class DeliveryRequestController extends Controller
      */
     public function autoAssign(DeliveryRequest $request)
     {
+        // Authorization: Only admin and head-of-dispatch can verify
+        if (!auth()->user()->canVerifyRequests()) {
+            abort(403, 'Only Admin can verify and auto-assign delivery requests.');
+        }
+
         if (!in_array($request->status, ['pending', 'verified'])) {
             return redirect()
                 ->back()
@@ -321,17 +358,16 @@ class DeliveryRequestController extends Controller
 
         // Check for duplicate schedule when updating (exclude current request)
         $preferredSchedule = Carbon::parse($validated['preferred_schedule']);
-        $duplicateRequest = DeliveryRequest::where('client_id', $validated['client_id'])
+        $duplicateRequest = DeliveryRequest::active()->where('client_id', $validated['client_id'])
             ->where('preferred_schedule', $preferredSchedule)
             ->where('id', '!=', $request->id)
             ->whereIn('status', ['pending', 'verified', 'assigned'])
             ->exists();
 
         if ($duplicateRequest) {
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Duplicate schedule detected: This client already has another delivery request scheduled at ' . $preferredSchedule->format('Y-m-d H:i') . '. Please choose a different time.');
+            throw ValidationException::withMessages([
+                'preferred_schedule' => 'This client already has another delivery request scheduled at ' . $preferredSchedule->format('Y-m-d H:i') . '. Please choose a different time.',
+            ]);
         }
 
         $request->update($validated);
@@ -379,7 +415,7 @@ class DeliveryRequestController extends Controller
 
     public function filterByStatus($status)
     {
-        $requests = DeliveryRequest::with('client')
+        $requests = DeliveryRequest::active()->with('client')
             ->where('status', $status)
             ->orderBy('created_at', 'desc')
             ->paginate(10);
@@ -391,7 +427,7 @@ class DeliveryRequestController extends Controller
     {
         $query = $request->input('q');
 
-        $requests = DeliveryRequest::with('client')
+        $requests = DeliveryRequest::active()->with('client')
             ->where('atw_reference', 'LIKE', "%{$query}%")
             ->orWhere('pickup_location', 'LIKE', "%{$query}%")
             ->orWhere('delivery_location', 'LIKE', "%{$query}%")
@@ -406,7 +442,7 @@ class DeliveryRequestController extends Controller
 
     public function exportExcel()
     {
-        $requests = DeliveryRequest::with('client')->get();
+        $requests = DeliveryRequest::active()->with('client')->get();
 
         $filename = 'delivery_requests_' . now()->format('Y-m-d') . '.csv';
 
@@ -455,7 +491,7 @@ class DeliveryRequestController extends Controller
 
     public function exportPdf()
     {
-        $requests = DeliveryRequest::with('client')->get();
+        $requests = DeliveryRequest::active()->with('client')->get();
         return redirect()->back()->with('info', 'PDF export feature requires DomPDF package.');
     }
 
@@ -475,3 +511,5 @@ class DeliveryRequestController extends Controller
             ->with('info', 'Import feature coming soon.');
     }
 }
+
+

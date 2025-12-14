@@ -1,4 +1,4 @@
-<div class="overflow-x-auto">
+﻿<div class="overflow-x-auto">
     <table class="w-full">
         <thead class="bg-gray-50">
             <tr>
@@ -75,13 +75,14 @@
                             data-status="{{ $request->status }}"
                             data-notes="{{ $request->notes ?? '' }}"
                             data-created="{{ $request->created_at->diffForHumans() }}"
-                            data-verify-url="{{ $request->status === 'pending' ? route('requests.verify', $request) : '' }}">
+                            data-verify-url="{{ ($request->status === 'pending' && auth()->user()->canVerifyRequests()) ? route('requests.verify', $request) : '' }}">
                             <i class="fas fa-eye"></i>
                         </button>
-                        @if($request->status === 'pending')
+                        @if($request->status === 'pending' && auth()->user()->canVerifyRequests())
+                        {{-- Only Admin can verify --}}
                         <form method="POST" action="{{ route('requests.verify', $request) }}" class="inline">
                             @csrf
-                            <button type="button" class="text-green-600 hover:text-green-800 verify-request-btn" title="Verify">
+                            <button type="button" class="text-green-600 hover:text-green-800 verify-request-btn" title="Verify ATW">
                                 <i class="fas fa-check"></i>
                             </button>
                         </form>
@@ -133,3 +134,4 @@
     </div>
 </div>
 @endif
+

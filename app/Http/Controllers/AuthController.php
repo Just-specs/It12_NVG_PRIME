@@ -27,12 +27,12 @@ class AuthController extends Controller
         // Validate the login form
         $credentials = $request->validate([
             'email' => 'required|email',
-            'password' => 'required|string|min:6',
+            'password' => 'required|string|min:8',
         ], [
             'email.required' => 'Email is required',
             'email.email' => 'Please enter a valid email address',
             'password.required' => 'Password is required',
-            'password.min' => 'Password must be at least 6 characters',
+            'password.min' => 'Password must be at least 8 characters',
         ]);
 
         // Attempt to authenticate the user
@@ -169,14 +169,14 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users|max:255',
-            'password' => 'required|string|min:6|confirmed',
+            'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/'],
         ], [
             'name.required' => 'Name is required',
             'email.required' => 'Email is required',
             'email.email' => 'Please enter a valid email address',
             'email.unique' => 'This email is already registered',
             'password.required' => 'Password is required',
-            'password.min' => 'Password must be at least 6 characters',
+            'password.min' => 'Password must be at least 8 characters',
             'password.confirmed' => 'Passwords do not match',
         ]);
 
@@ -204,3 +204,4 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'Logout successful!');
     }
 }
+

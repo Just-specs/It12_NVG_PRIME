@@ -59,19 +59,24 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/search', [DashboardController::class, 'globalSearch'])->name('search');
     });
 
-    // DELIVERY REQUESTS (Everyone)
+    // DELIVERY REQUESTS
     Route::prefix('requests')->name('requests.')->group(function () {
+        // Everyone can view and create requests
         Route::get('/', [DeliveryRequestController::class, 'index'])->name('index');
         Route::get('/create', [DeliveryRequestController::class, 'create'])->name('create');
         Route::post('/', [DeliveryRequestController::class, 'store'])->name('store');
         Route::get('/{request}', [DeliveryRequestController::class, 'show'])->name('show');
-        Route::post('/{request}/verify', [DeliveryRequestController::class, 'verify'])->name('verify');
-        Route::post('/{request}/verify-and-assign', [DeliveryRequestController::class, 'verifyAndAssign'])->name('verify-and-assign');
-        Route::post('/{request}/auto-assign', [DeliveryRequestController::class, 'autoAssign'])->name('auto-assign');
         Route::post('/{request}/cancel', [DeliveryRequestController::class, 'cancel'])->name('cancel');
 
+        // VERIFICATION - Only Admin & Head of Dispatch can verify
+        Route::middleware([CheckRole::class . ':admin'])->group(function () {
+            Route::post('/{request}/verify', [DeliveryRequestController::class, 'verify'])->name('verify');
+            Route::post('/{request}/verify-and-assign', [DeliveryRequestController::class, 'verifyAndAssign'])->name('verify-and-assign');
+            Route::post('/{request}/auto-assign', [DeliveryRequestController::class, 'autoAssign'])->name('auto-assign');
+        });
+
         // Edit/Delete - Admin & Head only
-        Route::middleware([CheckRole::class . ':admin,head-of-dispatch'])->group(function () {
+        Route::middleware([CheckRole::class . ':admin'])->group(function () {
             Route::get('/{request}/edit', [DeliveryRequestController::class, 'edit'])->name('edit');
             Route::put('/{request}', [DeliveryRequestController::class, 'update'])->name('update');
             Route::delete('/{request}', [DeliveryRequestController::class, 'destroy'])->name('destroy');
@@ -88,13 +93,13 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{trip}', [TripController::class, 'show'])->name('show');
         Route::post('/{trip}/start', [TripController::class, 'startTrip'])->name('start');
         Route::post('/{trip}/complete', [TripController::class, 'completeTrip'])->name('complete');
-        Route::post('/{trip}/cancel', [TripController::class, 'cancelTrip'])->name('cancel');
         Route::post('/{trip}/add-update', [TripController::class, 'addUpdate'])->name('add-update');
 
-        // Edit/Delete - Admin & Head only
-        Route::middleware([CheckRole::class . ':admin,head-of-dispatch'])->group(function () {
+        // Edit/Delete/Cancel - Admin only
+        Route::middleware([CheckRole::class . ':admin'])->group(function () {
             Route::get('/{trip}/edit', [TripController::class, 'edit'])->name('edit');
             Route::put('/{trip}', [TripController::class, 'update'])->name('update');
+            Route::post('/{trip}/cancel', [TripController::class, 'cancelTrip'])->name('cancel');
             Route::delete('/{trip}', [TripController::class, 'destroy'])->name('destroy');
             Route::get('/export/excel', [TripController::class, 'exportExcel'])->name('export-excel');
             Route::get('/export/pdf', [TripController::class, 'exportPdf'])->name('export-pdf');
@@ -105,21 +110,23 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('notifications')->name('notifications.')->group(function () {
         // Main notification pages
         Route::get('/', [NotificationController::class, 'index'])->name('index');
-        Route::get('/{notification}', [NotificationController::class, 'show'])->name('show');
 
-        // Notification actions
-        Route::post('/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+        // AJAX endpoints - must be before {notification} route
+        Route::get('/ajax/unread', [NotificationController::class, 'getUnread'])->name('ajax.unread');
+        Route::get('/ajax/unread-count', [NotificationController::class, 'getUnreadCount'])->name('ajax.unread-count');
+
+        // Specific action routes - must be before {notification} route
         Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
-        Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
         Route::delete('/clear-all', [NotificationController::class, 'clearAll'])->name('clear-all');
 
-        // Send notifications
+        // Send notifications - must be before {notification} route
         Route::post('/send-client/{trip}', [NotificationController::class, 'sendClientNotification'])->name('send-client');
         Route::post('/send-driver/{trip}', [NotificationController::class, 'sendDriverNotification'])->name('send-driver');
 
-        // AJAX endpoints
-        Route::get('/ajax/unread', [NotificationController::class, 'getUnread'])->name('ajax.unread');
-        Route::get('/ajax/unread-count', [NotificationController::class, 'getUnreadCount'])->name('ajax.unread-count');
+        // Parameterized routes - must be last
+        Route::get('/{notification}', [NotificationController::class, 'show'])->name('show');
+        Route::post('/{notification}/mark-read', [NotificationController::class, 'markAsRead'])->name('mark-read');
+        Route::delete('/{notification}', [NotificationController::class, 'destroy'])->name('destroy');
     });
 
     // PROFILE (Everyone)
@@ -166,7 +173,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // ADMIN & HEAD OF DISPATCH ONLY
-Route::middleware([CheckRole::class . ':admin,head-of-dispatch'])->group(function () {
+Route::middleware([CheckRole::class . ':admin'])->group(function () {
 
     // DRIVERS
     Route::prefix('drivers')->name('drivers.')->group(function () {
@@ -201,7 +208,7 @@ Route::middleware([CheckRole::class . ':admin,head-of-dispatch'])->group(functio
         Route::get('/export/pdf', [ClientController::class, 'exportPdf'])->name('export-pdf');
         Route::post('/', [ClientController::class, 'store'])->name('store');
         Route::get('/{client}', [ClientController::class, 'show'])->name('show');
-        Route::get('/{client}/requests', [ClientController::class, 'requests'])->name('requests');
+        Route::get('/{client}/requests', [ClientController::class, 'clientRequests'])->name('requests');
         Route::get('/{client}/recent-requests', [ClientController::class, 'recentRequests'])->name('recent-requests');
         Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
         Route::put('/{client}', [ClientController::class, 'update'])->name('update');
@@ -217,5 +224,28 @@ Route::middleware([CheckRole::class . ':admin,head-of-dispatch'])->group(functio
             Route::post('/cache/clear', [DashboardController::class, 'clearCache'])->name('clear-cache');
         });
     });
+});
+
+
+
+
+
+// API routes for modal data fetching
+Route::get('/api/available-drivers', function () {
+    $drivers = \App\Models\Driver::where('status', 'available')
+        ->withCount('trips')
+        ->orderBy('name')
+        ->get(['id', 'name', 'mobile', 'license_number']);
+    
+    return response()->json($drivers);
+});
+
+Route::get('/api/available-vehicles', function () {
+    $vehicles = \App\Models\Vehicle::where('status', 'available')
+        ->withCount('trips')
+        ->orderBy('plate_number')
+        ->get(['id', 'plate_number', 'vehicle_type', 'trailer_type']);
+    
+    return response()->json($vehicles);
 });
 

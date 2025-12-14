@@ -204,6 +204,14 @@
                     <span>View Request</span>
                 </a>
 
+                @if(auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']))
+                <button type="button" id="open-cancel-modal"
+                    class="flex items-center justify-center gap-2 w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors mb-3">
+                    <i class="fas fa-times-circle"></i>
+                    <span>Cancel Trip</span>
+                </button>
+                @endif
+
                 <!-- Timeline -->
                 <div class="mt-6 pt-6 border-t">
                     <h4 class="font-semibold text-gray-800 mb-3">Timeline</h4>
@@ -453,5 +461,113 @@
         initCompleteModal();
     }
 </script>
+<!-- Cancel Trip Modal (Admin Only) -->
+@if(auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']))
+<div id="cancel-trip-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="mb-6 text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Cancel Trip?</h3>
+            <p class="text-gray-600">This will cancel the trip and free up the driver and vehicle. This action cannot be undone.</p>
+        </div>
+
+        <div class="bg-red-50 rounded-lg p-4 mb-6 border-l-4 border-red-500">
+            <p class="text-sm text-red-800 font-semibold mb-2">
+                <i class="fas fa-exclamation-triangle"></i> Warning
+            </p>
+            <ul class="text-sm text-red-700 space-y-1 ml-4 list-disc">
+                <li>Driver will be set to available</li>
+                <li>Vehicle will be set to available</li>
+                <li>Client will be notified of cancellation</li>
+                <li>Request status will be updated</li>
+            </ul>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Trip ID:</span>
+                    <span class="font-semibold text-gray-800">#{{ $trip->id }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Driver:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->driver->name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Vehicle:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->vehicle->plate_number }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Client:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->client->name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('trips.cancel', $trip) }}">
+            @csrf
+            <div class="flex gap-3">
+                <button type="button" id="cancel-cancel-modal"
+                    class="flex-1 px-6 py-3 rounded-full bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
+                    Keep Trip
+                </button>
+                <button type="submit"
+                    class="flex-1 px-6 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg">
+                    <i class="fas fa-times-circle mr-2"></i>Cancel Trip
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Cancel Trip Modal (Admin Only)
+    const initCancelModal = () => {
+        const openButton = document.getElementById('open-cancel-modal');
+        const modal = document.getElementById('cancel-trip-modal');
+        const cancelButton = document.getElementById('cancel-cancel-modal');
+
+        if (!openButton || !modal || !cancelButton) return;
+
+        const showModal = () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        openButton.addEventListener('click', showModal);
+        cancelButton.addEventListener('click', hideModal);
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) hideModal();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideModal();
+            }
+        });
+    };
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+            initStartModal();
+            initCompleteModal();
+            initCancelModal();
+        });
+    } else {
+        initStartModal();
+        initCompleteModal();
+        initCancelModal();
+    }
+</script>
+@endif
+
 @endif
 @endsection

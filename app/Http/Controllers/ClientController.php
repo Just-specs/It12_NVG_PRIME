@@ -46,6 +46,19 @@ class ClientController extends Controller
         return view('dispatch.clients.create');
     }
 
+    public function checkDuplicate(Request $request)
+    {
+        $name = $request->input('name');
+        $excludeId = $request->input('exclude_id');
+        
+        $similar = Client::findSimilar($name, $excludeId);
+        
+        return response()->json([
+            'has_similar' => count($similar) > 0,
+            'similar_clients' => $similar
+        ]);
+    }
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -53,9 +66,31 @@ class ClientController extends Controller
             'email' => 'nullable|email|unique:clients,email',
             'mobile' => 'nullable|string|max:20',
             'company' => 'nullable|string|max:255',
+            'confirm_duplicate' => 'nullable|boolean',
         ]);
 
+        // Check for similar names unless user confirmed
+        if (!$request->input('confirm_duplicate')) {
+            $similar = Client::findSimilar($validated['name']);
+            
+            if (count($similar) > 0) {
+                return response()->json([
+                    'requires_confirmation' => true,
+                    'similar_clients' => $similar,
+                    'message' => 'Similar client names found. Do you want to proceed?'
+                ], 200);
+            }
+        }
+
         $client = Client::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('clients.show', $client),
+                'message' => 'Client added successfully.'
+            ]);
+        }
 
         return redirect()
             ->route('clients.show', $client)
@@ -115,9 +150,31 @@ class ClientController extends Controller
             'email' => 'nullable|email|unique:clients,email,' . $client->id,
             'mobile' => 'nullable|string|max:20',
             'company' => 'nullable|string|max:255',
+            'confirm_duplicate' => 'nullable|boolean',
         ]);
 
+        // Check for similar names unless user confirmed (excluding current client)
+        if (!$request->input('confirm_duplicate')) {
+            $similar = Client::findSimilar($validated['name'], $client->id);
+            
+            if (count($similar) > 0) {
+                return response()->json([
+                    'requires_confirmation' => true,
+                    'similar_clients' => $similar,
+                    'message' => 'Similar client names found. Do you want to proceed?'
+                ], 200);
+            }
+        }
+
         $client->update($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('clients.show', $client),
+                'message' => 'Client updated successfully.'
+            ]);
+        }
 
         return redirect()
             ->route('clients.show', $client)

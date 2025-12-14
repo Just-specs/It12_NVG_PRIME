@@ -136,33 +136,51 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions</h3>
 
                 @if($request->status === 'pending' && !$request->atw_verified)
-                <form method="POST" action="{{ route('requests.verify', $request) }}" class="mb-3" id="verify-atw-form">
-                    @csrf
-                    <button type="button" id="open-verify-modal" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                        <i class="fas fa-check-circle"></i> Verify ATW
-                    </button>
-                </form>
+                    @if(auth()->user()->canVerifyRequests())
+                    {{-- Only Admin can verify --}}
+                    <form method="POST" action="{{ route('requests.verify', $request) }}" class="mb-3" id="verify-atw-form">
+                        @csrf
+                        <button type="button" id="open-verify-modal" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                            <i class="fas fa-check-circle"></i> Verify ATW
+                        </button>
+                    </form>
+
+                    <div id="verify-atw-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+                        <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-gray-100">
+                            <h3 class="text-xl font-semibold text-gray-800 mb-2">Verify ATW</h3>
+                            <p class="text-sm text-gray-600">Are you sure you want to verify?</p>
+                            <div class="mt-6 flex flex-col sm:flex-row sm:justify-center sm:space-x-4 gap-3">
+                                <button type="button" id="cancel-verify-atw" class="w-full sm:w-auto px-5 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors">Cancel</button>
+                                <button type="button" id="confirm-verify-atw" class="w-full sm:w-auto px-5 py-2 rounded-full bg-[#2563EB] text-white font-semibold hover:bg-blue-700 transition-colors shadow-[0_0_0_3px_rgba(37,99,235,0.2)]">Confirm</button>
+                            </div>
+                        </div>
+                    </div>
+                    @else
+                    {{-- Regular dispatchers see a message --}}
+                    <div class="mb-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <p class="text-sm text-yellow-800">
+                            <i class="fas fa-info-circle"></i> 
+                            <strong>Waiting for Admin Verification</strong><br>
+                            This request must be verified by an Admin before you can assign a driver.
+                        </p>
+                    </div>
+                    @endif
+                @endif
 
                 <a href="{{ route('requests.create') }}" class="mb-3 block w-full px-4 py-2 bg-[#2563EB] text-white rounded-lg text-center hover:bg-[#1D4ED8] transition-colors">
                     <i class="fas fa-plus-circle"></i> New Request
                 </a>
 
-                <div id="verify-atw-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-                    <div class="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 text-center border border-gray-100">
-                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Verify ATW</h3>
-                        <p class="text-sm text-gray-600">Are you sure you want to verify?</p>
-                        <div class="mt-6 flex flex-col sm:flex-row sm:justify-center sm:space-x-4 gap-3">
-                            <button type="button" id="cancel-verify-atw" class="w-full sm:w-auto px-5 py-2 rounded-full bg-red-500 text-white font-semibold hover:bg-red-600 transition-colors">Cancel</button>
-                            <button type="button" id="confirm-verify-atw" class="w-full sm:w-auto px-5 py-2 rounded-full bg-[#2563EB] text-white font-semibold hover:bg-blue-700 transition-colors shadow-[0_0_0_3px_rgba(37,99,235,0.2)]">Confirm</button>
-                        </div>
-                    </div>
-                </div>
+                @if(auth()->user()->isAdmin())
+                <button type="button" id="open-edit-request-modal" class="mb-3 block w-full px-4 py-2 bg-amber-600 text-white rounded-lg text-center hover:bg-amber-700 transition-colors">
+                    <i class="fas fa-edit"></i> Edit Request
+                </button>
                 @endif
 
                 @if($request->status === 'verified' && !$request->trip)
-                <a href="{{ route('trips.create', ['delivery_request' => $request->id]) }}" class="block w-full px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] text-center mb-3">
+                <button type="button" id="open-assign-driver-modal" class="block w-full px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] text-center mb-3">
                     <i class="fas fa-user-plus"></i> Assign Driver
-                </a>
+                </button>
                 @endif
 
                 <!-- Timeline -->
@@ -208,6 +226,194 @@
         </div>
     </div>
 </div>
+
+<!-- Include Assign Driver Modal -->
+@if($request->status === 'verified' && !$request->trip)
+    @include('dispatch.requests.partials.assign-driver-modal')
+@endif
+
+<!-- Edit Request Modal -->
+@if(auth()->user()->isAdmin())
+<div id="edit-request-modal" class="fixed inset-0 z-50 hidden overflow-y-auto bg-black/40 backdrop-blur-sm" style="backdrop-filter: blur(4px);">
+    <div class="flex items-center justify-center min-h-screen p-4">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden border border-gray-100">
+            <!-- Modal Header -->
+            <div class="bg-gradient-to-r from-amber-600 to-amber-700 px-6 py-4 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-white">
+                    <i class="fas fa-edit mr-2"></i>Edit Delivery Request
+                </h3>
+                <button type="button" id="close-edit-modal" class="text-white hover:text-gray-200 transition-colors">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+                <form id="edit-request-form" method="POST" action="{{ route('requests.update', $request) }}">
+                    @csrf
+                    @method('PUT')
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Client Selection -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Client <span class="text-red-500">*</span>
+                            </label>
+                            <select name="client_id" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+                                <option value="">Select a client</option>
+                                @foreach($clients as $client)
+                                    <option value="{{ $client->id }}" @selected(old('client_id', $request->client_id) == $client->id)>
+                                        {{ $client->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Contact Method -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Contact Method <span class="text-red-500">*</span>
+                            </label>
+                            <select name="contact_method" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+                                <option value="mobile" @selected(old('contact_method', $request->contact_method) == 'mobile')>Mobile</option>
+                                <option value="email" @selected(old('contact_method', $request->contact_method) == 'email')>Email</option>
+                                <option value="group_chat" @selected(old('contact_method', $request->contact_method) == 'group_chat')>Group Chat</option>
+                            </select>
+                        </div>
+
+                        <!-- ATW Reference -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                ATW Reference <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="atw_reference" value="{{ old('atw_reference', $request->atw_reference) }}" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="Enter ATW reference">
+                        </div>
+
+                        <!-- Pickup Location -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Pickup Location <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="pickup_location" value="{{ old('pickup_location', $request->pickup_location) }}" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="Enter pickup location">
+                        </div>
+
+                        <!-- Delivery Location -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Delivery Location <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" name="delivery_location" value="{{ old('delivery_location', $request->delivery_location) }}" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="Enter delivery location">
+                        </div>
+
+                        <!-- Container Size -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Container Size <span class="text-red-500">*</span>
+                            </label>
+                            <select name="container_size" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+                                <option value="20ft" @selected(old('container_size', $request->container_size) == '20ft')>20ft</option>
+                                <option value="40ft" @selected(old('container_size', $request->container_size) == '40ft')>40ft</option>
+                            </select>
+                        </div>
+
+                        <!-- Container Type -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Container Type <span class="text-red-500">*</span>
+                            </label>
+                            <select name="container_type" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+                                <option value="standard" @selected(old('container_type', $request->container_type) == 'standard')>Standard</option>
+                                <option value="refrigerated" @selected(old('container_type', $request->container_type) == 'refrigerated')>Refrigerated</option>
+                                <option value="open_top" @selected(old('container_type', $request->container_type) == 'open_top')>Open Top</option>
+                            </select>
+                        </div>
+
+                        <!-- Preferred Schedule -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Preferred Schedule <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" name="preferred_schedule" value="{{ old('preferred_schedule', $request->preferred_schedule ? \Carbon\Carbon::parse($request->preferred_schedule)->format('Y-m-d\TH:i') : '') }}" required
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+                        </div>
+
+                        <!-- Special Instructions -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Special Instructions
+                            </label>
+                            <textarea name="special_instructions" rows="4"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="Enter any special instructions">{{ old('special_instructions', $request->special_instructions) }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="mt-6 flex flex-col sm:flex-row justify-end gap-3">
+                        <button type="button" id="cancel-edit-modal" class="px-6 py-3 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
+                            <i class="fas fa-times mr-2"></i>Cancel
+                        </button>
+                        <button type="submit" class="px-6 py-3 rounded-lg bg-amber-600 text-white font-semibold hover:bg-amber-700 transition-colors">
+                            <i class="fas fa-save mr-2"></i>Update Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Edit Request Modal
+    const initEditRequestModal = () => {
+        const openButton = document.getElementById('open-edit-request-modal');
+        const modal = document.getElementById('edit-request-modal');
+        const closeButton = document.getElementById('close-edit-modal');
+        const cancelButton = document.getElementById('cancel-edit-modal');
+
+        if (!openButton || !modal) return;
+
+        const showModal = () => {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            document.body.style.overflow = '';
+        };
+
+        openButton.addEventListener('click', showModal);
+        if (closeButton) closeButton.addEventListener('click', hideModal);
+        if (cancelButton) cancelButton.addEventListener('click', hideModal);
+
+        // Close on outside click
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideModal();
+        });
+
+        // Close on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideModal();
+            }
+        });
+    };
+
+    // Initialize when DOM is ready
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initEditRequestModal);
+    } else {
+        initEditRequestModal();
+    }
+</script>
+@endif
 @endsection
 
 @push('scripts')
@@ -263,3 +469,6 @@
     }
 </script>
 @endpush
+
+
+

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Clients')
 
@@ -8,10 +8,76 @@
         <h1 class="text-3xl font-bold text-gray-800">
             <i class="fas fa-users text-blue-600"></i> Clients Management
         </h1>
-        <a href="{{ route('clients.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+        <button type="button" id="open-create-client-modal" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
             <i class="fas fa-plus"></i> Add New Client
-        </a>
+        </button>
     </div>
+
+<!-- Add Client Modal -->
+<div id="create-client-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-user-plus text-blue-600"></i> Add New Client
+            </h2>
+            <button type="button" id="close-create-client-modal" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form id="modal-create-client-form" method="POST" action="{{ route('clients.store') }}">
+                @csrf
+
+                <div class="space-y-4">
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Client Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter client name">
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Email Address
+                        </label>
+                        <input type="email" name="email" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="client@example.com">
+                    </div>
+
+                    <!-- Mobile -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Mobile Number
+                        </label>
+                        <input type="text" name="mobile" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+63 XXX XXX XXXX">
+                    </div>
+
+                    <!-- Company -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Company Name
+                        </label>
+                        <input type="text" name="company" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Company name (optional)">
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+                    <button type="button" id="cancel-create-client" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                        <i class="fas fa-save mr-2"></i>Create Client
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
     <!-- Stats Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -211,4 +277,45 @@
     });
 </script>
 @endpush
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const openModalBtn = document.getElementById('open-create-client-modal');
+        const modal = document.getElementById('create-client-modal');
+        const closeModalBtn = document.getElementById('close-create-client-modal');
+        const cancelBtn = document.getElementById('cancel-create-client');
+        const form = document.getElementById('modal-create-client-form');
+
+        if (!openModalBtn || !modal) return;
+
+        const showModal = () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        };
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+            form.reset();
+        };
+
+        openModalBtn.addEventListener('click', showModal);
+        closeModalBtn?.addEventListener('click', hideModal);
+        cancelBtn?.addEventListener('click', hideModal);
+
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) hideModal();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideModal();
+            }
+        });
+    });
+</script>
+
 @endsection
+

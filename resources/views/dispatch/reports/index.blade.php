@@ -2,9 +2,76 @@
 
 @section('content')
 <div class="container mx-auto px-5 py-6">
-    <div class="mb-5">
-        <h1 class="text-3xl font-bold text-gray-800">Reports & Analytics</h1>
-        <p class="text-gray-600 mt-1">View comprehensive reports and statistics</p>
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-5">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Reports & Analytics</h1>
+            <p class="text-gray-600 mt-1">View comprehensive reports and statistics</p>
+        </div>
+        <!-- Reports Dropdown -->
+        <div class="relative group">
+            <button class="bg-white text-blue-600 border-2 border-blue-600 px-8 py-2 rounded-full hover:bg-green-500 hover:border-green-500 hover:text-white transition-colors flex items-center">
+                <i class="fas fa-chart-line mr-2"></i> View Reports
+                <i class="fas fa-chevron-down ml-2 transition-transform group-hover:rotate-180"></i>
+            </button>
+            
+            <!-- Dropdown Menu -->
+            <div class="absolute right-0 mt-2 w-80 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                <!-- Daily Reports -->
+                <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-blue-100 p-2 rounded-lg">
+                            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Daily Reports</h4>
+                            <p class="text-xs text-gray-600">View daily trip summaries</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('reports.daily') }}" class="block w-full text-center bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 transition text-sm">
+                        View Daily Report
+                    </a>
+                </div>
+
+                <!-- Weekly Reports -->
+                <div class="p-4 border-b border-gray-100 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-green-100 p-2 rounded-lg">
+                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Weekly Reports</h4>
+                            <p class="text-xs text-gray-600">Analyze weekly performance trends</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('reports.weekly') }}" class="block w-full text-center bg-green-600 text-white px-3 py-2 rounded hover:bg-green-700 transition text-sm">
+                        View Weekly Report
+                    </a>
+                </div>
+
+                <!-- Monthly Reports -->
+                <div class="p-4 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-purple-100 p-2 rounded-lg">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Monthly Reports</h4>
+                            <p class="text-xs text-gray-600">Monthly performance overview</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('reports.monthly') }}" class="block w-full text-center bg-purple-600 text-white px-3 py-2 rounded hover:bg-purple-700 transition text-sm">
+                        View Monthly Report
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -116,68 +183,6 @@
         </div>
     </div>
 
-    
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="bg-blue-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-800">Daily Reports</h3>
-                </div>
-                <p class="text-gray-600 text-sm">View daily trip summaries and statistics</p>
-            </div>
-            <div class="p-6">
-                <a href="{{ route('reports.daily') }}" class="block w-full text-center bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                    View Daily Report
-                </a>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="bg-green-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-800">Weekly Reports</h3>
-                </div>
-                <p class="text-gray-600 text-sm">Analyze weekly performance trends</p>
-            </div>
-            <div class="p-6">
-                <a href="{{ route('reports.weekly') }}" class="block w-full text-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition">
-                    View Weekly Report
-                </a>
-            </div>
-        </div>
-
-        <div class="bg-white rounded-lg shadow hover:shadow-lg transition">
-            <div class="p-6 border-b border-gray-200">
-                <div class="flex items-center gap-3 mb-2">
-                    <div class="bg-purple-100 p-3 rounded-lg">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                    </div>
-                    <h3 class="text-lg font-semibold text-gray-800">Monthly Reports</h3>
-                </div>
-                <p class="text-gray-600 text-sm">Monthly performance overview</p>
-            </div>
-            <div class="p-6">
-                <a href="{{ route('reports.monthly') }}" class="block w-full text-center bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
-                    View Monthly Report
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 @push('scripts')
 <script src="{{ asset('js/chart.min.js') }}"></script>
 <script>
@@ -270,5 +275,3 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endsection
-
-

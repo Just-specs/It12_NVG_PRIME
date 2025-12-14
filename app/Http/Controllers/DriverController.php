@@ -84,8 +84,22 @@ class DriverController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
             'license_number' => 'required|string|max:50|unique:drivers,license_number',
-            'status' => 'sometimes|in:available,on-trip,off-duty'
+            'status' => 'sometimes|in:available,on-trip,off-duty',
+            'confirm_duplicate' => 'nullable|boolean',
         ]);
+
+        // Check for similar names or license numbers unless user confirmed
+        if (!$request->input('confirm_duplicate')) {
+            $similar = Driver::findSimilar($validated['name'], $validated['license_number']);
+            
+            if (count($similar) > 0) {
+                return response()->json([
+                    'requires_confirmation' => true,
+                    'similar_drivers' => $similar,
+                    'message' => 'Similar driver names or license numbers found. Do you want to proceed?'
+                ], 200);
+            }
+        }
 
         // Set default status if not provided
         if (!isset($validated['status'])) {
@@ -93,6 +107,14 @@ class DriverController extends Controller
         }
 
         $driver = Driver::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('drivers.show', $driver),
+                'message' => 'Driver added successfully.'
+            ]);
+        }
 
         return redirect()
             ->route('drivers.show', $driver)
@@ -118,6 +140,7 @@ class DriverController extends Controller
 
         return redirect()->back()->with('success', 'Driver status updated.');
     }
+    
     public function edit(Driver $driver)
     {
         return view('dispatch.drivers.edit', compact('driver'));
@@ -129,9 +152,31 @@ class DriverController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
             'license_number' => 'required|string|max:50',
+            'confirm_duplicate' => 'nullable|boolean',
         ]);
 
+        // Check for similar names or license numbers unless user confirmed (excluding current driver)
+        if (!$request->input('confirm_duplicate')) {
+            $similar = Driver::findSimilar($validated['name'], $validated['license_number'], $driver->id);
+            
+            if (count($similar) > 0) {
+                return response()->json([
+                    'requires_confirmation' => true,
+                    'similar_drivers' => $similar,
+                    'message' => 'Similar driver names or license numbers found. Do you want to proceed?'
+                ], 200);
+            }
+        }
+
         $driver->update($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('drivers.show', $driver),
+                'message' => 'Driver updated successfully.'
+            ]);
+        }
 
         return redirect()
             ->route('drivers.show', $driver)

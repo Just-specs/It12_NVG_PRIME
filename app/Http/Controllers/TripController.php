@@ -18,14 +18,24 @@ class TripController extends Controller
     public function __construct(DispatchService $dispatchService)
     {
         $this->dispatchService = $dispatchService;
+
     }
 
     public function index(Request $request)
     {
+        // Add 'archived' status for admin users only
         $allowedStatuses = ['scheduled', 'in-transit', 'completed', 'cancelled'];
+        if (auth()->user()->role === 'admin') {
+            $allowedStatuses[] = 'archived';
+        }
         $activeStatus = $request->query('status', 'all');
 
-        $tripsQuery = Trip::with(['deliveryRequest.client', 'driver', 'vehicle']);
+        // For archived status, use archived() scope instead of active()
+        if ($request->query('status') === 'archived' && auth()->user()->role === 'admin') {
+            $tripsQuery = Trip::archived()->with(['deliveryRequest.client', 'driver', 'vehicle']);
+        } else {
+            $tripsQuery = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle']);
+        }
 
         // Search functionality
         $search = $request->query('search');
@@ -73,14 +83,14 @@ class TripController extends Controller
             $trips->appends(['search' => $search]);
         }
 
-        $statusCounts = Trip::select('status')
+        $statusCounts = Trip::active()->select('status')
             ->selectRaw('COUNT(*) as aggregate')
             ->whereIn('status', $allowedStatuses)
             ->groupBy('status')
             ->pluck('aggregate', 'status');
 
         $counts = [
-            'all' => Trip::count(),
+            'all' => Trip::active()->count(),
         ];
 
         foreach ($allowedStatuses as $status) {
@@ -407,7 +417,7 @@ class TripController extends Controller
             'client_id' => $client->id,
             'notification_type' => $type,
             'message' => $message,
-            'method' => $trip->deliveryRequest->contact_method ?? 'sms',
+            'method' => ($trip->deliveryRequest->contact_method === 'mobile') ? 'sms' : ($trip->deliveryRequest->contact_method ?? 'sms'),
             'sent' => false
         ]);
 
@@ -461,12 +471,12 @@ class TripController extends Controller
 
     public function todayTrips()
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereDate('scheduled_time', \Carbon\Carbon::today())
             ->orderBy('scheduled_time')
             ->get();
 
-        $activeTrips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $activeTrips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereIn('status', ['scheduled', 'in-transit'])
             ->orderBy('scheduled_time')
             ->limit(5)
@@ -477,7 +487,7 @@ class TripController extends Controller
 
     public function upcomingTrips()
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->where('scheduled_time', '>', now())
             ->where('status', 'scheduled')
             ->orderBy('scheduled_time')
@@ -488,7 +498,7 @@ class TripController extends Controller
 
     public function completedTrips()
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->where('status', 'completed')
             ->orderBy('actual_end_time', 'desc')
             ->paginate(20);
@@ -520,7 +530,7 @@ class TripController extends Controller
     // Additional Filter Methods
     public function filterByStatus($status)
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->where('status', $status)
             ->orderBy('scheduled_time', 'desc')
             ->paginate(20);
@@ -530,7 +540,7 @@ class TripController extends Controller
 
     public function filterByDriver(Driver $driver)
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->where('driver_id', $driver->id)
             ->orderBy('scheduled_time', 'desc')
             ->paginate(20);
@@ -540,7 +550,7 @@ class TripController extends Controller
 
     public function filterByVehicle(Vehicle $vehicle)
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->where('vehicle_id', $vehicle->id)
             ->orderBy('scheduled_time', 'desc')
             ->paginate(20);
@@ -550,7 +560,7 @@ class TripController extends Controller
 
     public function filterByClient(Client $client)
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereHas('deliveryRequest', function ($query) use ($client) {
                 $query->where('client_id', $client->id);
             })
@@ -562,7 +572,7 @@ class TripController extends Controller
 
     public function activeTrips()
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereIn('status', ['scheduled', 'in-transit'])
             ->orderBy('scheduled_time')
             ->get();
@@ -574,7 +584,7 @@ class TripController extends Controller
     {
         $query = $request->input('q');
 
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereHas('deliveryRequest', function ($q) use ($query) {
                 $q->where('atw_reference', 'LIKE', "%{$query}%")
                     ->orWhereHas('client', function ($q2) use ($query) {
@@ -596,7 +606,7 @@ class TripController extends Controller
 
     public function getActiveTrips()
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])
             ->whereIn('status', ['scheduled', 'in-transit'])
             ->orderBy('scheduled_time')
             ->get();
@@ -609,7 +619,7 @@ class TripController extends Controller
 
     public function exportExcel()
     {
-        $trips = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])->get();
+        $trips = Trip::active()->with(['deliveryRequest.client', 'driver', 'vehicle'])->get();
 
         $filename = 'trips_' . now()->format('Y-m-d') . '.csv';
 
@@ -661,3 +671,5 @@ class TripController extends Controller
         return redirect()->back()->with('info', 'PDF export feature requires DomPDF package.');
     }
 }
+
+

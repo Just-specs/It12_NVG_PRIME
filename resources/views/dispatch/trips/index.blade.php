@@ -13,12 +13,17 @@
     <!-- Status Filter Tabs -->
     @php
     $tabs = [
-    'all' => 'All Trips',
-    'scheduled' => 'Scheduled',
-    'in-transit' => 'In Transit',
-    'completed' => 'Completed',
-    'cancelled' => 'Cancelled',
+        'all' => 'All Trips',
+        'scheduled' => 'Scheduled',
+        'in-transit' => 'In Transit',
+        'completed' => 'Completed',
+        'cancelled' => 'Cancelled',
     ];
+    
+    // Add 'archived' tab for admin users only
+    if (auth()->user()->role === 'admin') {
+        $tabs['archived'] = 'Archived';
+    }
     @endphp
     <div class="mb-6">
         <nav id="trip-status-tabs" data-current-status="{{ $activeStatus ?? 'all' }}"
@@ -92,6 +97,11 @@
             <form id="modal-complete-form" method="POST" class="hidden">
                 @csrf
             </form>
+            @if(auth()->user()->role === 'admin')
+            <form id="modal-cancel-form" method="POST" class="hidden">
+                @csrf
+            </form>
+            @endif
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 space-y-6">
                     <div class="space-y-4">
@@ -203,6 +213,12 @@
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <h4 class="text-sm font-semibold text-gray-700 mb-3">Actions</h4>
                         <div class="space-y-3">
+                            @if(auth()->user()->role === 'admin')
+                            <button type="button" id="modal-cancel-trip" 
+                                class="hidden w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                                <i class="fas fa-times-circle mr-2"></i>Cancel Trip
+                            </button>
+                            @endif
                             <button id="modal-start-trip"
                                 type="button"
                                 class="hidden w-full px-3 py-2 bg-green-600 text-white rounded-md text-sm font-semibold hover:bg-green-700 transition">
@@ -393,6 +409,8 @@
         const modalCompleteTime = document.getElementById('modal-complete-time');
         const modalStartTrip = document.getElementById('modal-start-trip');
         const modalCompleteTrip = document.getElementById('modal-complete-trip');
+        const modalCancelTrip = document.getElementById('modal-cancel-trip');
+        const modalCancelForm = document.getElementById('modal-cancel-form');
         const modalViewFull = document.getElementById('modal-view-full');
         const modalStartForm = document.getElementById('modal-start-form');
         const modalCompleteForm = document.getElementById('modal-complete-form');
@@ -502,20 +520,32 @@
                 modalCompleteTimeline.classList.add('hidden');
             }
 
+            // Hide both buttons by default
             modalStartTrip.classList.add('hidden');
             modalCompleteTrip.classList.add('hidden');
 
+            // Show Start Trip button only for scheduled trips
             if (button.dataset.status === 'scheduled' && button.dataset.startUrl) {
                 modalStartTrip.classList.remove('hidden');
                 modalStartForm.setAttribute('action', button.dataset.startUrl);
             }
 
+            // Show Complete Trip button only for in-transit trips
             if (button.dataset.status === 'in-transit' && button.dataset.completeUrl) {
                 modalCompleteTrip.classList.remove('hidden');
-                console.log('Setting complete form action:', button.dataset.completeUrl);
                 modalCompleteForm.setAttribute('action', button.dataset.completeUrl);
-                console.log('Complete form action set to:', modalCompleteForm.action);
             }
+
+            // Show Cancel Trip button for admin only (scheduled or in-transit)
+            if (modalCancelTrip && modalCancelForm && button.dataset.cancelUrl && 
+                (button.dataset.status === 'scheduled' || button.dataset.status === 'in-transit')) {
+                modalCancelTrip.classList.remove('hidden');
+                modalCancelForm.setAttribute('action', button.dataset.cancelUrl);
+            } else if (modalCancelTrip) {
+                modalCancelTrip.classList.add('hidden');
+            }
+
+            // For completed trips, both buttons remain hidden (no action needed)
 
             modalViewFull.href = button.dataset.viewUrl;
 
@@ -601,18 +631,21 @@
                     pendingCompleteForm.appendChild(input);
                 }
 
+                // Save form reference before hiding (because hideCompleteConfirm sets it to null)
+                const formToSubmit = pendingCompleteForm;
+                
                 hideCompleteConfirm();
 
                 // Submit the form - use setTimeout to ensure modal is closed first
                 setTimeout(() => {
-                    if (pendingCompleteForm) {
+                    if (formToSubmit) {
                         // Verify form has action and method
-                        if (!pendingCompleteForm.action) {
+                        if (!formToSubmit.action) {
                             console.error('Form has no action attribute');
                             return;
                         }
-                        console.log('Submitting form with action:', pendingCompleteForm.action);
-                        pendingCompleteForm.submit();
+                        console.log('Submitting form with action:', formToSubmit.action);
+                        formToSubmit.submit();
                     }
                 }, 100);
             });
@@ -731,4 +764,7 @@
 @endpush
 
 @endsection
+
+
+
 

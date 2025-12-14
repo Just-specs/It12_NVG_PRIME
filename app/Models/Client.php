@@ -19,4 +19,19 @@ class Client extends Model
     {
         return $this->hasMany(ClientNotification::class);
     }
+
+    /**
+     * Find similar client names (case-insensitive)
+     */
+    public static function findSimilar(string $name, ?int $excludeId = null): array
+    {
+        $query = static::whereRaw('LOWER(name) LIKE ?', ['%' . strtolower($name) . '%'])
+            ->orWhereRaw('LOWER(name) = ?', [strtolower($name)]);
+        
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+        
+        return $query->get(['id', 'name', 'email', 'company'])->toArray();
+    }
 }

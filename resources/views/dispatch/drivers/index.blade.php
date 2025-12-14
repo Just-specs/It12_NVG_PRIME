@@ -1,4 +1,4 @@
-@extends('layouts.app')
+ï»¿@extends('layouts.app')
 
 @section('title', 'Drivers')
 
@@ -8,9 +8,9 @@
         <h1 class="text-3xl font-bold text-gray-800">
             <i class="fas fa-user-tie text-blue-600"></i> Drivers Management
         </h1>
-        <a href="{{ route('drivers.create') }}" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+        <button type="button" id="open-create-driver-modal" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
             <i class="fas fa-plus"></i> Add Driver
-        </a>
+        </button>
     </div>
 
     <!-- Status Filter Tabs -->
@@ -74,6 +74,77 @@
     </div>
 </div>
 
+
+<!-- Add Driver Modal -->
+<div id="create-driver-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-user-plus text-blue-600"></i> Add New Driver
+            </h2>
+            <button type="button" id="close-create-driver-modal" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form id="modal-create-driver-form" method="POST" action="{{ route('drivers.store') }}">
+                @csrf
+
+                <div class="space-y-4">
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Driver Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter driver name">
+                    </div>
+
+                    <!-- Mobile -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Mobile Number <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="mobile" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+63 XXX XXX XXXX">
+                    </div>
+
+                    <!-- License Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            License Number <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="license_number" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter license number">
+                    </div>
+
+                    <!-- Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Status <span class="text-red-500">*</span>
+                        </label>
+                        <select name="status" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="available">Available</option>
+                            <option value="on-trip">On Trip</option>
+                            <option value="off-duty">Off Duty</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+                    <button type="button" id="cancel-create-driver" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                        <i class="fas fa-save mr-2"></i>Create Driver
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Driver Details Modal -->
 <div id="driver-details-modal"
     class="fixed inset-0 z-50 hidden items-center justify-center bg-black bg-opacity-50">
@@ -81,7 +152,7 @@
         <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
                 <h2 class="text-2xl font-semibold text-gray-800">Driver Details</h2>
-                <p id="modal-driver-id" class="text-sm text-gray-500">Driver #—</p>
+                <p id="modal-driver-id" class="text-sm text-gray-500">Driver #â€”</p>
             </div>
             <button type="button" class="text-gray-500 hover:text-gray-700" id="modal-close">
                 <i class="fas fa-times text-xl"></i>
@@ -93,7 +164,7 @@
                     <i class="fas fa-user text-blue-600 text-3xl"></i>
                 </div>
                 <div class="flex-1">
-                    <h3 id="modal-driver-name" class="text-2xl font-bold text-gray-800">—</h3>
+                    <h3 id="modal-driver-name" class="text-2xl font-bold text-gray-800">â€”</h3>
                     <span id="modal-status"
                         class="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 capitalize">Status</span>
                 </div>
@@ -103,12 +174,12 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <p class="text-sm text-gray-500">License Number</p>
-                        <p id="modal-license" class="text-base font-semibold text-gray-800">—</p>
+                        <p id="modal-license" class="text-base font-semibold text-gray-800">â€”</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Mobile</p>
                         <p id="modal-mobile" class="text-base font-semibold text-gray-800">
-                            <i class="fas fa-phone mr-1"></i><span id="modal-mobile-number">—</span>
+                            <i class="fas fa-phone mr-1"></i><span id="modal-mobile-number">â€”</span>
                         </p>
                     </div>
                 </div>
@@ -116,11 +187,11 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <p class="text-sm text-gray-500">Total Trips</p>
-                        <p id="modal-trips-count" class="text-2xl font-bold text-blue-600">—</p>
+                        <p id="modal-trips-count" class="text-2xl font-bold text-blue-600">â€”</p>
                     </div>
                     <div>
                         <p class="text-sm text-gray-500">Joined Date</p>
-                        <p id="modal-created" class="text-base font-semibold text-gray-800">—</p>
+                        <p id="modal-created" class="text-base font-semibold text-gray-800">â€”</p>
                     </div>
                 </div>
             </div>
@@ -314,7 +385,43 @@
                 toggleModal(false);
             }
         });
-            // Search functionality
+            
+        // Create Driver Modal
+        const openCreateDriverBtn = document.getElementById('open-create-driver-modal');
+        const createDriverModal = document.getElementById('create-driver-modal');
+        const closeCreateDriverBtn = document.getElementById('close-create-driver-modal');
+        const cancelCreateDriverBtn = document.getElementById('cancel-create-driver');
+        const createDriverForm = document.getElementById('modal-create-driver-form');
+
+        if (openCreateDriverBtn && createDriverModal) {
+            const showCreateModal = () => {
+                createDriverModal.classList.remove('hidden');
+                createDriverModal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+            };
+
+            const hideCreateModal = () => {
+                createDriverModal.classList.add('hidden');
+                createDriverModal.classList.remove('flex');
+                document.body.style.overflow = '';
+                if (createDriverForm) createDriverForm.reset();
+            };
+
+            openCreateDriverBtn.addEventListener('click', showCreateModal);
+            closeCreateDriverBtn?.addEventListener('click', hideCreateModal);
+            cancelCreateDriverBtn?.addEventListener('click', hideCreateModal);
+
+            createDriverModal.addEventListener('click', (e) => {
+                if (e.target === createDriverModal) hideCreateModal();
+            });
+
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && !createDriverModal.classList.contains('hidden')) {
+                    hideCreateModal();
+                }
+            });
+        }
+        // Search functionality
         const searchInput = document.getElementById('search-input');
         const clearSearchBtn = document.getElementById('clear-search');
         
@@ -403,3 +510,5 @@
 @endpush
 
 @endsection
+
+

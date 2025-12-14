@@ -1,0 +1,111 @@
+﻿═══════════════════════════════════════════════════════════════
+  MODAL FORMS - QUICK TEST GUIDE
+═══════════════════════════════════════════════════════════════
+
+🎯 WHAT WAS CHANGED:
+  - "Add Client/Driver/Vehicle" buttons now open modals
+  - No more page redirects - everything stays on same page
+  - Cleaner, faster user experience
+
+═══════════════════════════════════════════════════════════════
+
+📋 TESTING STEPS:
+
+1. CLIENTS PAGE
+   ✓ Go to: /clients
+   ✓ Click "Add New Client" button (top right)
+   ✓ Modal should open with form
+   ✓ Fill in:
+     - Client Name (required)
+     - Email (optional)
+     - Mobile (optional)
+     - Company (optional)
+   ✓ Click "Create Client"
+   ✓ Modal closes, new client appears in table
+
+2. DRIVERS PAGE
+   ✓ Go to: /drivers
+   ✓ Click "Add Driver" button (top right)
+   ✓ Modal should open with form
+   ✓ Fill in:
+     - Driver Name (required)
+     - Mobile Number (required)
+     - License Number (required)
+     - Status (dropdown - required)
+   ✓ Click "Create Driver"
+   ✓ Modal closes, new driver appears in table
+
+3. VEHICLES PAGE
+   ✓ Go to: /vehicles
+   ✓ Click "Add Vehicle" button (top right)
+   ✓ Modal should open with form
+   ✓ Fill in:
+     - Plate Number (required)
+     - Vehicle Type (dropdown - required)
+     - Trailer Type (dropdown - required)
+     - Status (dropdown - required)
+   ✓ Click "Create Vehicle"
+   ✓ Modal closes, new vehicle appears in table
+
+═══════════════════════════════════════════════════════════════
+
+🔍 TEST MODAL CLOSING:
+
+For each modal, verify it closes when:
+  ✓ Clicking the X button (top right)
+  ✓ Clicking the Cancel button (bottom left)
+  ✓ Pressing ESC key on keyboard
+  ✓ Clicking outside the modal (on backdrop)
+
+═══════════════════════════════════════════════════════════════
+
+✅ EXPECTED BEHAVIOR:
+
+OPENING:
+  - Modal appears smoothly
+  - Background is dimmed/blurred
+  - Page scroll is disabled
+  - Form is empty and ready
+
+SUBMITTING:
+  - Required fields are validated
+  - Form submits to server
+  - Modal closes after success
+  - New item appears in table
+  - Success message shows (if applicable)
+
+CLOSING:
+  - Modal disappears smoothly
+  - Background returns to normal
+  - Page scroll is restored
+  - Form is reset (empty)
+
+═══════════════════════════════════════════════════════════════
+
+🐛 TROUBLESHOOTING:
+
+ISSUE: Modal doesn't open
+FIX: Clear cache and hard refresh (Ctrl+F5)
+
+ISSUE: Form doesn't submit
+FIX: Check required fields are filled
+
+ISSUE: Background doesn't blur
+FIX: Ensure Tailwind CSS is loaded properly
+
+ISSUE: ESC key doesn't close modal
+FIX: Click in modal first to focus it
+
+═══════════════════════════════════════════════════════════════
+
+💡 TIPS:
+
+- Test with keyboard navigation (Tab, Enter, ESC)
+- Try submitting empty form (validation should work)
+- Test on mobile/tablet view if possible
+- Verify form resets when reopening modal
+
+═══════════════════════════════════════════════════════════════
+Status: Ready to Test ✅
+Date: December 9, 2025
+═══════════════════════════════════════════════════════════════

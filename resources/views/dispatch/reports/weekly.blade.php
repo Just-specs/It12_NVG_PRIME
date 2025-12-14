@@ -28,6 +28,11 @@
             <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
                 <i class="fas fa-search"></i> Generate Report
             </button>
+            <a href="{{ route('reports.export-weekly', ['start_date' => $startDate->format('Y-m-d')]) }}"
+                target="_blank"
+                class="bg-red-600 text-white px-6 py-2 rounded-lg hover:bg-red-700">
+                <i class="fas fa-file-pdf"></i> Export PDF
+            </a>
         </form>
     </div>
 

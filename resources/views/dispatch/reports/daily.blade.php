@@ -1,12 +1,12 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
         <div>
-            <a href="{{ route('reports.index') }}" class="text-blue-600 hover:text-blue-800 mb-2 inline-block">
-                â† Back to Reports
+            <a href="{{ route('reports.index') }}" class="bg-blue-600 text-white px-8 py-2 rounded-full hover:bg-blue-700 mb-2 inline-block">
+                Back
             </a>
             <h1 class="text-3xl font-bold text-gray-800">Daily Report</h1>
             <p class="text-gray-600 mt-1">{{ $date->format('l, F d, Y') }}</p>
@@ -18,7 +18,7 @@
                     <i class="fas fa-file-pdf"></i> Export PDF
                 </button>
             </form>
-            <button onclick="window.print()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+            <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
                 <i class="fas fa-print"></i> Print Report
             </button>
         </div>
@@ -63,26 +63,18 @@
     </div>
 
     <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <!-- Status Distribution Pie Chart -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
+        <div class="bg-white rounded-lg shadow p-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Status Distribution</h3>
             <div style="height: 300px; position: relative;">
                 <canvas id="statusPieChart"></canvas>
             </div>
         </div>
 
-        <!-- Hourly Trend Line Chart -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Hourly Trend</h3>
-            <div style="height: 300px; position: relative;">
-                <canvas id="hourlyLineChart"></canvas>
-            </div>
-        </div>
-
         <!-- Hourly Distribution Bar Chart -->
-        <div class="bg-white rounded-lg shadow-lg p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Hourly Distribution</h3>
+        <div class="bg-white rounded-lg shadow p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Hourly Trip Distribution</h3>
             <div style="height: 300px; position: relative;">
                 <canvas id="hourlyBarChart"></canvas>
             </div>

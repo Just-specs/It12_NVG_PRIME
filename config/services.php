@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 return [
 
@@ -14,12 +14,15 @@ return [
     |
     */
 
-    'postmark' => [
-        'key' => env('POSTMARK_API_KEY'),
+    'mailgun' => [
+        'domain' => env('MAILGUN_DOMAIN'),
+        'secret' => env('MAILGUN_SECRET'),
+        'endpoint' => env('MAILGUN_ENDPOINT', 'api.mailgun.net'),
+        'scheme' => 'https',
     ],
 
-    'resend' => [
-        'key' => env('RESEND_API_KEY'),
+    'postmark' => [
+        'token' => env('POSTMARK_TOKEN'),
     ],
 
     'ses' => [
@@ -28,17 +31,6 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
-    'slack' => [
-        'notifications' => [
-            'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),
-            'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
-        ],
-    ],
-
-    'calendarific' => [
-        'key' => env('CALENDARIFIC_API_KEY'),
-        'base' => env('CALENDARIFIC_BASE_URL', 'https://calendarific.com/api/v2'),
-    ],
     'google' => [
         'client_id' => env('GOOGLE_CLIENT_ID'),
         'client_secret' => env('GOOGLE_CLIENT_SECRET'),

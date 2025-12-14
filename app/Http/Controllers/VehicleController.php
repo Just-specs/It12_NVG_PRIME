@@ -85,10 +85,32 @@ class VehicleController extends Controller
             'plate_number' => 'required|string|unique:vehicles,plate_number',
             'vehicle_type' => 'required|string',
             'trailer_type' => 'required|string',
-            'status' => 'sometimes|in:available,in-use,maintenance'
+            'status' => 'sometimes|in:available,in-use,maintenance',
+            'confirm_duplicate' => 'nullable|boolean',
         ]);
 
+        // Check for similar plate numbers unless user confirmed
+        if (!$request->input('confirm_duplicate')) {
+            $similar = Vehicle::findSimilar($validated['plate_number']);
+            
+            if (count($similar) > 0) {
+                return response()->json([
+                    'requires_confirmation' => true,
+                    'similar_vehicles' => $similar,
+                    'message' => 'Similar plate numbers found. Do you want to proceed?'
+                ], 200);
+            }
+        }
+
         $vehicle = Vehicle::create($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('vehicles.show', $vehicle),
+                'message' => 'Vehicle added successfully.'
+            ]);
+        }
 
         return redirect()
             ->route('vehicles.show', $vehicle)
@@ -124,9 +146,31 @@ class VehicleController extends Controller
             'plate_number' => 'required|string|unique:vehicles,plate_number,' . $vehicle->id,
             'vehicle_type' => 'required|string',
             'trailer_type' => 'required|string',
+            'confirm_duplicate' => 'nullable|boolean',
         ]);
 
+        // Check for similar plate numbers unless user confirmed (excluding current vehicle)
+        if (!$request->input('confirm_duplicate')) {
+            $similar = Vehicle::findSimilar($validated['plate_number'], $vehicle->id);
+            
+            if (count($similar) > 0) {
+                return response()->json([
+                    'requires_confirmation' => true,
+                    'similar_vehicles' => $similar,
+                    'message' => 'Similar plate numbers found. Do you want to proceed?'
+                ], 200);
+            }
+        }
+
         $vehicle->update($validated);
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'redirect' => route('vehicles.show', $vehicle),
+                'message' => 'Vehicle updated successfully.'
+            ]);
+        }
 
         return redirect()
             ->route('vehicles.show', $vehicle)

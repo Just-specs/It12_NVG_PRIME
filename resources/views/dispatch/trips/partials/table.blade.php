@@ -95,6 +95,7 @@
                             data-complete-time="{{ $trip->actual_end_time ? $trip->actual_end_time->format('M d, Y h:i A') : '' }}"
                             data-start-url="{{ $trip->status === 'scheduled' ? route('trips.start', $trip) : '' }}"
                             data-complete-url="{{ $trip->status === 'in-transit' ? route('trips.complete', $trip) : '' }}"
+                              data-cancel-url="{{ auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']) ? route('trips.cancel', $trip) : '' }}"
                             data-view-url="{{ route('trips.show', $trip) }}">
                             <i class="fas fa-eye"></i>
                         </button>

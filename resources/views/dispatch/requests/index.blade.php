@@ -16,11 +16,16 @@
     <!-- Status Filter Tabs -->
     @php
     $tabs = [
-    'all' => 'All Requests',
-    'pending' => 'Pending',
-    'verified' => 'Verified',
-    'assigned' => 'Assigned',
+        'all' => 'All Requests',
+        'pending' => 'Pending',
+        'verified' => 'Verified',
+        'assigned' => 'Assigned',
     ];
+    
+    // Add 'archived' tab for admin users only
+    if (auth()->user()->role === 'admin') {
+        $tabs['archived'] = 'Archived';
+    }
     @endphp
     <div class="mb-6">
         <nav id="request-status-tabs" data-current-status="{{ $activeStatus ?? 'all' }}"

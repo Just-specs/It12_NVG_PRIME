@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Add New Driver')
 
@@ -18,6 +18,7 @@
 
         <form id="create-driver-form" method="POST" action="{{ route('drivers.store') }}">
             @csrf
+            <input type="hidden" name="confirm_duplicate" id="confirm_duplicate" value="0">
 
             <div class="space-y-4">
                 <!-- Name -->
@@ -25,7 +26,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Driver Name <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="name" required value="{{ old('name') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter driver name">
+                    <input type="text" name="name" id="driver_name" required value="{{ old('name') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter driver name">
                     @error('name')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -47,7 +48,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         License Number <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="license_number" required value="{{ old('license_number') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter license number">
+                    <input type="text" name="license_number" id="license_number" required value="{{ old('license_number') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter license number">
                     @error('license_number')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -71,7 +72,7 @@
 
             <!-- Submit Button -->
             <div class="flex justify-end mt-6">
-                <button type="button" id="open-confirm-modal" class="px-6 py-2 bg-[#2563EB] text-white rounded-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2">
+                <button type="submit" id="submit-btn" class="px-6 py-2 bg-[#2563EB] text-white rounded-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2">
                     <i class="fas fa-save"></i> Save Driver
                 </button>
             </div>
@@ -79,56 +80,136 @@
     </div>
 </div>
 
-<!-- Submit Confirmation Modal -->
-<div id="submit-confirm-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true" aria-labelledby="submit-confirm-title">
+<!-- Duplicate Warning Modal -->
+<div id="duplicate-modal" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
     <div class="flex min-h-full items-center justify-center bg-black/50 px-4">
-        <div class="w-full max-w-sm rounded-lg bg-white p-6 shadow-lg">
-            <h2 id="submit-confirm-title" class="text-lg font-semibold text-gray-800">Are you sure you want to create this driver?</h2>
-            <p class="mt-2 text-sm text-gray-600">Review the details before saving the new driver.</p>
-            <div class="mt-6 flex justify-center gap-3">
-                <button type="button" id="confirm-no-btn" class="px-4 py-2 rounded-lg bg-red-500 text-white transition-colors hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-offset-2 active:bg-red-700">Cancel</button>
-                <button type="button" id="confirm-yes-btn" class="px-4 py-2 rounded-lg bg-[#2563EB] text-white hover:bg-blue-700 focus:outline-none">Confirm</button>
+        <div class="w-full max-w-lg rounded-lg bg-white p-6 shadow-xl">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl"></i>
+                </div>
+                <div class="flex-1">
+                    <h2 class="text-lg font-semibold text-gray-800">Similar Driver Names or License Numbers Found</h2>
+                    <p class="mt-2 text-sm text-gray-600">The following drivers have similar information. Are you sure you want to add another driver?</p>
+                    
+                    <div id="similar-drivers-list" class="mt-4 space-y-2 max-h-48 overflow-y-auto">
+                        <!-- Similar drivers will be inserted here -->
+                    </div>
+
+                    <div class="mt-6 flex justify-end gap-3">
+                        <button type="button" id="cancel-btn" class="px-4 py-2 rounded-lg bg-gray-500 text-white transition-colors hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                            Cancel
+                        </button>
+                        <button type="button" id="proceed-btn" class="px-4 py-2 rounded-lg bg-[#2563EB] text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400">
+                            Yes, Add Anyway
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        const form = document.getElementById('create-driver-form');
-        const openModalBtn = document.getElementById('open-confirm-modal');
-        const modal = document.getElementById('submit-confirm-modal');
-        const confirmYesBtn = document.getElementById('confirm-yes-btn');
-        const confirmNoBtn = document.getElementById('confirm-no-btn');
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('create-driver-form');
+    const modal = document.getElementById('duplicate-modal');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const proceedBtn = document.getElementById('proceed-btn');
+    const confirmDuplicateInput = document.getElementById('confirm_duplicate');
+    const similarDriversList = document.getElementById('similar-drivers-list');
+    const submitBtn = document.getElementById('submit-btn');
 
-        const showModal = () => {
-            modal.classList.remove('hidden');
-        };
-
-        const hideModal = () => {
-            modal.classList.add('hidden');
-        };
-
-        openModalBtn.addEventListener('click', function () {
-            if (form.checkValidity()) {
-                showModal();
-            } else {
-                form.reportValidity();
-            }
+    const showModal = (similarDrivers) => {
+        // Build list of similar drivers
+        similarDriversList.innerHTML = '';
+        similarDrivers.forEach(driver => {
+            const div = document.createElement('div');
+            div.className = 'p-3 bg-yellow-50 border border-yellow-200 rounded-lg';
+            div.innerHTML = `
+                <p class="font-semibold text-gray-800">${driver.name}</p>
+                ${driver.license_number ? `<p class="text-xs text-gray-600">License: ${driver.license_number}</p>` : ''}
+                ${driver.mobile ? `<p class="text-xs text-gray-600">Mobile: ${driver.mobile}</p>` : ''}
+                <p class="text-xs text-gray-500">Status: ${driver.status}</p>
+            `;
+            similarDriversList.appendChild(div);
         });
 
-        confirmNoBtn.addEventListener('click', hideModal);
+        modal.classList.remove('hidden');
+        proceedBtn.focus();
+    };
 
-        confirmYesBtn.addEventListener('click', function () {
+    const hideModal = () => {
+        modal.classList.add('hidden');
+        confirmDuplicateInput.value = '0';
+    };
+
+    form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        if (confirmDuplicateInput.value === '1') {
+            // User already confirmed, submit the form
+            form.removeEventListener('submit', arguments.callee);
             form.submit();
-        });
+            return;
+        }
 
-        // Close modal on backdrop click
-        modal.addEventListener('click', function (e) {
-            if (e.target === modal) {
-                hideModal();
+        // Check for duplicates
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+
+        try {
+            const formData = new FormData(form);
+            const response = await fetch(form.action, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                },
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.requires_confirmation) {
+                // Show duplicate warning modal
+                showModal(data.similar_drivers);
+            } else if (data.success) {
+                // No duplicates, redirect to success page
+                window.location.href = data.redirect;
+            } else {
+                // Other error
+                alert(data.message || 'An error occurred');
             }
-        });
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred while checking for duplicates');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Driver';
+        }
     });
+
+    cancelBtn.addEventListener('click', hideModal);
+
+    proceedBtn.addEventListener('click', () => {
+        confirmDuplicateInput.value = '1';
+        hideModal();
+        form.submit();
+    });
+
+    modal.addEventListener('click', (event) => {
+        if (event.target === modal) {
+            hideModal();
+        }
+    });
+
+    window.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+            hideModal();
+        }
+    });
+});
 </script>
+
 @endsection
