@@ -52,7 +52,7 @@
             <div class="px-8 pt-8 pb-6 text-center">
                 <img
                     src="{{ asset('Img/NVG_LOGO org.png') }}"
-                    alt="RVG Prime Movers logo"
+                    alt="NVG Prime Movers logo"
                     class="mx-auto mb-4 h-20 w-auto drop-shadow-lg" />
                 <h2 class="text-3xl font-bold tracking-tight text-blue-900">
                     NVG PRIME MOVERS

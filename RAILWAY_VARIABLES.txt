@@ -1,0 +1,92 @@
+========================================
+RAILWAY ENVIRONMENT VARIABLES
+========================================
+
+Copy and paste this into Railway Variables (RAW Editor):
+
+APP_NAME=IT12 Dispatch System
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:YOUR_APP_KEY_HERE
+APP_URL=https://your-app.up.railway.app
+
+DB_CONNECTION=mysql
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_DATABASE=${{MySQL.MYSQLDATABASE}}
+DB_USERNAME=${{MySQL.MYSQLUSER}}
+DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+
+SESSION_DRIVER=file
+QUEUE_CONNECTION=sync
+CACHE_DRIVER=file
+
+========================================
+INSTRUCTIONS:
+========================================
+
+1. Go to Railway Dashboard: https://railway.app
+
+2. Click on your IT12 Dispatch project
+
+3. Do you see TWO services?
+   - One with your GitHub repo name (Laravel app)
+   - One with "MySQL" database icon
+   
+   If you DON'T see MySQL service:
+   - Click "+ New" button
+   - Select "Database" → "Add MySQL"
+   - Wait for it to provision
+
+4. Click on your Laravel service (GitHub repo)
+
+5. Click "Variables" tab
+
+6. Click "RAW Editor" button
+
+7. Delete everything in the editor
+
+8. Copy the variables above and paste them
+
+9. Replace these placeholders:
+   - APP_KEY: Get it by running locally: php artisan key:generate --show
+   - APP_URL: Use your actual Railway URL
+
+10. Click "Update Variables"
+
+11. Wait 2-3 minutes for redeploy
+
+12. Try migration again:
+    railway shell
+    php artisan migrate --force
+
+========================================
+IMPORTANT NOTES:
+========================================
+
+The ${{MySQL.MYSQLHOST}} syntax is CORRECT.
+Railway automatically replaces these with actual MySQL values.
+
+Do NOT use hardcoded values!
+Do NOT use localhost!
+
+The dollar sign and double curly braces tell Railway to 
+reference the MySQL service variables.
+
+========================================
+
+QUICK CHECKLIST:
+========================================
+
+[ ] MySQL service exists in Railway project
+[ ] Laravel service has all variables set
+[ ] DB_HOST uses ${{MySQL.MYSQLHOST}} syntax
+[ ] APP_KEY is set (not empty)
+[ ] APP_URL matches your Railway domain
+[ ] Clicked "Update Variables"
+[ ] Waited for redeploy to finish
+[ ] Green checkmark in Deployments tab
+
+Then try: railway shell → php artisan migrate --force
+
+========================================
