@@ -51,7 +51,7 @@
             <!-- Logo and Header -->
             <div class="px-6 pt-6 pb-4 text-center">
                 <img
-                    src="{{ asset('Img/NVG_LOGO org.png') }}"
+                    src="{{ asset('img/NVG_LOGO_org.png') }}"
                     alt="RVG Prime Movers logo"
                     class="mx-auto mb-3 h-16 w-auto drop-shadow-lg" />
                 <h2 class="text-2xl font-bold tracking-tight text-blue-900">

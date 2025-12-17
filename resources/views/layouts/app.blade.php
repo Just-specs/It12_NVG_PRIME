@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -104,7 +104,7 @@
         <!-- Logo & Header -->
         <div class="p-4 border-b border-blue-700">
             <a href="{{ route('dashboard') }}" class="flex items-center justify-center hover:opacity-80 transition">
-                <img src="{{ asset('img/NVG_LOGO org.png') }}" alt="NVG Prime Movers logo" class="h-20 w-20" />
+                <img src="{{ asset('img/NVG_LOGO_org.png') }}" alt="NVG Prime Movers logo" class="h-20 w-20" />
             </a>
             <div class="text-center mt-3">
                 <h2 class="text-lg font-bold">
