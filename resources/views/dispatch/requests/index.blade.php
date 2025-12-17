@@ -880,4 +880,6 @@
 
 @endpush
 
+@include('dispatch.requests.partials.assign-driver-modal-table')
+
 @endsection

@@ -1,4 +1,4 @@
-﻿<div class="overflow-x-auto">
+<div class="overflow-x-auto">
     <table class="w-full">
         <thead class="bg-gray-50">
             <tr>
@@ -88,11 +88,12 @@
                         </form>
                         @endif
                         @if($request->status === 'verified')
-                        <a href="{{ route('trips.create', $request) }}"
+                        <button type="button" 
+                            onclick="openAssignModalForRequest({{ $request->id }})"
                             class="text-purple-600 hover:text-purple-800"
                             title="Assign Driver">
                             <i class="fas fa-user-plus"></i>
-                        </a>
+                        </button>
                         @endif
                     </div>
                 </td>
