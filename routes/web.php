@@ -10,6 +10,7 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\AdminController;
 use App\Http\Middleware\CheckRole;
 use Illuminate\Support\Facades\Route;
 
@@ -213,6 +214,16 @@ Route::middleware([CheckRole::class . ':admin'])->group(function () {
         Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
         Route::put('/{client}', [ClientController::class, 'update'])->name('update');
         Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+});
+
+    // ADMIN - Dispatcher Management
+    Route::prefix('admin')->name('admin.')->group(function () {
+        Route::get('/dispatchers', [AdminController::class, 'dispatchers'])->name('dispatchers.index');
+        Route::get('/dispatchers/create', [AdminController::class, 'createDispatcher'])->name('dispatchers.create');
+        Route::post('/dispatchers', [AdminController::class, 'storeDispatcher'])->name('dispatchers.store');
+        Route::get('/dispatchers/{dispatcher}/edit', [AdminController::class, 'editDispatcher'])->name('dispatchers.edit');
+        Route::put('/dispatchers/{dispatcher}', [AdminController::class, 'updateDispatcher'])->name('dispatchers.update');
+        Route::delete('/dispatchers/{dispatcher}', [AdminController::class, 'destroyDispatcher'])->name('dispatchers.destroy');
     });
 
 

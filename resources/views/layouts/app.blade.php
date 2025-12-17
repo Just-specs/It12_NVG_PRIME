@@ -230,6 +230,12 @@
                 <i class="fas fa-building w-5 {{ request()->routeIs('clients.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
                 <span class="ml-3 font-medium">Clients</span>
             </a>
+            <!-- Dispatchers - ADMIN ONLY -->
+            <a href="{{ route('admin.dispatchers.index') }}"
+                class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('admin.dispatchers.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
+                <i class="fas fa-user-tie w-5 {{ request()->routeIs('admin.dispatchers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
+                <span class="ml-3 font-medium">Dispatchers</span>
+            </a>
             @endif
         </nav>
 

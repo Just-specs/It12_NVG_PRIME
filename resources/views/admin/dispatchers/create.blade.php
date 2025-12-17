@@ -1,0 +1,102 @@
+﻿@extends('layouts.app')
+
+@section('content')
+<div class="container mx-auto px-4 py-8">
+    <div class="max-w-2xl mx-auto">
+        <div class="mb-6">
+            <a href="{{ route('admin.dispatchers.index') }}" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Back to Dispatchers
+            </a>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">Create New Dispatcher</h1>
+
+            <form action="{{ route('admin.dispatchers.store') }}" method="POST">
+                @csrf
+
+                <!-- Name -->
+                <div class="mb-4">
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
+                    <input type="text" 
+                           id="name" 
+                           name="name" 
+                           value="{{ old('name') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('name') border-red-500 @enderror"
+                           required>
+                    @error('name')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Email -->
+                <div class="mb-4">
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <input type="email" 
+                           id="email" 
+                           name="email" 
+                           value="{{ old('email') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('email') border-red-500 @enderror"
+                           required>
+                    @error('email')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Role -->
+                <div class="mb-4">
+                    <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role</label>
+                    <select id="role" 
+                            name="role" 
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('role') border-red-500 @enderror"
+                            required>
+                        <option value="">Select Role</option>
+                        <option value="dispatch" {{ old('role') === 'dispatch' ? 'selected' : '' }}>Dispatcher</option>
+                        <option value="head_dispatch" {{ old('role') === 'head_dispatch' ? 'selected' : '' }}>Head Dispatcher</option>
+                    </select>
+                    @error('role')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Password -->
+                <div class="mb-4">
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                    <input type="password" 
+                           id="password" 
+                           name="password" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('password') border-red-500 @enderror"
+                           required>
+                    @error('password')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-sm text-gray-500">Minimum 8 characters</p>
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="mb-6">
+                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                    <input type="password" 
+                           id="password_confirmation" 
+                           name="password_confirmation" 
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                           required>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex items-center justify-end space-x-3">
+                    <a href="{{ route('admin.dispatchers.index') }}" 
+                       class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition">
+                        Cancel
+                    </a>
+                    <button type="submit" 
+                            class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition">
+                        Create Dispatcher
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
