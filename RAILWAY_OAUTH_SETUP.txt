@@ -1,0 +1,58 @@
+﻿========================================
+RAILWAY ENVIRONMENT VARIABLES (UPDATED)
+========================================
+
+Copy and paste this into Railway Variables (RAW Editor):
+
+APP_NAME=IT12 Dispatch System
+APP_ENV=production
+APP_DEBUG=false
+APP_KEY=base64:IR7ncca5zsOFQi+LPhYBIG8Ay9VgQgN9Y5UgAuGGvFg=
+APP_URL=https://it12-prime-mover.up.railway.app
+
+DB_CONNECTION=mysql
+DB_HOST=${{MySQL.MYSQLHOST}}
+DB_PORT=${{MySQL.MYSQLPORT}}
+DB_DATABASE=${{MySQL.MYSQLDATABASE}}
+DB_USERNAME=${{MySQL.MYSQLUSER}}
+DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
+
+SESSION_DRIVER=database
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+
+GOOGLE_CLIENT_ID=103460479014-ljakmre3cgs4utbvn3c485amg50ils37.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=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
+GOOGLE_REDIRECT_URI=https://it12-prime-mover.up.railway.app/auth/google/callback
+
+========================================
+INSTRUCTIONS TO ADD GOOGLE OAUTH:
+========================================
+
+1. Go to Railway Dashboard: https://railway.app
+2. Click on your IT12 Dispatch project
+3. Click on your Laravel service
+4. Click "Variables" tab
+5. Click "RAW Editor" button
+6. Add the GOOGLE_* variables above
+7. Click "Update Variables"
+
+========================================
+GOOGLE CLOUD CONSOLE SETUP:
+========================================
+
+IMPORTANT: You must also configure the redirect URI in Google Cloud Console!
+
+1. Go to: https://console.cloud.google.com/
+2. Select your project
+3. Go to "APIs & Services" > "Credentials"
+4. Click on your OAuth 2.0 Client ID
+5. Under "Authorized redirect URIs", add:
+   
+   https://it12-prime-mover.up.railway.app/auth/google/callback
+   
+6. Click "Save"
+
+Make sure BOTH Railway and Google Cloud Console have the EXACT same redirect URI!
+
+========================================
