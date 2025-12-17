@@ -1,8 +1,9 @@
-<?php
+﻿<?php
 
 namespace App\Providers;
 
 use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,6 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS in production
+        if ($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         // Blade directive to check if user is head of dispatch
         Blade::if('headDispatch', function () {
             return auth()->check() && auth()->user()->isHeadDispatch();

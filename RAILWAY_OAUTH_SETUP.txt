@@ -1,5 +1,5 @@
 ﻿========================================
-RAILWAY ENVIRONMENT VARIABLES (UPDATED)
+RAILWAY ENVIRONMENT VARIABLES (UPDATED WITH PERFORMANCE)
 ========================================
 
 Copy and paste this into Railway Variables (RAW Editor):
@@ -17,42 +17,24 @@ DB_DATABASE=${{MySQL.MYSQLDATABASE}}
 DB_USERNAME=${{MySQL.MYSQLUSER}}
 DB_PASSWORD=${{MySQL.MYSQLPASSWORD}}
 
-SESSION_DRIVER=database
-QUEUE_CONNECTION=database
-CACHE_STORE=database
+SESSION_DRIVER=file
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+QUEUE_CONNECTION=sync
+CACHE_STORE=file
 
 GOOGLE_CLIENT_ID=103460479014-ljakmre3cgs4utbvn3c485amg50ils37.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=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
 GOOGLE_REDIRECT_URI=https://it12-prime-mover.up.railway.app/auth/google/callback
 
 ========================================
-INSTRUCTIONS TO ADD GOOGLE OAUTH:
+PERFORMANCE IMPROVEMENTS:
 ========================================
 
-1. Go to Railway Dashboard: https://railway.app
-2. Click on your IT12 Dispatch project
-3. Click on your Laravel service
-4. Click "Variables" tab
-5. Click "RAW Editor" button
-6. Add the GOOGLE_* variables above
-7. Click "Update Variables"
+Changed SESSION_DRIVER from "database" to "file" for better performance.
+Changed CACHE_STORE from "database" to "file" for faster caching.
+Added SESSION_SECURE_COOKIE=true to force HTTPS cookies.
 
-========================================
-GOOGLE CLOUD CONSOLE SETUP:
-========================================
-
-IMPORTANT: You must also configure the redirect URI in Google Cloud Console!
-
-1. Go to: https://console.cloud.google.com/
-2. Select your project
-3. Go to "APIs & Services" > "Credentials"
-4. Click on your OAuth 2.0 Client ID
-5. Under "Authorized redirect URIs", add:
-   
-   https://it12-prime-mover.up.railway.app/auth/google/callback
-   
-6. Click "Save"
-
-Make sure BOTH Railway and Google Cloud Console have the EXACT same redirect URI!
+This will significantly improve the app speed on Railway!
 
 ========================================
