@@ -77,8 +77,7 @@
                 <form method="POST" action="{{ route('trips.store') }}" id="assignmentForm">
                     @csrf
                     <input type="hidden" name="_token" value="{{ csrf_token() }}" id="csrf-token">
-                    <input type="hidden" name="delivery_request_id" value="{{ $deliveryRequest->id }}" id="delivery_request_id_field">
-                    <input type="hidden" name="delivery_request_id_backup" value="{{ $deliveryRequest->id }}">
+                    <input type="hidden" name="delivery_request_id" value="{{ $deliveryRequest->id }}">
 
                     <!-- Driver Selection -->
                     <div class="mb-6">
@@ -359,22 +358,8 @@
 </div>
 
 <script>
-    // Enhanced debugging for Railway
-    console.log('Delivery Request ID:', '{{ $deliveryRequest->id }}');
-    console.log('Form action:', '{{ route("trips.store") }}');
-
-    // Ensure delivery_request_id is set on page load
+    // Refresh CSRF token on page load (important for Railway/production)
     document.addEventListener('DOMContentLoaded', function() {
-        const deliveryRequestIdField = document.getElementById('delivery_request_id_field');
-        if (deliveryRequestIdField) {
-            console.log('Delivery Request ID Field Value:', deliveryRequestIdField.value);
-            if (!deliveryRequestIdField.value || deliveryRequestIdField.value === '') {
-                console.error('WARNING: delivery_request_id field is empty!');
-                deliveryRequestIdField.value = '{{ $deliveryRequest->id }}';
-            }
-        }
-
-        // Refresh CSRF token
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
         if (csrfToken) {
             const csrfInput = document.getElementById('csrf-token');
@@ -441,4 +426,3 @@
     });
 </script>
 @endsection
-
