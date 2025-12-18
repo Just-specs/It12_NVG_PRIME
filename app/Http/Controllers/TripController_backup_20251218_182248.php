@@ -149,19 +149,6 @@ class TripController extends Controller
             'ip_address' => $request->ip()
         ]);
 
-        // Check if delivery_request_id is missing early
-        if (!$request->has('delivery_request_id') || empty($request->input('delivery_request_id'))) {
-            \Log::error('Trip assignment failed: Missing delivery_request_id', [
-                'request_data' => $request->except(['_token']),
-                'referer' => $request->header('referer')
-            ]);
-            
-            return redirect()
-                ->back()
-                ->withInput()
-                ->with('error', 'Failed to assign trip: Delivery request information is missing. Please try again or contact support.');
-        }
-
         try {
             $validated = $request->validate([
                 'delivery_request_id' => 'required|exists:delivery_requests,id',
@@ -169,15 +156,6 @@ class TripController extends Controller
                 'vehicle_id' => 'required|exists:vehicles,id',
                 'scheduled_time' => 'required|date',
                 'route_instructions' => 'nullable|string'
-            ], [
-                'delivery_request_id.required' => 'Delivery request is required. Please refresh the page and try again.',
-                'delivery_request_id.exists' => 'The selected delivery request does not exist.',
-                'driver_id.required' => 'Please select a driver.',
-                'driver_id.exists' => 'The selected driver does not exist.',
-                'vehicle_id.required' => 'Please select a vehicle.',
-                'vehicle_id.exists' => 'The selected vehicle does not exist.',
-                'scheduled_time.required' => 'Scheduled time is required.',
-                'scheduled_time.date' => 'Please provide a valid scheduled time.'
             ]);
 
             \Log::info('Validation passed', ['validated_data' => $validated]);
@@ -209,18 +187,11 @@ class TripController extends Controller
                 'errors' => $e->errors(),
                 'input' => $request->except(['_token'])
             ]);
-            
-            // Provide user-friendly error message
-            $errorMessage = 'Validation failed. ';
-            if (isset($e->errors()['delivery_request_id'])) {
-                $errorMessage = 'Delivery request information is missing or invalid. Please refresh the page and try again.';
-            }
-            
             return redirect()
                 ->back()
                 ->withInput()
                 ->withErrors($e->errors())
-                ->with('error', $errorMessage);
+                ->with('error', 'Validation failed. Please check all fields.');
 
         } catch (\Exception $e) {
             \Log::error('Trip assignment failed', [
