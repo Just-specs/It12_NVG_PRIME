@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryRequestController;
@@ -259,4 +259,10 @@ Route::get('/api/available-vehicles', function () {
     
     return response()->json($vehicles);
 });
+
+
+
+// Debug routes (REMOVE IN PRODUCTION)
+Route::get('/debug/test-driver', [App\Http\Controllers\DebugController::class, 'testDriverCreation']);
+Route::post('/debug/test-driver-ajax', [App\Http\Controllers\DebugController::class, 'testAjaxDriverCreation']);
 
