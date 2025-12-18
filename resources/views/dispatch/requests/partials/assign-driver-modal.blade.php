@@ -1,4 +1,4 @@
-﻿<!-- Assign Driver Modal -->
+<!-- Assign Driver Modal -->
 <div id="assign-driver-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
     <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8">
         <!-- Modal Header -->
@@ -15,7 +15,7 @@
         <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
             <form id="modal-assign-driver-form" method="POST" action="{{ route('trips.store') }}">
                 @csrf
-                <input type="hidden" name="delivery_request_id" value="{{ $request->id }}">
+                <input type="hidden" name="delivery_request_id" value="{{ $deliveryRequest->id }}">
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Left Column: Driver & Vehicle Selection -->
@@ -61,12 +61,12 @@
                                 name="scheduled_time"
                                 id="scheduled_time"
                                 required
-                                value="{{ $request->preferred_schedule->format('Y-m-d\TH:i') }}"
+                                value="{{ $deliveryRequest->preferred_schedule->format('Y-m-d\TH:i') }}"
                                 min="{{ now()->format('Y-m-d\TH:i') }}"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <p class="text-xs text-gray-600 mt-2">
                                 <i class="fas fa-info-circle"></i>
-                                Preferred: {{ $request->preferred_schedule->format('F d, Y h:i A') }}
+                                Preferred: {{ $deliveryRequest->preferred_schedule->format('F d, Y h:i A') }}
                             </p>
                         </div>
 
@@ -94,19 +94,19 @@
                                 <div class="pb-2 border-b">
                                     <p class="text-gray-500 mb-1">ATW Reference</p>
                                     <p class="font-mono font-semibold text-purple-600 bg-white px-2 py-1 rounded">
-                                        {{ $request->atw_reference }}
+                                        {{ $deliveryRequest->atw_reference }}
                                     </p>
                                 </div>
 
                                 <div>
                                     <p class="text-gray-500 mb-1">Client</p>
-                                    <p class="font-semibold text-gray-800">{{ $request->client->name }}</p>
+                                    <p class="font-semibold text-gray-800">{{ $deliveryRequest->client->name }}</p>
                                 </div>
 
                                 <div>
                                     <p class="text-gray-500 mb-1">Container</p>
-                                    <p class="font-semibold text-gray-800">{{ $request->container_size }}</p>
-                                    <p class="text-gray-600">{{ $request->container_type }}</p>
+                                    <p class="font-semibold text-gray-800">{{ $deliveryRequest->container_size }}</p>
+                                    <p class="text-gray-600">{{ $deliveryRequest->container_type }}</p>
                                 </div>
 
                                 <div>
@@ -114,14 +114,14 @@
                                     <div class="space-y-2">
                                         <div class="flex items-start p-2 bg-green-50 rounded text-xs">
                                             <i class="fas fa-map-marker-alt text-green-500 mr-1 mt-0.5"></i>
-                                            <p class="font-medium">{{ Str::limit($request->pickup_location, 40) }}</p>
+                                            <p class="font-medium">{{ Str::limit($deliveryRequest->pickup_location, 40) }}</p>
                                         </div>
                                         <div class="flex justify-center">
                                             <i class="fas fa-arrow-down text-gray-300 text-xs"></i>
                                         </div>
                                         <div class="flex items-start p-2 bg-red-50 rounded text-xs">
                                             <i class="fas fa-flag-checkered text-red-500 mr-1 mt-0.5"></i>
-                                            <p class="font-medium">{{ Str::limit($request->delivery_location, 40) }}</p>
+                                            <p class="font-medium">{{ Str::limit($deliveryRequest->delivery_location, 40) }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -351,3 +351,4 @@
         initAssignDriverModal();
     }
 </script>
+

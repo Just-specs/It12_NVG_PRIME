@@ -18,14 +18,14 @@
                 <div class="flex justify-between items-start mb-6">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Request Details</h1>
-                        <p class="text-gray-600 text-sm mt-1">Created {{ $request->created_at->diffForHumans() }}</p>
+                        <p class="text-gray-600 text-sm mt-1">Created {{ $deliveryRequest->created_at->diffForHumans() }}</p>
                     </div>
                     <span class="px-4 py-2 rounded-full text-sm font-semibold
-                        {{ $request->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                        {{ $request->status === 'verified' ? 'bg-green-100 text-green-800' : '' }}
-                        {{ $request->status === 'assigned' ? 'bg-blue-100 text-blue-800' : '' }}
-                        {{ $request->status === 'completed' ? 'bg-gray-100 text-gray-800' : '' }}">
-                        {{ ucfirst($request->status) }}
+                        {{ $deliveryRequest->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                        {{ $deliveryRequest->status === 'verified' ? 'bg-green-100 text-green-800' : '' }}
+                        {{ $deliveryRequest->status === 'assigned' ? 'bg-blue-100 text-blue-800' : '' }}
+                        {{ $deliveryRequest->status === 'completed' ? 'bg-gray-100 text-gray-800' : '' }}">
+                        {{ ucfirst($deliveryRequest->status) }}
                     </span>
                 </div>
 
@@ -37,13 +37,13 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <p class="text-sm text-gray-600">Client Name</p>
-                            <p class="font-semibold">{{ $request->client->name }}</p>
+                            <p class="font-semibold">{{ $deliveryRequest->client->name }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-600">Contact Method</p>
                             <p class="font-semibold">
-                                <i class="fas fa-{{ $request->contact_method === 'mobile' ? 'phone' : ($request->contact_method === 'email' ? 'envelope' : 'comments') }}"></i>
-                                {{ ucfirst(str_replace('_', ' ', $request->contact_method)) }}
+                                <i class="fas fa-{{ $deliveryRequest->contact_method === 'mobile' ? 'phone' : ($deliveryRequest->contact_method === 'email' ? 'envelope' : 'comments') }}"></i>
+                                {{ ucfirst(str_replace('_', ' ', $deliveryRequest->contact_method)) }}
                             </p>
                         </div>
                     </div>
@@ -58,8 +58,8 @@
                         <div class="flex items-start">
                             <div class="w-32 text-sm text-gray-600">ATW Reference:</div>
                             <div class="flex-1 font-semibold">
-                                {{ $request->atw_reference }}
-                                @if($request->atw_verified)
+                                {{ $deliveryRequest->atw_reference }}
+                                @if($deliveryRequest->atw_verified)
                                 <span class="ml-2 text-green-600 text-sm"><i class="fas fa-check-circle"></i> Verified</span>
                                 @else
                                 <span class="ml-2 text-yellow-600 text-sm"><i class="fas fa-exclamation-circle"></i> Pending Verification</span>
@@ -68,40 +68,40 @@
                         </div>
                         <div class="flex items-start">
                             <div class="w-32 text-sm text-gray-600">Container:</div>
-                            <div class="flex-1 font-semibold">{{ $request->container_size }} - {{ ucfirst($request->container_type) }}</div>
+                            <div class="flex-1 font-semibold">{{ $deliveryRequest->container_size }} - {{ ucfirst($deliveryRequest->container_type) }}</div>
                         </div>
                         <div class="flex items-start">
                             <div class="w-32 text-sm text-gray-600">Pickup:</div>
                             <div class="flex-1">
                                 <i class="fas fa-map-marker-alt text-green-500"></i>
-                                {{ $request->pickup_location }}
+                                {{ $deliveryRequest->pickup_location }}
                             </div>
                         </div>
                         <div class="flex items-start">
                             <div class="w-32 text-sm text-gray-600">Delivery:</div>
                             <div class="flex-1">
                                 <i class="fas fa-flag-checkered text-red-500"></i>
-                                {{ $request->delivery_location }}
+                                {{ $deliveryRequest->delivery_location }}
                             </div>
                         </div>
                         <div class="flex items-start">
                             <div class="w-32 text-sm text-gray-600">Schedule:</div>
                             <div class="flex-1 font-semibold">
                                 <i class="far fa-calendar-alt"></i>
-                                {{ $request->preferred_schedule->format('F d, Y') }} at {{ $request->preferred_schedule->format('h:i A') }}
+                                {{ $deliveryRequest->preferred_schedule->format('F d, Y') }} at {{ $deliveryRequest->preferred_schedule->format('h:i A') }}
                             </div>
                         </div>
-                        @if($request->notes)
+                        @if($deliveryRequest->notes)
                         <div class="flex items-start">
                             <div class="w-32 text-sm text-gray-600">Notes:</div>
-                            <div class="flex-1">{{ $request->notes }}</div>
+                            <div class="flex-1">{{ $deliveryRequest->notes }}</div>
                         </div>
                         @endif
                     </div>
                 </div>
 
                 <!-- Trip Information (if assigned) -->
-                @if($request->trip)
+                @if($deliveryRequest->trip)
                 <div class="border-t pt-6">
                     <h3 class="text-lg font-semibold text-gray-800 mb-3">
                         <i class="fas fa-truck text-blue-600"></i> Assigned Trip
@@ -110,17 +110,17 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="text-sm text-gray-600">Driver</p>
-                                <p class="font-semibold">{{ $request->trip->driver->name }}</p>
-                                <p class="text-xs text-gray-500">{{ $request->trip->driver->mobile }}</p>
+                                <p class="font-semibold">{{ $deliveryRequest->trip->driver->name }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip->driver->mobile }}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600">Vehicle</p>
-                                <p class="font-semibold">{{ $request->trip->vehicle->plate_number }}</p>
-                                <p class="text-xs text-gray-500">{{ $request->trip->vehicle->trailer_type }}</p>
+                                <p class="font-semibold">{{ $deliveryRequest->trip->vehicle->plate_number }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip->vehicle->trailer_type }}</p>
                             </div>
                         </div>
                         <div class="mt-4">
-                            <a href="{{ route('trips.show', $request->trip) }}" class="text-blue-600 hover:text-blue-800 text-sm">
+                            <a href="{{ route('trips.show', $deliveryRequest->trip) }}" class="text-blue-600 hover:text-blue-800 text-sm">
                                 <i class="fas fa-external-link-alt"></i> View Trip Details
                             </a>
                         </div>
@@ -135,7 +135,7 @@
             <div class="bg-white rounded-lg shadow-md p-6 sticky top-6">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Actions</h3>
 
-                @if($request->status === 'pending' && !$request->atw_verified)
+                @if($deliveryRequest->status === 'pending' && !$deliveryRequest->atw_verified)
                     @if(auth()->user()->canVerifyRequests())
                     {{-- Only Admin can verify --}}
                     <form method="POST" action="{{ route('requests.verify', $request) }}" class="mb-3" id="verify-atw-form">
@@ -177,7 +177,7 @@
                 </button>
                 @endif
 
-                @if($request->status === 'verified' && !$request->trip)
+                @if($deliveryRequest->status === 'verified' && !$deliveryRequest->trip)
                 <button type="button" id="open-assign-driver-modal" class="block w-full px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:bg-[#1D4ED8] text-center mb-3">
                     <i class="fas fa-user-plus"></i> Assign Driver
                 </button>
@@ -193,30 +193,30 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium">Request Created</p>
-                                <p class="text-xs text-gray-500">{{ $request->created_at->format('M d, Y h:i A') }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->created_at->format('M d, Y h:i A') }}</p>
                             </div>
                         </div>
 
-                        @if($request->atw_verified)
+                        @if($deliveryRequest->atw_verified)
                         <div class="flex items-start">
                             <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
                                 <i class="fas fa-check text-green-600 text-xs"></i>
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium">ATW Verified</p>
-                                <p class="text-xs text-gray-500">{{ $request->updated_at->format('M d, Y h:i A') }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->updated_at->format('M d, Y h:i A') }}</p>
                             </div>
                         </div>
                         @endif
 
-                        @if($request->trip)
+                        @if($deliveryRequest->trip)
                         <div class="flex items-start">
                             <div class="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
                                 <i class="fas fa-user-check text-purple-600 text-xs"></i>
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium">Driver Assigned</p>
-                                <p class="text-xs text-gray-500">{{ $request->trip->created_at->format('M d, Y h:i A') }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip->created_at->format('M d, Y h:i A') }}</p>
                             </div>
                         </div>
                         @endif
@@ -228,7 +228,7 @@
 </div>
 
 <!-- Include Assign Driver Modal -->
-@if($request->status === 'verified' && !$request->trip)
+@if($deliveryRequest->status === 'verified' && !$deliveryRequest->trip)
     @include('dispatch.requests.partials.assign-driver-modal')
 @endif
 
@@ -262,7 +262,7 @@
                             <select name="client_id" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
                                 <option value="">Select a client</option>
                                 @foreach($clients as $client)
-                                    <option value="{{ $client->id }}" @selected(old('client_id', $request->client_id) == $client->id)>
+                                    <option value="{{ $client->id }}" @selected(old('client_id', $deliveryRequest->client_id) == $client->id)>
                                         {{ $client->name }}
                                     </option>
                                 @endforeach
@@ -275,9 +275,9 @@
                                 Contact Method <span class="text-red-500">*</span>
                             </label>
                             <select name="contact_method" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
-                                <option value="mobile" @selected(old('contact_method', $request->contact_method) == 'mobile')>Mobile</option>
-                                <option value="email" @selected(old('contact_method', $request->contact_method) == 'email')>Email</option>
-                                <option value="group_chat" @selected(old('contact_method', $request->contact_method) == 'group_chat')>Group Chat</option>
+                                <option value="mobile" @selected(old('contact_method', $deliveryRequest->contact_method) == 'mobile')>Mobile</option>
+                                <option value="email" @selected(old('contact_method', $deliveryRequest->contact_method) == 'email')>Email</option>
+                                <option value="group_chat" @selected(old('contact_method', $deliveryRequest->contact_method) == 'group_chat')>Group Chat</option>
                             </select>
                         </div>
 
@@ -286,7 +286,7 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 ATW Reference <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="atw_reference" value="{{ old('atw_reference', $request->atw_reference) }}" required
+                            <input type="text" name="atw_reference" value="{{ old('atw_reference', $deliveryRequest->atw_reference) }}" required
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                                 placeholder="Enter ATW reference">
                         </div>
@@ -296,7 +296,7 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 Pickup Location <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="pickup_location" value="{{ old('pickup_location', $request->pickup_location) }}" required
+                            <input type="text" name="pickup_location" value="{{ old('pickup_location', $deliveryRequest->pickup_location) }}" required
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                                 placeholder="Enter pickup location">
                         </div>
@@ -306,7 +306,7 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 Delivery Location <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="delivery_location" value="{{ old('delivery_location', $request->delivery_location) }}" required
+                            <input type="text" name="delivery_location" value="{{ old('delivery_location', $deliveryRequest->delivery_location) }}" required
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
                                 placeholder="Enter delivery location">
                         </div>
@@ -317,8 +317,8 @@
                                 Container Size <span class="text-red-500">*</span>
                             </label>
                             <select name="container_size" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
-                                <option value="20ft" @selected(old('container_size', $request->container_size) == '20ft')>20ft</option>
-                                <option value="40ft" @selected(old('container_size', $request->container_size) == '40ft')>40ft</option>
+                                <option value="20ft" @selected(old('container_size', $deliveryRequest->container_size) == '20ft')>20ft</option>
+                                <option value="40ft" @selected(old('container_size', $deliveryRequest->container_size) == '40ft')>40ft</option>
                             </select>
                         </div>
 
@@ -328,9 +328,9 @@
                                 Container Type <span class="text-red-500">*</span>
                             </label>
                             <select name="container_type" required class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
-                                <option value="standard" @selected(old('container_type', $request->container_type) == 'standard')>Standard</option>
-                                <option value="refrigerated" @selected(old('container_type', $request->container_type) == 'refrigerated')>Refrigerated</option>
-                                <option value="open_top" @selected(old('container_type', $request->container_type) == 'open_top')>Open Top</option>
+                                <option value="standard" @selected(old('container_type', $deliveryRequest->container_type) == 'standard')>Standard</option>
+                                <option value="refrigerated" @selected(old('container_type', $deliveryRequest->container_type) == 'refrigerated')>Refrigerated</option>
+                                <option value="open_top" @selected(old('container_type', $deliveryRequest->container_type) == 'open_top')>Open Top</option>
                             </select>
                         </div>
 
@@ -339,7 +339,7 @@
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
                                 Preferred Schedule <span class="text-red-500">*</span>
                             </label>
-                            <input type="datetime-local" name="preferred_schedule" value="{{ old('preferred_schedule', $request->preferred_schedule ? \Carbon\Carbon::parse($request->preferred_schedule)->format('Y-m-d\TH:i') : '') }}" required
+                            <input type="datetime-local" name="preferred_schedule" value="{{ old('preferred_schedule', $deliveryRequest->preferred_schedule ? \Carbon\Carbon::parse($deliveryRequest->preferred_schedule)->format('Y-m-d\TH:i') : '') }}" required
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
                         </div>
 
@@ -350,7 +350,7 @@
                             </label>
                             <textarea name="special_instructions" rows="4"
                                 class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
-                                placeholder="Enter any special instructions">{{ old('special_instructions', $request->special_instructions) }}</textarea>
+                                placeholder="Enter any special instructions">{{ old('special_instructions', $deliveryRequest->special_instructions) }}</textarea>
                         </div>
                     </div>
 
@@ -469,6 +469,7 @@
     }
 </script>
 @endpush
+
 
 
 

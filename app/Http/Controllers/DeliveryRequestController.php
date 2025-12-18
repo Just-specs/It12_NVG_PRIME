@@ -194,20 +194,20 @@ class DeliveryRequestController extends Controller
             ->with('success', 'Delivery request created successfully. You can verify and assign it when ready.');
     }
 
-    public function show(DeliveryRequest $request)
+    public function show(DeliveryRequest $deliveryRequest)
     {
-        $request->load(['client', 'trip.driver', 'trip.vehicle']);
-        return view('dispatch.requests.show', compact('request'));
+        $deliveryRequest->load(['client', 'trip.driver', 'trip.vehicle']);
+        return view('dispatch.requests.show', compact('deliveryRequest'));
     }
 
-    public function verify(DeliveryRequest $request)
+    public function verify(DeliveryRequest $deliveryRequest)
     {
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
             abort(403, 'Only Admin can verify delivery requests.');
         }
 
-        $request->update([
+        $deliveryRequest->update([
             'atw_verified' => true,
             'status' => 'verified'
         ]);
@@ -220,7 +220,7 @@ class DeliveryRequestController extends Controller
     /**
      * Verify AND automatically assign the request to a trip
      */
-    public function verifyAndAssign(DeliveryRequest $request)
+    public function verifyAndAssign(DeliveryRequest $deliveryRequest)
     {
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
@@ -228,7 +228,7 @@ class DeliveryRequestController extends Controller
         }
 
         // First verify
-        $request->update([
+        $deliveryRequest->update([
             'atw_verified' => true,
             'status' => 'verified'
         ]);
@@ -240,22 +240,22 @@ class DeliveryRequestController extends Controller
     /**
      * Auto-assign delivery request to available resources
      */
-    public function autoAssign(DeliveryRequest $request)
+    public function autoAssign(DeliveryRequest $deliveryRequest)
     {
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
             abort(403, 'Only Admin can verify and auto-assign delivery requests.');
         }
 
-        if (!in_array($request->status, ['pending', 'verified'])) {
+        if (!in_array($deliveryRequest->status, ['pending', 'verified'])) {
             return redirect()
                 ->back()
-                ->with('error', 'This request cannot be auto-assigned. Status: ' . $request->status);
+                ->with('error', 'This request cannot be auto-assigned. Status: ' . $deliveryRequest->status);
         }
 
         // Verify if not already verified
-        if (!$request->atw_verified) {
-            $request->update([
+        if (!$deliveryRequest->atw_verified) {
+            $deliveryRequest->update([
                 'atw_verified' => true,
                 'status' => 'verified'
             ]);
@@ -336,13 +336,13 @@ class DeliveryRequestController extends Controller
         ]);
     }
 
-    public function edit(DeliveryRequest $request)
+    public function edit(DeliveryRequest $deliveryRequest)
     {
         $clients = \App\Models\Client::orderBy('name')->get();
         return view('dispatch.requests.edit', compact('request', 'clients'));
     }
 
-    public function update(Request $validateRequest, DeliveryRequest $request)
+    public function update(Request $httpRequest, DeliveryRequest $deliveryRequest)
     {
         $validated = $validateRequest->validate([
             'client_id' => 'required|exists:clients,id',
@@ -360,7 +360,7 @@ class DeliveryRequestController extends Controller
         $preferredSchedule = Carbon::parse($validated['preferred_schedule']);
         $duplicateRequest = DeliveryRequest::active()->where('client_id', $validated['client_id'])
             ->where('preferred_schedule', $preferredSchedule)
-            ->where('id', '!=', $request->id)
+            ->where('id', '!=', $deliveryRequest->id)
             ->whereIn('status', ['pending', 'verified', 'assigned'])
             ->exists();
 
@@ -370,41 +370,41 @@ class DeliveryRequestController extends Controller
             ]);
         }
 
-        $request->update($validated);
+        $deliveryRequest->update($validated);
 
         return redirect()
             ->route('requests.show', $request)
             ->with('success', 'Request updated successfully.');
     }
 
-    public function destroy(DeliveryRequest $request)
+    public function destroy(DeliveryRequest $deliveryRequest)
     {
         // Check if request has a trip assigned
-        if ($request->trip && $request->trip->status !== 'cancelled') {
+        if ($deliveryRequest->trip && $deliveryRequest->trip->status !== 'cancelled') {
             return redirect()
                 ->back()
                 ->with('error', 'Cannot delete request with active trip.');
         }
 
-        $request->delete();
+        $deliveryRequest->delete();
 
         return redirect()
             ->route('requests.index')
             ->with('success', 'Request deleted successfully.');
     }
 
-    public function cancel(DeliveryRequest $request)
+    public function cancel(DeliveryRequest $deliveryRequest)
     {
-        $request->update(['status' => 'cancelled']);
+        $deliveryRequest->update(['status' => 'cancelled']);
 
         // Cancel associated trip if exists
-        if ($request->trip) {
-            $request->trip->update(['status' => 'cancelled']);
+        if ($deliveryRequest->trip) {
+            $deliveryRequest->trip->update(['status' => 'cancelled']);
 
             // Free up resources
-            \App\Models\Driver::where('id', $request->trip->driver_id)
+            \App\Models\Driver::where('id', $deliveryRequest->trip->driver_id)
                 ->update(['status' => 'available']);
-            \App\Models\Vehicle::where('id', $request->trip->vehicle_id)
+            \App\Models\Vehicle::where('id', $deliveryRequest->trip->vehicle_id)
                 ->update(['status' => 'available']);
         }
 
@@ -511,5 +511,8 @@ class DeliveryRequestController extends Controller
             ->with('info', 'Import feature coming soon.');
     }
 }
+
+
+
 
 
