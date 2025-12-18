@@ -1,0 +1,31 @@
+﻿# Quick Railway Deployment Commands
+
+# 1. First, update Railway environment variables with these (via Railway Dashboard):
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+SESSION_DOMAIN=.railway.app
+SANCTUM_STATEFUL_DOMAINS=it12-prime-mover.up.railway.app,*.railway.app
+
+# 2. Commit and push changes:
+git add .
+git commit -m "Fix: Railway trip assignment validation - Add session/CSRF configuration"
+git push origin main
+
+# 3. After Railway auto-deploys, run these commands:
+railway run php artisan config:clear
+railway run php artisan cache:clear
+railway run php artisan route:clear
+railway run php artisan view:clear
+
+# 4. Test the fix:
+# Go to: https://it12-prime-mover.up.railway.app
+# Navigate to a verified request and try assigning a trip
+
+# If you need to check logs:
+railway logs --tail
+
+# If you need to verify sessions table:
+railway run php artisan tinker
+# Then in tinker: DB::table('sessions')->count();
