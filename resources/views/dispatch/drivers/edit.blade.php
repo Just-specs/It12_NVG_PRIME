@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Edit Driver - ' . $driver->name)
 
@@ -172,7 +172,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
-                },
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')},
                 body: formData
             });
 
@@ -216,3 +216,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endsection
+

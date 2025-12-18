@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Add New Driver')
 
@@ -120,6 +120,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const similarDriversList = document.getElementById('similar-drivers-list');
     const submitBtn = document.getElementById('submit-btn');
 
+    // Get CSRF token from meta tag
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
     const showModal = (similarDrivers) => {
         // Build list of similar drivers
         similarDriversList.innerHTML = '';
@@ -148,13 +151,13 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         if (confirmDuplicateInput.value === '1') {
-            // User already confirmed, submit the form
+            // User already confirmed, submit the form normally
             form.removeEventListener('submit', arguments.callee);
             form.submit();
             return;
         }
 
-        // Check for duplicates
+        // Check for duplicates via AJAX
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
 
@@ -165,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken  // FIX: Add CSRF token to headers
                 },
                 body: formData
             });
@@ -178,12 +182,20 @@ document.addEventListener('DOMContentLoaded', function () {
                 // No duplicates, redirect to success page
                 window.location.href = data.redirect;
             } else {
-                // Other error
-                alert(data.message || 'An error occurred');
+                // Handle validation errors or other errors
+                if (data.errors) {
+                    let errorMsg = 'Validation errors:\n';
+                    for (const [field, messages] of Object.entries(data.errors)) {
+                        errorMsg += `\n${field}: ${messages.join(', ')};
+                    }
+                    alert(errorMsg);
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred while checking for duplicates');
+            alert('An error occurred while checking for duplicates. Check browser console for details.');
         } finally {
             submitBtn.disabled = false;
             submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Driver';
