@@ -106,20 +106,8 @@
 let currentRequestData = null;
 
 async function openAssignModalForRequest(requestId) {
-    console.log('Opening assign modal for request:', requestId);
-    
     const modal = document.getElementById('assign-driver-modal-table');
-    const requestIdInput = document.getElementById('modal-request-id');
-    const scheduledTimeInput = document.getElementById('scheduled-time-table');
-    const summaryContainer = document.getElementById('request-summary-table');
-    
-    // Set the delivery request ID
-    if (requestIdInput) {
-        requestIdInput.value = requestId;
-        console.log('Set delivery_request_id to:', requestId);
-    } else {
-        console.error('modal-request-id input not found!');
-    }
+    document.getElementById('modal-request-id').value = requestId;
     
     modal.classList.remove('hidden');
     modal.classList.add('flex');
@@ -127,70 +115,17 @@ async function openAssignModalForRequest(requestId) {
     
     // Load request data
     try {
-        summaryContainer.innerHTML = '<p class="text-gray-500">Loading request details...</p>';
-        
         const response = await fetch(`/requests/${requestId}`);
         const html = await response.text();
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         
-        // Extract request data from the HTML
-        const atwReference = doc.querySelector('[data-atw-reference]')?.textContent.trim() || 'N/A';
-        const clientName = doc.querySelector('[data-client-name]')?.textContent.trim() || 'N/A';
-        const containerSize = doc.querySelector('[data-container-size]')?.textContent.trim() || 'N/A';
-        const pickup = doc.querySelector('[data-pickup]')?.textContent.trim() || 'N/A';
-        const delivery = doc.querySelector('[data-delivery]')?.textContent.trim() || 'N/A';
-        const preferredSchedule = doc.querySelector('[data-preferred-schedule]')?.getAttribute('data-preferred-schedule');
-        
-        // Populate summary
-        summaryContainer.innerHTML = `
-            <div class="pb-2 border-b">
-                <p class="text-gray-500 mb-1">ATW Reference</p>
-                <p class="font-mono font-semibold text-purple-600 bg-white px-2 py-1 rounded">
-                    ${atwReference}
-                </p>
-            </div>
-            <div>
-                <p class="text-gray-500 mb-1">Client</p>
-                <p class="font-semibold text-gray-800">${clientName}</p>
-            </div>
-            <div>
-                <p class="text-gray-500 mb-1">Container</p>
-                <p class="font-semibold text-gray-800">${containerSize}</p>
-            </div>
-            <div>
-                <p class="text-gray-500 mb-1">Route</p>
-                <div class="space-y-2">
-                    <div class="flex items-start p-2 bg-green-50 rounded text-xs">
-                        <i class="fas fa-map-marker-alt text-green-500 mr-1 mt-0.5"></i>
-                        <p class="font-medium">${pickup}</p>
-                    </div>
-                    <div class="flex justify-center">
-                        <i class="fas fa-arrow-down text-gray-300 text-xs"></i>
-                    </div>
-                    <div class="flex items-start p-2 bg-red-50 rounded text-xs">
-                        <i class="fas fa-flag-checkered text-red-500 mr-1 mt-0.5"></i>
-                        <p class="font-medium">${delivery}</p>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // Set scheduled time to preferred schedule or current time + 1 hour
-        if (preferredSchedule) {
-            scheduledTimeInput.value = preferredSchedule;
-        } else {
-            const now = new Date();
-            now.setHours(now.getHours() + 1);
-            scheduledTimeInput.value = now.toISOString().slice(0, 16);
-        }
-        
-        // Load drivers and vehicles
+        // Extract request data from the page (alternative: create API endpoint)
+        // For now, load drivers and vehicles
         await loadDriversAndVehiclesTable();
         
     } catch (error) {
         console.error('Error loading request:', error);
-        summaryContainer.innerHTML = '<p class="text-red-500">Error loading request details</p>';
     }
 }
 
@@ -313,11 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
         modal.classList.add('hidden');
         modal.classList.remove('flex');
         document.body.style.overflow = '';
-        
-        // Reset form but keep delivery_request_id for debugging
-        const requestId = document.getElementById('modal-request-id')?.value;
         form.reset();
-        console.log('Modal closed. Previous delivery_request_id was:', requestId);
     }
 
     closeBtn?.addEventListener('click', hideModal);
@@ -336,23 +267,6 @@ document.addEventListener('DOMContentLoaded', function() {
     form?.addEventListener('submit', function(e) {
         const driverSelected = document.querySelector('input[name="driver_id"]:checked');
         const vehicleSelected = document.querySelector('input[name="vehicle_id"]:checked');
-        const requestIdInput = document.getElementById('modal-request-id');
-        
-        // Log all form data before submission
-        console.log('Form submission attempt:', {
-            delivery_request_id: requestIdInput?.value,
-            driver_id: driverSelected?.value,
-            vehicle_id: vehicleSelected?.value,
-            scheduled_time: document.getElementById('scheduled-time-table')?.value
-        });
-
-        // Check if delivery_request_id is set
-        if (!requestIdInput || !requestIdInput.value) {
-            e.preventDefault();
-            console.error('CRITICAL: delivery_request_id is missing!');
-            alert('Error: Delivery request information is missing. Please close this modal and try again.');
-            return false;
-        }
 
         if (!driverSelected || !vehicleSelected) {
             e.preventDefault();
