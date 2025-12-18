@@ -4,13 +4,13 @@
 <div class="container mx-auto px-4 py-8">
     <div class="mb-6 flex items-center justify-between">
         <div>
-            <h1 class="text-3xl font-bold text-gray-800">Dispatcher Management</h1>
-            <p class="text-gray-600 mt-1">Manage dispatcher accounts and credentials</p>
+            <h1 class="text-3xl font-bold text-gray-800">User Management</h1>
+            <p class="text-gray-600 mt-1">Manage admin and dispatcher accounts</p>
         </div>
         <a href="{{ route('admin.dispatchers.create') }}" 
            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition">
             <i class="fas fa-plus mr-2"></i>
-            Add New Dispatcher
+            Add New User
         </a>
     </div>
 
@@ -32,6 +32,7 @@
                 <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Mobile</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created At</th>
                     <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
@@ -56,9 +57,23 @@
                         <div class="text-sm text-gray-900">{{ $dispatcher->email }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">
+                            <i class="fas fa-phone text-gray-400 mr-1"></i>
+                            {{ $dispatcher->mobile ?? 'N/A' }}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                            {{ $dispatcher->role === 'head_dispatch' ? 'bg-purple-100 text-purple-800' : 'bg-blue-100 text-blue-800' }}">
-                            {{ $dispatcher->role === 'head_dispatch' ? 'Head Dispatcher' : 'Dispatcher' }}
+                            {{ $dispatcher->role === 'admin' ? 'bg-red-100 text-red-800' : '' }}
+                            {{ $dispatcher->role === 'head_dispatch' ? 'bg-purple-100 text-purple-800' : '' }}
+                            {{ $dispatcher->role === 'dispatch' ? 'bg-blue-100 text-blue-800' : '' }}">
+                            @if($dispatcher->role === 'admin')
+                                Admin
+                            @elseif($dispatcher->role === 'head_dispatch')
+                                Head Dispatcher
+                            @else
+                                Dispatcher
+                            @endif
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -73,22 +88,24 @@
                         <form action="{{ route('admin.dispatchers.destroy', $dispatcher) }}" 
                               method="POST" 
                               class="inline"
-                              onsubmit="return confirm('Are you sure you want to delete this dispatcher?');">
+                              onsubmit="return confirm('Are you sure you want to delete this user?');">
                             @csrf
                             @method('DELETE')
                             <button type="submit" class="text-red-600 hover:text-red-900">
                                 <i class="fas fa-trash"></i> Delete
                             </button>
                         </form>
+                        @else
+                        <span class="text-gray-400 text-xs italic">(You)</span>
                         @endif
                     </td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
                         <i class="fas fa-users text-4xl mb-3 text-gray-300"></i>
-                        <p class="text-lg font-medium">No dispatchers found</p>
-                        <p class="text-sm mt-1">Create your first dispatcher account to get started.</p>
+                        <p class="text-lg font-medium">No users found</p>
+                        <p class="text-sm mt-1">Create your first user account to get started.</p>
                     </td>
                 </tr>
                 @endforelse

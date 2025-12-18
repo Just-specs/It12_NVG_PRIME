@@ -4,35 +4,6 @@
 
 @section('content')
 <div class="container mx-auto px-4 max-w-6xl">
-    <!-- Error Messages -->
-    @if(session('error'))
-    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded">
-        <div class="flex items-start">
-            <i class="fas fa-exclamation-circle text-red-600 text-xl mt-1 mr-3"></i>
-            <div>
-                <p class="font-semibold text-red-800">Error</p>
-                <p class="text-red-700 text-sm mt-1">{{ session('error') }}</p>
-            </div>
-        </div>
-    </div>
-    @endif
-
-    @if($errors->any())
-    <div class="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded">
-        <div class="flex items-start">
-            <i class="fas fa-exclamation-circle text-red-600 text-xl mt-1 mr-3"></i>
-            <div>
-                <p class="font-semibold text-red-800">Validation Errors</p>
-                <ul class="text-red-700 text-sm mt-2 list-disc list-inside">
-                    @foreach($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
-    </div>
-    @endif
-
     <div class="mb-6 flex items-center justify-between">
         <a href="{{ route('requests.show', $deliveryRequest) }}" class="text-blue-600 hover:text-blue-800">
             <i class="fas fa-arrow-left"></i> Back to Request
@@ -76,7 +47,6 @@
 
                 <form method="POST" action="{{ route('trips.store') }}" id="assignmentForm">
                     @csrf
-                    <input type="hidden" name="_token" value="{{ csrf_token() }}" id="csrf-token">
                     <input type="hidden" name="delivery_request_id" value="{{ $deliveryRequest->id }}">
 
                     <!-- Driver Selection -->
@@ -358,45 +328,21 @@
 </div>
 
 <script>
-    // Refresh CSRF token on page load (important for Railway/production)
-    document.addEventListener('DOMContentLoaded', function() {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-        if (csrfToken) {
-            const csrfInput = document.getElementById('csrf-token');
-            if (csrfInput) {
-                csrfInput.value = csrfToken;
-            }
-        }
-    });
-
     // Form validation feedback
     document.getElementById('assignmentForm')?.addEventListener('submit', function(e) {
         const driverSelected = document.querySelector('input[name="driver_id"]:checked');
         const vehicleSelected = document.querySelector('input[name="vehicle_id"]:checked');
-        const scheduledTime = document.querySelector('input[name="scheduled_time"]');
 
-        // Validate selections
         if (!driverSelected || !vehicleSelected) {
             e.preventDefault();
             alert('Please select both a driver and a vehicle to continue.');
             return false;
         }
 
-        if (!scheduledTime || !scheduledTime.value) {
-            e.preventDefault();
-            alert('Please select a scheduled time.');
-            return false;
-        }
-
         // Show loading state
         const submitBtn = this.querySelector('button[type="submit"]');
-        if (submitBtn) {
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning Trip...';
-        }
-
-        // Allow form submission
-        return true;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
     });
 
     // Radio button selection visual feedback
@@ -415,14 +361,6 @@
                 this.closest('label').classList.add('border-purple-500', 'bg-purple-50');
             }
         });
-    });
-
-    // Auto-scroll to error messages if present
-    window.addEventListener('load', function() {
-        const errorDiv = document.querySelector('.bg-red-50');
-        if (errorDiv) {
-            errorDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
     });
 </script>
 @endsection

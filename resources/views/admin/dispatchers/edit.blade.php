@@ -6,12 +6,12 @@
         <div class="mb-6">
             <a href="{{ route('admin.dispatchers.index') }}" class="text-blue-600 hover:text-blue-800 inline-flex items-center">
                 <i class="fas fa-arrow-left mr-2"></i>
-                Back to Dispatchers
+                Back to User Management
             </a>
         </div>
 
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h1 class="text-2xl font-bold text-gray-800 mb-6">Edit Dispatcher</h1>
+            <h1 class="text-2xl font-bold text-gray-800 mb-6">Edit User</h1>
 
             <form action="{{ route('admin.dispatchers.update', $dispatcher) }}" method="POST">
                 @csrf
@@ -45,6 +45,21 @@
                     @enderror
                 </div>
 
+                <!-- Mobile Number -->
+                <div class="mb-4">
+                    <label for="mobile" class="block text-sm font-medium text-gray-700 mb-2">Mobile Number</label>
+                    <input type="text" 
+                           id="mobile" 
+                           name="mobile" 
+                           value="{{ old('mobile', $dispatcher->mobile) }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('mobile') border-red-500 @enderror"
+                           placeholder="e.g., 09123456789"
+                           required>
+                    @error('mobile')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Role -->
                 <div class="mb-4">
                     <label for="role" class="block text-sm font-medium text-gray-700 mb-2">Role</label>
@@ -52,12 +67,18 @@
                             name="role" 
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('role') border-red-500 @enderror"
                             required>
-                        <option value="dispatch" {{ old('role', $dispatcher->role) === 'dispatch' ? 'selected' : '' }}>Dispatcher</option>
+                        <option value="admin" {{ old('role', $dispatcher->role) === 'admin' ? 'selected' : '' }}>Admin</option>
                         <option value="head_dispatch" {{ old('role', $dispatcher->role) === 'head_dispatch' ? 'selected' : '' }}>Head Dispatcher</option>
+                        <option value="dispatch" {{ old('role', $dispatcher->role) === 'dispatch' ? 'selected' : '' }}>Dispatcher</option>
                     </select>
                     @error('role')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="mt-1 text-sm text-gray-500">
+                        <span class="font-semibold">Admin:</span> Full system access<br>
+                        <span class="font-semibold">Head Dispatcher:</span> Can verify requests and manage dispatchers<br>
+                        <span class="font-semibold">Dispatcher:</span> Can view and assign trips
+                    </p>
                 </div>
 
                 <hr class="my-6">
@@ -93,7 +114,7 @@
                     </a>
                     <button type="submit" 
                             class="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition">
-                        Update Dispatcher
+                        Update User
                     </button>
                 </div>
             </form>

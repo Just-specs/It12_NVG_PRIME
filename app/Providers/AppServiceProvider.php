@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
+use App\Models\Client;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -45,5 +47,15 @@ class AppServiceProvider extends ServiceProvider
         Blade::if('role', function ($role) {
             return auth()->check() && auth()->user()->role === $role;
         });
+
+        // View Composer: Automatically share clients with request create/edit views
+        View::composer(
+            ['dispatch.requests.create', 'dispatch.requests.edit'],
+            function ($view) {
+                if (!$view->offsetExists('clients')) {
+                    $view->with('clients', Client::orderBy('name')->get());
+                }
+            }
+        );
     }
 }

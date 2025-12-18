@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('body-class', 'bg-[#38B7F7]')
 
@@ -175,12 +175,9 @@
                         </button>
                     </div>
 
-                    <!-- Register Link -->
-                    <p class="text-center text-sm text-blue-800">
-                        Don't have an account?
-                        <a href="{{ route('register') }}" class="font-semibold text-blue-600 transition hover:text-blue-800 hover:underline">
-                            Register here
-                        </a>
+                    <!-- Removed Register Link - Only Admins Can Create Accounts -->
+                    <p class="text-center text-sm text-blue-700 italic">
+                        Contact your administrator for account access
                     </p>
                 </form>
             </div>
@@ -203,5 +200,3 @@ function togglePasswordVisibility(fieldId) {
 }
 </script>
 @endsection
-
-

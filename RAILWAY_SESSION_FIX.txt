@@ -1,0 +1,6 @@
+# Add these to Railway environment variables:
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+SANCTUM_STATEFUL_DOMAINS=it12-prime-mover.up.railway.app

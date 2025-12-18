@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 namespace App\Http\Controllers;
 
@@ -141,25 +141,15 @@ class TripController extends Controller
 
     public function store(Request $request)
     {
-        // Log the incoming request for debugging
-        \Log::info('Trip assignment attempt', [
-            'user_id' => auth()->id(),
-            'request_data' => $request->except(['_token']),
-            'session_id' => session()->getId(),
-            'ip_address' => $request->ip()
+        $validated = $request->validate([
+            'delivery_request_id' => 'required|exists:delivery_requests,id',
+            'driver_id' => 'required|exists:drivers,id',
+            'vehicle_id' => 'required|exists:vehicles,id',
+            'scheduled_time' => 'required|date',
+            'route_instructions' => 'nullable|string'
         ]);
 
         try {
-            $validated = $request->validate([
-                'delivery_request_id' => 'required|exists:delivery_requests,id',
-                'driver_id' => 'required|exists:drivers,id',
-                'vehicle_id' => 'required|exists:vehicles,id',
-                'scheduled_time' => 'required|date',
-                'route_instructions' => 'nullable|string'
-            ]);
-
-            \Log::info('Validation passed', ['validated_data' => $validated]);
-
             // Use dispatch service to create trip and update all statuses
             $trip = $this->dispatchService->assignTrip(
                 $validated['delivery_request_id'],
@@ -169,40 +159,17 @@ class TripController extends Controller
                 $validated['route_instructions'] ?? null
             );
 
-            \Log::info('Trip assigned successfully', [
-                'trip_id' => $trip->id,
-                'driver_id' => $trip->driver_id,
-                'vehicle_id' => $trip->vehicle_id
-            ]);
-
             // Send assignment notification to client
             $this->sendClientNotification($trip, 'scheduled', 'Your delivery has been scheduled.');
 
             return redirect()
-                ->route('trips.index', ['status' => 'scheduled'])
+                ->route('trips.show', $trip)
                 ->with('success', 'Trip assigned successfully. Driver has been notified.');
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            \Log::error('Validation failed in trip assignment', [
-                'errors' => $e->errors(),
-                'input' => $request->except(['_token'])
-            ]);
-            return redirect()
-                ->back()
-                ->withInput()
-                ->withErrors($e->errors())
-                ->with('error', 'Validation failed. Please check all fields.');
-
         } catch (\Exception $e) {
-            \Log::error('Trip assignment failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'input' => $request->except(['_token'])
-            ]);
             return redirect()
                 ->back()
                 ->withInput()
-                ->with('error', 'Failed to assign trip: ' . $e->getMessage());
+                ->with('error', $e->getMessage());
         }
     }
 
@@ -312,7 +279,7 @@ class TripController extends Controller
             }, ARRAY_FILTER_USE_KEY));
 
             return redirect()
-                ->route('trips.index', ['status' => 'scheduled'])
+                ->route('trips.show', $trip)
                 ->with('success', 'Trip updated successfully.');
         } catch (\Exception $e) {
             return redirect()
@@ -704,7 +671,5 @@ class TripController extends Controller
         return redirect()->back()->with('info', 'PDF export feature requires DomPDF package.');
     }
 }
-
-
 
 

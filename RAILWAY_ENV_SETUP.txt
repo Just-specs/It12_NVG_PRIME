@@ -1,0 +1,20 @@
+﻿=========================================
+RAILWAY ENVIRONMENT VARIABLES - QUICK SETUP
+=========================================
+
+Copy and paste these into Railway Dashboard > Variables:
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+SESSION_DOMAIN=null
+
+IMPORTANT: After adding these variables, Railway will automatically redeploy your app.
+
+After deployment, run this command in Railway terminal:
+php artisan migrate
+
+Then test the assign driver functionality.
+
+=========================================
