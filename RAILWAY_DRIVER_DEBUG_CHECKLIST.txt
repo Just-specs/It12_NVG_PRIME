@@ -1,0 +1,104 @@
+﻿# RAILWAY DRIVER DEBUGGING CHECKLIST
+# Run these checks to identify the exact problem
+
+## STEP 1: Check if Railway Environment Variables are Set
+1. Go to Railway Dashboard: https://railway.app/
+2. Select your IT12 project
+3. Go to Variables tab
+4. Verify these variables exist:
+
+REQUIRED VARIABLES:
+☐ SESSION_DRIVER=database
+☐ SESSION_LIFETIME=120
+☐ SESSION_SECURE_COOKIE=true
+☐ SESSION_SAME_SITE=lax
+☐ SESSION_DOMAIN=.railway.app
+☐ SANCTUM_STATEFUL_DOMAINS=it12-prime-mover.up.railway.app,*.railway.app
+
+If ANY are missing, add them now!
+
+## STEP 2: Check Browser Console for Errors
+1. Go to: https://it12-prime-mover.up.railway.app/drivers/create
+2. Open Browser Developer Tools (F12)
+3. Go to Console tab
+4. Try to submit the form
+5. Look for errors like:
+   - "CSRF token not found"
+   - "Failed to fetch"
+   - "419 Page Expired"
+   - "422 Unprocessable Entity"
+   - Any red error messages
+
+WRITE DOWN THE ERROR MESSAGE: _______________________________
+
+## STEP 3: Check Network Tab
+1. In Developer Tools, go to Network tab
+2. Try to submit the form
+3. Look for the POST request to /drivers
+4. Click on it and check:
+   - Status Code: _______
+   - Response: _______
+   - Request Headers (should have X-CSRF-TOKEN): _______
+
+## STEP 4: Test CSRF Token
+1. Open browser console on the drivers/create page
+2. Run this command:
+   document.querySelector('meta[name="csrf-token"]')
+3. Does it return a meta tag? Yes/No: _______
+4. Run this:
+   document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+5. Does it return a token string? Yes/No: _______
+
+## STEP 5: Check if Deployment Completed
+1. Go to Railway Dashboard
+2. Check Deployments tab
+3. Latest deployment status: _______
+4. Any errors in deployment logs? _______
+
+## STEP 6: Check Database Connection
+1. Go to Railway Dashboard
+2. Click on your MySQL database
+3. Is it running? Yes/No: _______
+4. Check Connect tab for connection details
+
+## STEP 7: Test Simple Driver Creation (Without AJAX)
+Try adding a driver with a unique license number to see if it's a backend issue.
+
+## COMMON ISSUES & SOLUTIONS:
+
+### Issue 1: "419 Page Expired" or CSRF Token Mismatch
+Solution: 
+- Clear browser cache
+- Make sure SESSION variables are set on Railway
+- Hard refresh page (Ctrl + F5)
+
+### Issue 2: "Validation failed" with all fields filled
+Solution:
+- Check license_number doesn't already exist
+- Check mobile format is correct
+- Look at Response in Network tab for specific field errors
+
+### Issue 3: Page doesn't load
+Solution:
+- Check Railway deployment status
+- Check database is running
+- Check .env variables are correct
+
+### Issue 4: Nothing happens when clicking Save
+Solution:
+- Check browser console for JavaScript errors
+- Verify CSRF token meta tag exists
+- Check if fetch() is being blocked
+
+### Issue 5: "Table 'drivers' doesn't exist"
+Solution:
+- Run migrations on Railway
+- Check database connection
+
+## WHAT TO REPORT BACK:
+Please provide:
+1. Exact error message: _______________________________
+2. Browser console errors: _______________________________
+3. Network response status code: _______________________________
+4. Railway environment variables status: All set? Yes/No
+5. Latest deployment status: _______________________________

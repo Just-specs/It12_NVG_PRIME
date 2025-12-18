@@ -1,0 +1,136 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Railway CSRF Test</title>
+    <style>
+        body { font-family: Arial; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .result { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>Railway Driver Creation Debug Tool</h1>
+    <p>This page will help diagnose why drivers can't be added on Railway.</p>
+
+    <h2>Test 1: Check CSRF Token</h2>
+    <button onclick="testCsrfToken()">Test CSRF Token</button>
+    <div id="csrf-result"></div>
+
+    <h2>Test 2: Test AJAX Request</h2>
+    <button onclick="testAjaxRequest()">Test AJAX Request</button>
+    <div id="ajax-result"></div>
+
+    <h2>Test 3: Check Session</h2>
+    <button onclick="testSession()">Test Session</button>
+    <div id="session-result"></div>
+
+    <h2>Test 4: Try Create Driver</h2>
+    <form id="test-form">
+        <input type="text" name="name" placeholder="Driver Name" required><br>
+        <input type="text" name="mobile" placeholder="Mobile" required><br>
+        <input type="text" name="license_number" placeholder="License Number" required><br>
+        <select name="status">
+            <option value="available">Available</option>
+        </select><br>
+        <button type="submit">Create Test Driver</button>
+    </form>
+    <div id="form-result"></div>
+
+    <script>
+        function showResult(elementId, message, isSuccess) {
+            const el = document.getElementById(elementId);
+            el.className = 'result ' + (isSuccess ? 'success' : 'error');
+            el.innerHTML = message;
+        }
+
+        function testCsrfToken() {
+            const meta = document.querySelector('meta[name="csrf-token"]');
+            if (meta) {
+                const token = meta.getAttribute('content');
+                if (token) {
+                    showResult('csrf-result', '✅ CSRF Token Found: ' + token.substring(0, 20) + '...', true);
+                } else {
+                    showResult('csrf-result', '❌ CSRF meta tag exists but has no content', false);
+                }
+            } else {
+                showResult('csrf-result', '❌ CSRF meta tag not found in page', false);
+            }
+        }
+
+        async function testAjaxRequest() {
+            try {
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                const token = meta ? meta.getAttribute('content') : null;
+                
+                const response = await fetch('/api/available-drivers', {
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    showResult('ajax-result', '✅ AJAX Request Success! Found ' + data.length + ' drivers', true);
+                } else {
+                    showResult('ajax-result', '❌ AJAX Failed: Status ' + response.status, false);
+                }
+            } catch (error) {
+                showResult('ajax-result', '❌ AJAX Error: ' + error.message, false);
+            }
+        }
+
+        async function testSession() {
+            try {
+                const response = await fetch('/drivers', {
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    showResult('session-result', '✅ Session Working! Can access drivers page', true);
+                } else {
+                    showResult('session-result', '❌ Session Issue: Status ' + response.status, false);
+                }
+            } catch (error) {
+                showResult('session-result', '❌ Session Error: ' + error.message, false);
+            }
+        }
+
+        document.getElementById('test-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            try {
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                const token = meta ? meta.getAttribute('content') : null;
+                
+                const formData = new FormData(this);
+                formData.append('confirm_duplicate', '1');
+
+                const response = await fetch('/drivers', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': token,
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    showResult('form-result', '✅ Driver Created Successfully!', true);
+                } else {
+                    showResult('form-result', '❌ Failed: ' + JSON.stringify(data), false);
+                }
+            } catch (error) {
+                showResult('form-result', '❌ Error: ' + error.message, false);
+            }
+        });
+    </script>
+</body>
+</html>

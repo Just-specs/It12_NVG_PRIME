@@ -1,0 +1,22 @@
+﻿# Railway Driver Addition Debugging Script
+# Run this on Railway to check what's wrong
+
+# 1. Check if drivers table exists
+echo "=== Checking if drivers table exists ==="
+railway run php artisan tinker --execute="echo 'Drivers count: ' . \App\Models\Driver::count();"
+
+# 2. Check table structure
+echo "\n=== Checking drivers table structure ==="
+railway run php artisan tinker --execute="\Schema::getColumnListing('drivers');"
+
+# 3. Try to create a test driver
+echo "\n=== Trying to create test driver ==="
+railway run php artisan tinker --execute="\App\Models\Driver::create(['name' => 'Test Driver', 'mobile' => '09123456789', 'license_number' => 'TEST123', 'status' => 'available']);"
+
+# 4. Check for validation errors in logs
+echo "\n=== Checking recent errors in logs ==="
+railway logs --tail 100
+
+# 5. Check if license_number has unique constraint
+echo "\n=== Checking unique constraints ==="
+railway run php artisan tinker --execute="DB::select('SHOW CREATE TABLE drivers');"

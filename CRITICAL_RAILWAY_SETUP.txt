@@ -1,0 +1,33 @@
+﻿# CRITICAL: Railway Environment Variables Setup
+# You MUST add these to Railway before drivers will work!
+
+Go to Railway Dashboard → Your Project → Variables Tab
+
+Add EXACTLY these variables (copy-paste):
+
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+SESSION_DOMAIN=.railway.app
+SANCTUM_STATEFUL_DOMAINS=it12-prime-mover.up.railway.app,*.railway.app
+
+After adding, Railway will auto-redeploy (takes 2-3 minutes).
+
+IMPORTANT: Without these variables, the CSRF fix won't work!
+
+Then test:
+1. Go to https://it12-prime-mover.up.railway.app/drivers/create
+2. Open browser console (F12)
+3. Fill in:
+   - Name: Test Driver
+   - Mobile: 09123456789
+   - License: TEST2536
+   - Status: Available
+4. Click Save Driver
+5. Check console for any errors
+
+If still failing, tell me:
+- What error message you see
+- What's in the browser console (red errors)
+- Status code in Network tab

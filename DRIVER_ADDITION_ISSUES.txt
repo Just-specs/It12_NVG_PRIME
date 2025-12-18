@@ -1,0 +1,38 @@
+﻿Common Issues When Adding Drivers on Railway:
+
+1. **CSRF Token Issue** (Same as trips assignment)
+   - Symptom: Form submits but shows validation error
+   - Cause: Session not configured for HTTPS
+   - Solution: Already fixed with SESSION_SECURE_COOKIE=true
+
+2. **Database Connection Issue**
+   - Symptom: 500 error or "Connection refused"
+   - Cause: Database not accessible
+   - Check: Railway database is running
+
+3. **License Number Unique Constraint**
+   - Symptom: "The license number has already been taken"
+   - Cause: Duplicate license number in database
+   - Solution: Check existing drivers first
+
+4. **Mobile/Phone Validation**
+   - Symptom: "The mobile field is required"
+   - Cause: Field validation fails
+   - Solution: Check input format
+
+5. **Status Enum Mismatch**
+   - Symptom: "Invalid status value"
+   - Cause: Status value not in enum
+   - Solution: Use only: available, on-trip, off-duty
+
+6. **Migration Not Run**
+   - Symptom: "Table 'railway.drivers' doesn't exist"
+   - Cause: Migrations haven't run on Railway
+   - Solution: Run 'php artisan migrate --force'
+
+7. **JavaScript/AJAX Error**
+   - Symptom: Form doesn't submit, stays on page
+   - Cause: JavaScript error or fetch() fails
+   - Check: Browser console for errors
+
+WHICH ERROR ARE YOU SEEING?

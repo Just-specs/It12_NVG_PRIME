@@ -1,0 +1,52 @@
+﻿# QUICK REFERENCE: Driver Addition Fix for Railway
+
+## THE PROBLEM
+Cannot add or edit drivers on Railway - AJAX requests failing due to missing CSRF token
+
+## THE FIX
+Added CSRF token to fetch request headers in driver forms
+
+## FILES FIXED
+✅ resources/views/dispatch/drivers/create.blade.php
+✅ resources/views/dispatch/drivers/edit.blade.php
+
+## DEPLOYMENT COMMANDS
+
+# 1. Commit and push changes
+git add resources/views/dispatch/drivers/create.blade.php resources/views/dispatch/drivers/edit.blade.php
+git commit -m "Fix: Add CSRF token to driver AJAX requests for Railway compatibility"
+git push origin main
+
+# 2. Wait for Railway auto-deploy (no additional commands needed)
+
+# 3. Test on Railway
+# Go to: https://it12-prime-mover.up.railway.app/drivers/create
+# Fill form and submit - should work now!
+
+## WHAT WAS CHANGED
+
+Before:
+  headers: {
+    'X-Requested-With': 'XMLHttpRequest',
+    'Accept': 'application/json',
+  }
+
+After:
+  const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+  
+  headers: {
+    'X-Requested-With': 'XMLHttpRequest',
+    'Accept': 'application/json',
+    'X-CSRF-TOKEN': csrfToken  // <-- ADDED THIS
+  }
+
+## TESTING CHECKLIST
+□ Create new driver - should work
+□ Edit existing driver - should work
+□ Duplicate detection modal - should show when similar driver exists
+□ Form validation - should show proper error messages
+
+## NOTES
+- This fix works together with the previous session/CSRF fix for trip assignment
+- Both fixes are required for Railway to work properly
+- No database changes needed, only view files updated

@@ -1,0 +1,45 @@
+﻿# CRITICAL FIX FOUND!
+# ===================
+
+## THE BUG:
+In DeliveryRequestController.php, the show() method uses parameter name \:
+
+    public function show(DeliveryRequest \)
+    {
+        \->load(['client', 'trip.driver', 'trip.vehicle']);
+        return view('dispatch.requests.show', compact('request'));
+    }
+
+This creates a VARIABLE NAME CONFLICT because Laravel's HTTP request is also named \!
+
+When the blade template tries to use \->id in the modal:
+    <input type="hidden" name="delivery_request_id" value="{{ \->id }}">
+
+It's actually trying to get the ID from Laravel's HTTP Request object (which returns null),
+NOT from the DeliveryRequest model!
+
+## THE FIX:
+Change the parameter name from \ to \ in ALL methods that use DeliveryRequest as a parameter.
+
+This is a COMMON Laravel pitfall - never name route model binding parameters \!
+
+## FILES TO FIX:
+1. app/Http/Controllers/DeliveryRequestController.php
+   - show() method
+   - verify() method  
+   - verifyAndAssign() method
+   - autoAssign() method
+   - edit() method
+   - update() method
+   - destroy() method
+   - Any other method with DeliveryRequest \ parameter
+
+2. resources/views/dispatch/requests/show.blade.php
+   - Change all \-> to \->
+
+3. resources/views/dispatch/requests/partials/assign-driver-modal.blade.php
+   - Change \->id to \->id
+
+## IMPACT:
+This is a HIGH PRIORITY bug that prevents driver assignment on Railway (and locally).
+The validation fails because delivery_request_id is always null.
