@@ -377,83 +377,70 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     form?.addEventListener('submit', function(e) {
-        console.log('=== FORM SUBMIT HANDLER CALLED ===');
-        
+        e.preventDefault(); // Stop default submission
         
         const driverSelected = document.querySelector('input[name="driver_id"]:checked');
         const vehicleSelected = document.querySelector('input[name="vehicle_id"]:checked');
-        const requestIdInput = document.getElementById('modal-delivery-request-id');
-        console.log('Submit handler - Found element:', requestIdInput);
-        console.log('Submit handler - Element exists:', !!requestIdInput);
-        console.log('Submit handler - Element.value BEFORE reading:', document.getElementById('modal-delivery-request-id')?.value);
-        
-        
-        // Log all form data before submission
 
-        
-        console.log('===== FORM SUBMISSION DEBUG =====');
-
-        
-        console.log('requestIdInput element:', requestIdInput);
-
-        
-        console.log('requestIdInput.value:', requestIdInput?.value);
-
-        
-        console.log('All form data:', new FormData(form));
-
-        
-        for (let pair of new FormData(form).entries()) {
-
-        
-            console.log(pair[0] + ': ' + pair[1]);
-
-        
-        }
-
-        
-        console.log('Form submission attempt:', {
-
-        
-            delivery_request_id: requestIdInput?.value,
-            driver_id: driverSelected?.value,
-            vehicle_id: vehicleSelected?.value,
-            scheduled_time: document.getElementById('scheduled-time-table')?.value
-        });
-
-        // CRITICAL FIX: Restore the request ID from global storage if it's missing
-        if ((!requestIdInput || !requestIdInput.value || requestIdInput.value === "" || requestIdInput.value === "null") && window.currentAssignRequestId) {
-            console.warn('WARNING: delivery_request_id was empty, restoring from window.currentAssignRequestId:', window.currentAssignRequestId);
-            requestIdInput.value = window.currentAssignRequestId;
-        }
-
-        // Check if delivery_request_id is set
-        if (!requestIdInput || !requestIdInput.value || requestIdInput.value === "" || requestIdInput.value === "null") {
-            e.preventDefault();
-            console.error('CRITICAL: delivery_request_id is missing or invalid!');
-            console.error('requestIdInput:', requestIdInput);
-            console.error('requestIdInput.value:', requestIdInput?.value);
-            alert('ERROR: Cannot assign trip - Request ID is missing. Please close the modal and try again.');
-            return false;
-        }
-
+        // Validate driver and vehicle
         if (!driverSelected || !vehicleSelected) {
-            e.preventDefault();
             alert('Please select both a driver and a vehicle.');
             return false;
         }
 
+        // Get the request ID from the global variable
+        const requestId = window.currentAssignRequestId;
         
+        if (!requestId) {
+            alert('ERROR: Cannot assign trip - Request ID is missing. Please close the modal and try again.');
+            return false;
+        }
+
+        console.log('Submitting with delivery_request_id:', requestId);
+
+        // Create FormData and manually add all fields including delivery_request_id
+        const formData = new FormData(form);
         
-        // FINAL CHECK - Show alert with the delivery_request_id value
+        // Force set delivery_request_id
+        formData.set('delivery_request_id', requestId);
         
-        
+        console.log('Final FormData contents:');
+        for (let [key, value] of formData.entries()) {
+            console.log(`${key}: ${value}`);
+        }
+
         const submitBtn = document.getElementById('submit-assign-table');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
+
+        // Submit using fetch
+        fetch(form.action, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect || '/trips';
+            } else {
+                alert('Error: ' + (data.message || 'Failed to assign trip'));
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-check"></i> Assign Trip & Notify Driver';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error submitting form. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-check"></i> Assign Trip & Notify Driver';
+        });
     });
 });
 </script>
+
 
 
 
