@@ -167,6 +167,9 @@ class DeliveryRequestController extends Controller
             ]);
         }
 
+        // Debug: Log the data being saved
+        \Log::info('Creating delivery request with data:', $validated);
+        
         $deliveryRequest = DeliveryRequest::create([
             'client_id' => $validated['client_id'],
             'contact_method' => $validated['contact_method'],
@@ -186,6 +189,9 @@ class DeliveryRequestController extends Controller
 
         // Refresh the model to ensure all attributes are loaded
         $deliveryRequest->refresh();
+        
+        // Debug: Log the refreshed model
+        \Log::info('Delivery request after refresh:', $deliveryRequest->toArray());
 
         // Check if auto-assignment is requested
         if ($request->input('auto_assign', false)) {
@@ -517,6 +523,8 @@ class DeliveryRequestController extends Controller
             ->with('info', 'Import feature coming soon.');
     }
 }
+
+
 
 
 
