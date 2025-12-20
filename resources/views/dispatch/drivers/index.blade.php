@@ -414,7 +414,7 @@
             if (createDriverForm) {
                 createDriverForm.addEventListener('submit', function(e) {
                     e.preventDefault();
-                    console.log('Driver form submitted');
+                    
                     
                     const submitBtn = createDriverForm.querySelector('button[type="submit"]');
                     const originalText = submitBtn.innerHTML;
@@ -433,9 +433,9 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        console.log('Response:', data);
+                        
                         if (data.success) {
-                            alert('Driver created successfully!');
+                            // Driver created successfully
                             window.location.reload();
                         } else if (data.confirm_required) {
                             if (confirm(data.message + '\n\nDo you want to create this driver anyway?')) {
@@ -451,7 +451,7 @@
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.success) {
-                                        alert('Driver created successfully!');
+                                        // Driver created successfully
                                         window.location.reload();
                                     }
                                 });
@@ -573,6 +573,7 @@
 @endpush
 
 @endsection
+
 
 
 
