@@ -479,13 +479,8 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log('Response data:', data);
             if (data.success || data.success === undefined) {
-                // Show success toast
-                showToast('Trip assigned successfully! Redirecting...', 'success');
-                
-                // Wait a moment before redirecting so user sees the toast
-                setTimeout(() => {
-                    window.location.href = data.redirect || '/trips';
-                }, 1500);
+                // Redirect immediately - toast will show on trips page
+                window.location.href = data.redirect || '/trips';
             } else {
                 // Show error toast
                 showToast(data.message || 'Failed to assign trip', 'error');
@@ -502,6 +497,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
 

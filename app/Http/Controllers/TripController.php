@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -740,6 +740,7 @@ class TripController extends Controller
         return redirect()->back()->with('info', 'PDF export feature requires DomPDF package.');
     }
 }
+
 
 
 
