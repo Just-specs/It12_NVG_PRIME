@@ -107,13 +107,7 @@
                 <img src="{{ asset('img/NVG_LOGO_org.png') }}" alt="NVG Prime Movers logo" class="h-20 w-20" />
             </a>
             <div class="text-center mt-3">
-                <h2 class="text-lg font-bold">
-                    @if(auth()->user()->role === 'admin')
-                    Head Dispatcher
-                    @else
-                    Dispatcher
-                    @endif
-                </h2>
+                <h2 class="text-lg font-bold">NVG PRIME MOVERS</h2>
 
             </div>
         </div>
@@ -203,37 +197,38 @@
                 <span class="ml-3 font-medium">Reports</span>
             </a>
 
+            <!-- Drivers - Available to Head Dispatcher (Admin) -->
             @if(auth()->user()->role === 'admin')
-            <!-- ADMIN ONLY SECTION -->
-            <div class="pt-2    "></div>
-            <div class="px-3">
-
-            </div>
-
-            <!-- Drivers - ADMIN ONLY -->
             <a href="{{ route('drivers.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('drivers.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
                 <i class="fas fa-user-tie w-5 {{ request()->routeIs('drivers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
                 <span class="ml-3 font-medium">Drivers</span>
             </a>
+            @endif
 
-            <!-- Vehicles - ADMIN ONLY -->
+            <!-- Vehicles - Available to Head Dispatcher (Admin) -->
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('vehicles.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('vehicles.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
                 <i class="fas fa-truck w-5 {{ request()->routeIs('vehicles.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
                 <span class="ml-3 font-medium">Vehicles</span>
             </a>
+            @endif
 
-            <!-- Clients - ADMIN ONLY -->
+            <!-- Clients - Available to Head Dispatcher (Admin) -->
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('clients.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('clients.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
                 <i class="fas fa-building w-5 {{ request()->routeIs('clients.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
                 <span class="ml-3 font-medium">Clients</span>
             </a>
-            <!-- Dispatchers - ADMIN ONLY -->
+            @endif
+
+            <!-- Dispatchers - ADMIN ONLY (Full Admin Control) -->
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('admin.dispatchers.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('admin.dispatchers.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
-                <i class="fas fa-user-tie w-5 {{ request()->routeIs('admin.dispatchers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
+                <i class="fas fa-users-cog w-5 {{ request()->routeIs('admin.dispatchers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
                 <span class="ml-3 font-medium">Dispatchers</span>
             </a>
             @endif
