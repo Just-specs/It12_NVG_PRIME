@@ -122,9 +122,24 @@ async function openAssignModalForRequest(requestId) {
     const summaryContainer = document.getElementById('request-summary-table');
     
     // Set the delivery request ID
+
+    
     if (requestIdInput) {
+
+    
         requestIdInput.value = requestId;
+
+    
         console.log('Set delivery_request_id to:', requestId);
+
+    
+        console.log('Hidden field value after setting:', requestIdInput.value);
+
+    
+        console.log('Hidden field ID:', requestIdInput.id);
+
+    
+        console.log('Hidden field name:', requestIdInput.name);
     } else {
         console.error('modal-request-id input not found!');
     }
@@ -347,7 +362,32 @@ document.addEventListener('DOMContentLoaded', function() {
         const requestIdInput = document.getElementById('modal-request-id');
         
         // Log all form data before submission
+
+        
+        console.log('===== FORM SUBMISSION DEBUG =====');
+
+        
+        console.log('requestIdInput element:', requestIdInput);
+
+        
+        console.log('requestIdInput.value:', requestIdInput?.value);
+
+        
+        console.log('All form data:', new FormData(form));
+
+        
+        for (let pair of new FormData(form).entries()) {
+
+        
+            console.log(pair[0] + ': ' + pair[1]);
+
+        
+        }
+
+        
         console.log('Form submission attempt:', {
+
+        
             delivery_request_id: requestIdInput?.value,
             driver_id: driverSelected?.value,
             vehicle_id: vehicleSelected?.value,
@@ -374,4 +414,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
 
