@@ -395,7 +395,14 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Check if delivery_request_id is set
-        if (!requestIdInput || !requestIdInput.value || requestIdInput.value === "" || requestIdInput.value === "null") {`n            e.preventDefault();`n            console.error("CRITICAL: delivery_request_id is missing or invalid!");`n            console.error("requestIdInput:", requestIdInput);`n            console.error("requestIdInput.value:", requestIdInput?.value);`n            alert("ERROR: Cannot assign trip - Request ID is missing. Value: " + (requestIdInput?.value || "NONE"));`n            return false;`n        }
+        if (!requestIdInput || !requestIdInput.value || requestIdInput.value === "" || requestIdInput.value === "null") {
+            e.preventDefault();
+            console.error('CRITICAL: delivery_request_id is missing or invalid!');
+            console.error('requestIdInput:', requestIdInput);
+            console.error('requestIdInput.value:', requestIdInput?.value);
+            alert('ERROR: Cannot assign trip - Request ID is missing. Value: ' + (requestIdInput?.value || 'NONE'));
+            return false;
+        }
 
         if (!driverSelected || !vehicleSelected) {
             e.preventDefault();
@@ -412,6 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
 
