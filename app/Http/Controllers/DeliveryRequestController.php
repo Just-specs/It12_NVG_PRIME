@@ -208,6 +208,16 @@ class DeliveryRequestController extends Controller
         // Refresh and load relationships
         $deliveryRequest->refresh();
         $deliveryRequest->load(['client', 'trip.driver', 'trip.vehicle']);
+        
+        // Debug: Log what we're showing
+        \Log::info('Showing delivery request:', [
+            'id' => $deliveryRequest->id,
+            'client_id' => $deliveryRequest->client_id,
+            'client_name' => $deliveryRequest->client?->name,
+            'atw_reference' => $deliveryRequest->atw_reference,
+            'pickup_location' => $deliveryRequest->pickup_location,
+            'delivery_location' => $deliveryRequest->delivery_location,
+        ]);
         $clients = Client::orderBy('name')->get();
         return view('dispatch.requests.show', compact('deliveryRequest', 'clients'));
     }
@@ -523,6 +533,7 @@ class DeliveryRequestController extends Controller
             ->with('info', 'Import feature coming soon.');
     }
 }
+
 
 
 
