@@ -15,7 +15,7 @@
         <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
             <form id="assign-driver-form-table" method="POST" action="{{ route('trips.store') }}">
                 @csrf
-                <input type="hidden" name="delivery_request_id" id="modal-request-id" value="" data-debug="true">
+                <input type="hidden" name="delivery_request_id" id="modal-delivery-request-id" value="" data-debug="true">
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Left Column: Driver & Vehicle Selection -->
@@ -117,10 +117,10 @@ async function openAssignModalForRequest(requestId) {
     }
     
     const modal = document.getElementById('assign-driver-modal-table');
-    const requestIdInput = document.getElementById('modal-request-id');
+    const requestIdInput = document.getElementById('modal-delivery-request-id');
         console.log('Submit handler - Found element:', requestIdInput);
         console.log('Submit handler - Element exists:', !!requestIdInput);
-        console.log('Submit handler - Element.value BEFORE reading:', document.getElementById('modal-request-id')?.value);
+        console.log('Submit handler - Element.value BEFORE reading:', document.getElementById('modal-delivery-request-id')?.value);
         
     const scheduledTimeInput = document.getElementById('scheduled-time-table');
     const summaryContainer = document.getElementById('request-summary-table');
@@ -353,11 +353,11 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = '';
         
         // Reset form but keep delivery_request_id for debugging
-        const requestId = document.getElementById('modal-request-id')?.value;
+        const requestId = document.getElementById('modal-delivery-request-id')?.value;
         form.reset();
         // Restore the delivery_request_id after reset
-        if (requestId && document.getElementById('modal-request-id')) {
-            document.getElementById('modal-request-id').value = requestId;
+        if (requestId && document.getElementById('modal-delivery-request-id')) {
+            document.getElementById('modal-delivery-request-id').value = requestId;
             console.log('Restored delivery_request_id after form reset:', requestId);
         }
         console.log('Modal closed. Previous delivery_request_id was:', requestId);
@@ -382,10 +382,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const driverSelected = document.querySelector('input[name="driver_id"]:checked');
         const vehicleSelected = document.querySelector('input[name="vehicle_id"]:checked');
-        const requestIdInput = document.getElementById('modal-request-id');
+        const requestIdInput = document.getElementById('modal-delivery-request-id');
         console.log('Submit handler - Found element:', requestIdInput);
         console.log('Submit handler - Element exists:', !!requestIdInput);
-        console.log('Submit handler - Element.value BEFORE reading:', document.getElementById('modal-request-id')?.value);
+        console.log('Submit handler - Element.value BEFORE reading:', document.getElementById('modal-delivery-request-id')?.value);
         
         
         // Log all form data before submission
@@ -454,6 +454,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
 
