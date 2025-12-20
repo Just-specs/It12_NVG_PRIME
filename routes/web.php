@@ -266,3 +266,4 @@ Route::get('/api/available-vehicles', function () {
 Route::get('/debug/test-driver', [App\Http\Controllers\DebugController::class, 'testDriverCreation']);
 Route::post('/debug/test-driver-ajax', [App\Http\Controllers\DebugController::class, 'testAjaxDriverCreation']);
 
+

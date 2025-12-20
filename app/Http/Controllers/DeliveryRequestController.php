@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -554,7 +554,37 @@ class DeliveryRequestController extends Controller
             ->route('requests.index')
             ->with('info', 'Import feature coming soon.');
     }
+    
+    /**
+     * Get request details for modal (API endpoint)
+     */
+    public function getRequestDetails($id)
+    {
+        try {
+            $request = DeliveryRequest::with('client')->findOrFail($id);
+            
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'id' => $request->id,
+                    'atw_reference' => $request->atw_reference ?? 'N/A',
+                    'client_name' => $request->client?->name ?? 'N/A',
+                    'container_size' => $request->container_size ?? 'N/A',
+                    'container_type' => $request->container_type ?? 'N/A',
+                    'pickup_location' => $request->pickup_location ?? 'N/A',
+                    'delivery_location' => $request->delivery_location ?? 'N/A',
+                    'preferred_schedule' => $request->preferred_schedule,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request not found'
+            ], 404);
+        }
+    }
 }
+
 
 
 
