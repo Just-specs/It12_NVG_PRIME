@@ -132,6 +132,8 @@ async function openAssignModalForRequest(requestId) {
 
     
         requestIdInput.value = requestId;
+        requestIdInput.setAttribute('value', requestId); // Set attribute so form.reset() preserves it
+        
         window.currentAssignRequestId = requestId; // Store globally
         console.log('Stored in window.currentAssignRequestId:', window.currentAssignRequestId);
 
@@ -350,6 +352,11 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset form but keep delivery_request_id for debugging
         const requestId = document.getElementById('modal-request-id')?.value;
         form.reset();
+        // Restore the delivery_request_id after reset
+        if (requestId && document.getElementById('modal-request-id')) {
+            document.getElementById('modal-request-id').value = requestId;
+            console.log('Restored delivery_request_id after form reset:', requestId);
+        }
         console.log('Modal closed. Previous delivery_request_id was:', requestId);
     }
 
@@ -444,6 +451,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
 
 
 
