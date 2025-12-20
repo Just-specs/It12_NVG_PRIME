@@ -88,7 +88,7 @@
                             <div class="w-32 text-sm text-gray-600">Schedule:</div>
                             <div class="flex-1 font-semibold">
                                 <i class="far fa-calendar-alt"></i>
-                                {{ $deliveryRequest->preferred_schedule->format('F d, Y') }} at {{ $deliveryRequest->preferred_schedule->format('h:i A') }}
+                                {{ $deliveryRequest->preferred_schedule ? $deliveryRequest->preferred_schedule->format('F d, Y') : 'N/A' }} at {{ $deliveryRequest->preferred_schedule ? $deliveryRequest->preferred_schedule->format('h:i A') : '' }}
                             </div>
                         </div>
                         @if($deliveryRequest->notes)
@@ -469,6 +469,7 @@
     }
 </script>
 @endpush
+
 
 
 
