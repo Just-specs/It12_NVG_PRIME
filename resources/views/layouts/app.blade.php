@@ -225,7 +225,7 @@
             @endif
 
             <!-- Dispatchers - ADMIN ONLY (Full Admin Control) -->
-            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
+            @if(auth()->user()->role === 'admin')
             <a href="{{ route('admin.dispatchers.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('admin.dispatchers.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
                 <i class="fas fa-users-cog w-5 {{ request()->routeIs('admin.dispatchers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
