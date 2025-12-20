@@ -118,6 +118,10 @@ async function openAssignModalForRequest(requestId) {
     
     const modal = document.getElementById('assign-driver-modal-table');
     const requestIdInput = document.getElementById('modal-request-id');
+        console.log('Submit handler - Found element:', requestIdInput);
+        console.log('Submit handler - Element exists:', !!requestIdInput);
+        console.log('Submit handler - Element.value BEFORE reading:', document.getElementById('modal-request-id')?.value);
+        
     const scheduledTimeInput = document.getElementById('scheduled-time-table');
     const summaryContainer = document.getElementById('request-summary-table');
     
@@ -128,6 +132,8 @@ async function openAssignModalForRequest(requestId) {
 
     
         requestIdInput.value = requestId;
+        window.currentAssignRequestId = requestId; // Store globally
+        console.log('Stored in window.currentAssignRequestId:', window.currentAssignRequestId);
 
     
         console.log('Set delivery_request_id to:', requestId);
@@ -367,6 +373,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const driverSelected = document.querySelector('input[name="driver_id"]:checked');
         const vehicleSelected = document.querySelector('input[name="vehicle_id"]:checked');
         const requestIdInput = document.getElementById('modal-request-id');
+        console.log('Submit handler - Found element:', requestIdInput);
+        console.log('Submit handler - Element exists:', !!requestIdInput);
+        console.log('Submit handler - Element.value BEFORE reading:', document.getElementById('modal-request-id')?.value);
+        
         
         // Log all form data before submission
 
@@ -417,6 +427,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
+        // EMERGENCY FIX: Store the request ID in a global variable and force set it
+        if (window.currentAssignRequestId) {
+            console.log('FORCING value from window.currentAssignRequestId:', window.currentAssignRequestId);
+            requestIdInput.value = window.currentAssignRequestId;
+            console.log('After forcing, requestIdInput.value:', requestIdInput.value);
+        }
+        
         // FINAL CHECK - Show alert with the delivery_request_id value
         alert('About to submit with delivery_request_id: ' + (requestIdInput?.value || 'NULL/EMPTY'));
         
@@ -426,6 +443,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
+
 
 
 
