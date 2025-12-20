@@ -260,6 +260,8 @@ Route::get('/api/available-vehicles', function () {
     return response()->json($vehicles);
 });
 
+Route::get('/api/requests/{id}', [App\Http\Controllers\DeliveryRequestController::class, 'getRequestDetails'])->name('api.requests.details');
+
 
 
 // Debug routes (REMOVE IN PRODUCTION)
