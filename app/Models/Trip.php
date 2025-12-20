@@ -24,6 +24,8 @@ class Trip extends Model
         'actual_start_time' => 'datetime',
         'actual_end_time' => 'datetime',
         'archived_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
@@ -131,3 +133,4 @@ class Trip extends Model
         return $this->hasMany(ClientNotification::class);
     }
 }
+

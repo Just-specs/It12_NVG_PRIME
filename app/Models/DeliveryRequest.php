@@ -33,6 +33,8 @@ class DeliveryRequest extends Model
         'preferred_schedule' => 'datetime',
         'atw_verified' => 'boolean',
         'archived_at' => 'datetime',
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
     ];
 
     /**
@@ -125,3 +127,4 @@ class DeliveryRequest extends Model
         return $this->hasOne(Trip::class);
     }
 }
+
