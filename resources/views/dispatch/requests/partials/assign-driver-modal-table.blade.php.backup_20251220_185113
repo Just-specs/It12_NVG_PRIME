@@ -1,4 +1,4 @@
-﻿<!-- Assign Driver Modal (Reusable) -->
+<!-- Assign Driver Modal (Reusable) -->
 <div id="assign-driver-modal-table" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
     <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8">
         <!-- Modal Header -->
@@ -338,7 +338,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const cancelBtn = document.getElementById('cancel-assign-table');
     const form = document.getElementById('assign-driver-form-table');
     
-    
+    alert('DOMContentLoaded fired! Form found: ' + (form ? 'YES' : 'NO') + ', Form ID: ' + (form?.id || 'NONE'));
     console.log('Modal elements:', { modal, closeBtn, cancelBtn, form });
     
 
@@ -368,7 +368,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form?.addEventListener('submit', function(e) {
         console.log('=== FORM SUBMIT HANDLER CALLED ===');
-        
+        alert('SUBMIT HANDLER: Form is being submitted!');
         
         const driverSelected = document.querySelector('input[name="driver_id"]:checked');
         const vehicleSelected = document.querySelector('input[name="vehicle_id"]:checked');
@@ -411,19 +411,13 @@ document.addEventListener('DOMContentLoaded', function() {
             scheduled_time: document.getElementById('scheduled-time-table')?.value
         });
 
-        // CRITICAL FIX: Restore the request ID from global storage if it's missing
-        if ((!requestIdInput || !requestIdInput.value || requestIdInput.value === "" || requestIdInput.value === "null") && window.currentAssignRequestId) {
-            console.warn('WARNING: delivery_request_id was empty, restoring from window.currentAssignRequestId:', window.currentAssignRequestId);
-            requestIdInput.value = window.currentAssignRequestId;
-        }
-
         // Check if delivery_request_id is set
         if (!requestIdInput || !requestIdInput.value || requestIdInput.value === "" || requestIdInput.value === "null") {
             e.preventDefault();
             console.error('CRITICAL: delivery_request_id is missing or invalid!');
             console.error('requestIdInput:', requestIdInput);
             console.error('requestIdInput.value:', requestIdInput?.value);
-            alert('ERROR: Cannot assign trip - Request ID is missing. Please close the modal and try again.');
+            alert('ERROR: Cannot assign trip - Request ID is missing. Value: ' + (requestIdInput?.value || 'NONE'));
             return false;
         }
 
@@ -433,10 +427,15 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
-        
+        // EMERGENCY FIX: Store the request ID in a global variable and force set it
+        if (window.currentAssignRequestId) {
+            console.log('FORCING value from window.currentAssignRequestId:', window.currentAssignRequestId);
+            requestIdInput.value = window.currentAssignRequestId;
+            console.log('After forcing, requestIdInput.value:', requestIdInput.value);
+        }
         
         // FINAL CHECK - Show alert with the delivery_request_id value
-        
+        alert('About to submit with delivery_request_id: ' + (requestIdInput?.value || 'NULL/EMPTY'));
         
         const submitBtn = document.getElementById('submit-assign-table');
         submitBtn.disabled = true;
@@ -444,9 +443,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
-
-
 
 
 
