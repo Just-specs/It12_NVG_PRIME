@@ -230,8 +230,10 @@ class DeliveryRequestController extends Controller
         return view('dispatch.requests.show', compact('deliveryRequest', 'clients'));
     }
 
-    public function verify(DeliveryRequest $deliveryRequest)
+    public function verify(DeliveryRequest $request)
     {
+        $deliveryRequest = $request;
+        
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
             abort(403, 'Only Admin can verify delivery requests.');
@@ -250,8 +252,10 @@ class DeliveryRequestController extends Controller
     /**
      * Verify AND automatically assign the request to a trip
      */
-    public function verifyAndAssign(DeliveryRequest $deliveryRequest)
+    public function verifyAndAssign(DeliveryRequest $request)
     {
+        $deliveryRequest = $request;
+        
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
             abort(403, 'Only Admin can verify delivery requests.');
@@ -270,8 +274,10 @@ class DeliveryRequestController extends Controller
     /**
      * Auto-assign delivery request to available resources
      */
-    public function autoAssign(DeliveryRequest $deliveryRequest)
+    public function autoAssign(DeliveryRequest $request)
     {
+        $deliveryRequest = $request;
+        
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
             abort(403, 'Only Admin can verify and auto-assign delivery requests.');
@@ -366,15 +372,19 @@ class DeliveryRequestController extends Controller
         ]);
     }
 
-    public function edit(DeliveryRequest $deliveryRequest)
+    public function edit(DeliveryRequest $request)
     {
+        $deliveryRequest = $request;
+        
         $clients = \App\Models\Client::orderBy('name')->get();
         return view('dispatch.requests.edit', compact('request', 'clients'));
     }
 
-    public function update(Request $httpRequest, DeliveryRequest $deliveryRequest)
+    public function update(Request $httpRequest, DeliveryRequest $request)
     {
-        $validated = $validateRequest->validate([
+        $deliveryRequest = $request;
+        
+        $validated = $httpRequest->validate([
             'client_id' => 'required|exists:clients,id',
             'contact_method' => 'required|in:mobile,email,group_chat',
             'atw_reference' => 'required|string',
@@ -407,8 +417,10 @@ class DeliveryRequestController extends Controller
             ->with('success', 'Request updated successfully.');
     }
 
-    public function destroy(DeliveryRequest $deliveryRequest)
+    public function destroy(DeliveryRequest $request)
     {
+        $deliveryRequest = $request;
+        
         // Check if request has a trip assigned
         if ($deliveryRequest->trip && $deliveryRequest->trip->status !== 'cancelled') {
             return redirect()
@@ -423,8 +435,10 @@ class DeliveryRequestController extends Controller
             ->with('success', 'Request deleted successfully.');
     }
 
-    public function cancel(DeliveryRequest $deliveryRequest)
+    public function cancel(DeliveryRequest $request)
     {
+        $deliveryRequest = $request;
+        
         $deliveryRequest->update(['status' => 'cancelled']);
 
         // Cancel associated trip if exists
@@ -541,6 +555,9 @@ class DeliveryRequestController extends Controller
             ->with('info', 'Import feature coming soon.');
     }
 }
+
+
+
 
 
 
