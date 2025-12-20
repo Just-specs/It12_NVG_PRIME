@@ -184,6 +184,9 @@ class DeliveryRequestController extends Controller
             'status' => 'pending',
         ]);
 
+        // Refresh the model to ensure all attributes are loaded
+        $deliveryRequest->refresh();
+
         // Check if auto-assignment is requested
         if ($request->input('auto_assign', false)) {
             return $this->attemptAutoAssignment($deliveryRequest);
@@ -196,6 +199,8 @@ class DeliveryRequestController extends Controller
 
     public function show(DeliveryRequest $deliveryRequest)
     {
+        // Refresh and load relationships
+        $deliveryRequest->refresh();
         $deliveryRequest->load(['client', 'trip.driver', 'trip.vehicle']);
         $clients = Client::orderBy('name')->get();
         return view('dispatch.requests.show', compact('deliveryRequest', 'clients'));
@@ -512,6 +517,8 @@ class DeliveryRequestController extends Controller
             ->with('info', 'Import feature coming soon.');
     }
 }
+
+
 
 
 
