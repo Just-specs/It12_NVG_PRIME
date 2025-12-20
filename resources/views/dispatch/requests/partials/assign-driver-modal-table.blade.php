@@ -1,4 +1,4 @@
-﻿<!-- Assign Driver Modal (Reusable) -->
+<!-- Assign Driver Modal (Reusable) -->
 <div id="assign-driver-modal-table" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
     <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8">
         <!-- Modal Header -->
@@ -107,6 +107,14 @@ let currentRequestData = null;
 
 async function openAssignModalForRequest(requestId) {
     console.log('Opening assign modal for request:', requestId);
+    console.log('Request ID type:', typeof requestId);
+    console.log('Request ID is null/undefined:', requestId == null);
+    
+    if (!requestId || requestId === 'null' || requestId === 'undefined') {
+        console.error('CRITICAL: Invalid request ID passed to modal:', requestId);
+        alert('Error: Invalid request ID. Cannot assign driver.');
+        return;
+    }
     
     const modal = document.getElementById('assign-driver-modal-table');
     const requestIdInput = document.getElementById('modal-request-id');
@@ -366,3 +374,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
