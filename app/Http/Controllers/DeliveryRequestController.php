@@ -197,7 +197,8 @@ class DeliveryRequestController extends Controller
     public function show(DeliveryRequest $deliveryRequest)
     {
         $deliveryRequest->load(['client', 'trip.driver', 'trip.vehicle']);
-        return view('dispatch.requests.show', compact('deliveryRequest'));
+        $clients = Client::orderBy('name')->get();
+        return view('dispatch.requests.show', compact('deliveryRequest', 'clients'));
     }
 
     public function verify(DeliveryRequest $deliveryRequest)
@@ -511,6 +512,7 @@ class DeliveryRequestController extends Controller
             ->with('info', 'Import feature coming soon.');
     }
 }
+
 
 
 
