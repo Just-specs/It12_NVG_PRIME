@@ -112,6 +112,13 @@ class TripController extends Controller
 
     public function create(DeliveryRequest $deliveryRequest)
     {
+        // Debug: Log the delivery request being passed
+        \Log::info('Trip create method called', [
+            'delivery_request_id' => $deliveryRequest->id,
+            'delivery_request_status' => $deliveryRequest->status,
+            'delivery_request_data' => $deliveryRequest->toArray()
+        ]);
+        
         // Verify delivery request can be assigned
         if (!in_array($deliveryRequest->status, ['pending', 'verified'])) {
             return redirect()
@@ -733,6 +740,7 @@ class TripController extends Controller
         return redirect()->back()->with('info', 'PDF export feature requires DomPDF package.');
     }
 }
+
 
 
 
