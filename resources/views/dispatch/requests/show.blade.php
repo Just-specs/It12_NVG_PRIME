@@ -18,7 +18,7 @@
                 <div class="flex justify-between items-start mb-6">
                     <div>
                         <h1 class="text-2xl font-bold text-gray-800">Request Details</h1>
-                        <p class="text-gray-600 text-sm mt-1">Created {{ $deliveryRequest->created_at->diffForHumans() }}</p>
+                        <p class="text-gray-600 text-sm mt-1">Created {{ $deliveryRequest->created_at ? $deliveryRequest->created_at->diffForHumans() : 'Just now' }}</p>
                     </div>
                     <span class="px-4 py-2 rounded-full text-sm font-semibold
                         {{ $deliveryRequest->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
@@ -193,7 +193,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium">Request Created</p>
-                                <p class="text-xs text-gray-500">{{ $deliveryRequest->created_at->format('M d, Y h:i A') }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->created_at ? $deliveryRequest->created_at->format('M d, Y h:i A') : 'N/A' }}</p>
                             </div>
                         </div>
 
@@ -204,7 +204,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium">ATW Verified</p>
-                                <p class="text-xs text-gray-500">{{ $deliveryRequest->updated_at->format('M d, Y h:i A') }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->updated_at ? $deliveryRequest->updated_at->format('M d, Y h:i A') : 'N/A' }}</p>
                             </div>
                         </div>
                         @endif
@@ -216,7 +216,7 @@
                             </div>
                             <div class="ml-3">
                                 <p class="text-sm font-medium">Driver Assigned</p>
-                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip->created_at->format('M d, Y h:i A') }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip->created_at ? $deliveryRequest->trip->created_at->format('M d, Y h:i A') : 'N/A' }}</p>
                             </div>
                         </div>
                         @endif
@@ -469,6 +469,9 @@
     }
 </script>
 @endpush
+
+
+
 
 
 
