@@ -357,6 +357,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     form?.addEventListener('submit', function(e) {
+        console.log('=== FORM SUBMIT HANDLER CALLED ===');
+        alert('SUBMIT HANDLER: Form is being submitted!');
+        
         const driverSelected = document.querySelector('input[name="driver_id"]:checked');
         const vehicleSelected = document.querySelector('input[name="vehicle_id"]:checked');
         const requestIdInput = document.getElementById('modal-request-id');
@@ -419,6 +422,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
 
