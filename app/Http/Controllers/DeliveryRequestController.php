@@ -203,10 +203,18 @@ class DeliveryRequestController extends Controller
             ->with('success', 'Delivery request created successfully. You can verify and assign it when ready.');
     }
 
-    public function show(DeliveryRequest $deliveryRequest)
+    public function show(DeliveryRequest $request)
     {
+        // Use correct variable name to match route parameter
+
+        $deliveryRequest = $request;
+
+        
+
         // Refresh and load relationships
+
         $deliveryRequest->refresh();
+
         $deliveryRequest->load(['client', 'trip.driver', 'trip.vehicle']);
         
         // Debug: Log what we're showing
@@ -533,6 +541,7 @@ class DeliveryRequestController extends Controller
             ->with('info', 'Import feature coming soon.');
     }
 }
+
 
 
 
