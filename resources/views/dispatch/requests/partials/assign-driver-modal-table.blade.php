@@ -15,7 +15,7 @@
         <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
             <form id="assign-driver-form-table" method="POST" action="{{ route('trips.store') }}">
                 @csrf
-                <input type="hidden" name="delivery_request_id" id="modal-request-id" value="">
+                <input type="hidden" name="delivery_request_id" id="modal-request-id" value="" data-debug="true">
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Left Column: Driver & Vehicle Selection -->
@@ -395,12 +395,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Check if delivery_request_id is set
-        if (!requestIdInput || !requestIdInput.value) {
-            e.preventDefault();
-            console.error('CRITICAL: delivery_request_id is missing!');
-            alert('Error: Delivery request information is missing. Please close this modal and try again.');
-            return false;
-        }
+        if (!requestIdInput || !requestIdInput.value || requestIdInput.value === "" || requestIdInput.value === "null") {`n            e.preventDefault();`n            console.error("CRITICAL: delivery_request_id is missing or invalid!");`n            console.error("requestIdInput:", requestIdInput);`n            console.error("requestIdInput.value:", requestIdInput?.value);`n            alert("ERROR: Cannot assign trip - Request ID is missing. Value: " + (requestIdInput?.value || "NONE"));`n            return false;`n        }
 
         if (!driverSelected || !vehicleSelected) {
             e.preventDefault();
@@ -408,12 +403,18 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
 
+        // FINAL CHECK - Show alert with the delivery_request_id value
+        alert('About to submit with delivery_request_id: ' + (requestIdInput?.value || 'NULL/EMPTY'));
+        
         const submitBtn = document.getElementById('submit-assign-table');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Assigning...';
     });
 });
 </script>
+
+
+
 
 
 
