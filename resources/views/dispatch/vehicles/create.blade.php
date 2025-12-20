@@ -128,6 +128,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.getElementById('create-vehicle-form');
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     const modal = document.getElementById('duplicate-modal');
     const cancelBtn = document.getElementById('cancel-btn');
     const proceedBtn = document.getElementById('proceed-btn');
@@ -177,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
+                    'X-CSRF-TOKEN': csrfToken
                 },
                 body: formData
             });
@@ -222,3 +224,4 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 @endsection
+

@@ -1,0 +1,70 @@
+========================================
+   419 CSRF ERROR - QUICK FIX STEPS
+========================================
+
+THE MAIN PROBLEM:
+-----------------
+SESSION_DOMAIN=.railway.app was causing cookies to fail!
+
+THE SOLUTION:
+-------------
+REMOVE SESSION_DOMAIN from Railway environment variables!
+
+STEP-BY-STEP FIX:
+=================
+
+1. UPDATE RAILWAY VARIABLES
+   ------------------------
+   Go to Railway Dashboard > Your Project > Variables
+   
+   DELETE THIS VARIABLE:
+   ? SESSION_DOMAIN
+   
+   KEEP THESE:
+   ? SESSION_DRIVER=database
+   ? SESSION_LIFETIME=120
+   ? SESSION_SECURE_COOKIE=true
+   ? SESSION_SAME_SITE=lax
+   ? SESSION_HTTP_ONLY=true
+   ? SANCTUM_STATEFUL_DOMAINS=it12-prime-mover.up.railway.app
+
+2. PUSH CODE TO GITHUB
+   --------------------
+   cd C:\IT12_project\IT12_updated\IT12-
+   git add .
+   git commit -m "Fix 419 CSRF error"
+   git push origin main
+
+3. WAIT FOR AUTO-DEPLOY
+   ---------------------
+   Wait 2-3 minutes for Railway to deploy
+
+4. CLEAR CACHE ON RAILWAY
+   -----------------------
+   Railway Dashboard > Your Service > Settings > Deploy
+   Or via CLI:
+   railway run php artisan cache:clear
+   railway run php artisan config:clear
+
+5. CLEAR BROWSER CACHE
+   --------------------
+   Open Incognito/Private Window
+   OR
+   F12 > Right-click refresh > Empty Cache and Hard Reload
+
+6. TEST IT!
+   --------
+   ? Try creating a driver
+   ? Try creating a vehicle
+   ? Try assigning a trip
+   
+   NO MORE 419 ERRORS! ??
+
+========================================
+FILES MODIFIED:
+- .env.railway (removed SESSION_DOMAIN)
+- resources/views/dispatch/vehicles/create.blade.php (added CSRF token to AJAX)
+
+STATUS: READY TO DEPLOY ?
+DATE: 2025-12-20
+========================================
