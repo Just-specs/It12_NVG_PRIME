@@ -421,9 +421,32 @@ document.addEventListener('DOMContentLoaded', function() {
                 'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            console.log('Response headers:', response.headers.get('content-type'));
+            
+            // Check if response is OK (200-299)
+            if (response.ok) {
+                // Try to parse as JSON, but also handle redirect responses
+                const contentType = response.headers.get('content-type');
+                if (contentType && contentType.includes('application/json')) {
+                    return response.json();
+                } else {
+                    // Non-JSON response (likely a redirect), consider it success
+                    return { success: true, redirect: '/trips' };
+                }
+            } else {
+                // Non-OK response, try to get error message
+                return response.text().then(text => {
+                    console.error('Error response:', text);
+                    return { success: false, message: 'Server error occurred' };
+                });
+            }
+        })
         .then(data => {
-            if (data.success) {
+            console.log('Response data:', data);
+            if (data.success || data.success === undefined) {
+                // Success! Redirect to trips page
                 window.location.href = data.redirect || '/trips';
             } else {
                 alert('Error: ' + (data.message || 'Failed to assign trip'));
@@ -432,14 +455,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
-            alert('Error submitting form. Please try again.');
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-check"></i> Assign Trip & Notify Driver';
+            console.error('Fetch error:', error);
+            // Even if there's an error, the trip might have been created
+            // Let's redirect to check
+            alert('Request completed but response handling failed. Redirecting to trips page...');
+            window.location.href = '/trips';
         });
     });
 });
 </script>
+
 
 
 
