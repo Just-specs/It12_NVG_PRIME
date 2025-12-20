@@ -410,6 +410,69 @@
             openCreateDriverBtn.addEventListener('click', showCreateModal);
             closeCreateDriverBtn?.addEventListener('click', hideCreateModal);
             cancelCreateDriverBtn?.addEventListener('click', hideCreateModal);
+            // Handle form submission
+            if (createDriverForm) {
+                createDriverForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    console.log('Driver form submitted');
+                    
+                    const submitBtn = createDriverForm.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Creating...';
+                    
+                    const formData = new FormData(createDriverForm);
+                    
+                    fetch(createDriverForm.action, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Response:', data);
+                        if (data.success) {
+                            alert('Driver created successfully!');
+                            window.location.reload();
+                        } else if (data.confirm_required) {
+                            if (confirm(data.message + '\n\nDo you want to create this driver anyway?')) {
+                                formData.append('confirm_duplicate', '1');
+                                fetch(createDriverForm.action, {
+                                    method: 'POST',
+                                    body: formData,
+                                    headers: {
+                                        'X-Requested-With': 'XMLHttpRequest',
+                                        'Accept': 'application/json'
+                                    }
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                        alert('Driver created successfully!');
+                                        window.location.reload();
+                                    }
+                                });
+                            } else {
+                                submitBtn.disabled = false;
+                                submitBtn.innerHTML = originalText;
+                            }
+                        } else {
+                            alert('Error: ' + (data.message || 'Failed to create driver'));
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalText;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error creating driver. Please try again.');
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = originalText;
+                    });
+                });
+            }
 
             createDriverModal.addEventListener('click', (e) => {
                 if (e.target === createDriverModal) hideCreateModal();
@@ -510,6 +573,7 @@
 @endpush
 
 @endsection
+
 
 
 
