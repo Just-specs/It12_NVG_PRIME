@@ -132,7 +132,10 @@ async function openAssignModalForRequest(requestId) {
 
     
         requestIdInput.value = requestId;
-        requestIdInput.setAttribute('value', requestId); // Set attribute so form.reset() preserves it
+        requestIdInput.setAttribute('value', requestId);
+        requestIdInput.setAttribute('name', 'delivery_request_id'); // Force-set name attribute
+        console.log('AFTER SETTING - name attribute:', requestIdInput.getAttribute('name'));
+        console.log('AFTER SETTING - name property:', requestIdInput.name); // Set attribute so form.reset() preserves it
         
         window.currentAssignRequestId = requestId; // Store globally
         console.log('Stored in window.currentAssignRequestId:', window.currentAssignRequestId);
@@ -451,6 +454,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
 
 
 
