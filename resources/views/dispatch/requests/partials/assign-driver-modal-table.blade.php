@@ -331,6 +331,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const closeBtn = document.getElementById('close-assign-modal-table');
     const cancelBtn = document.getElementById('cancel-assign-table');
     const form = document.getElementById('assign-driver-form-table');
+    
+    alert('DOMContentLoaded fired! Form found: ' + (form ? 'YES' : 'NO') + ', Form ID: ' + (form?.id || 'NONE'));
+    console.log('Modal elements:', { modal, closeBtn, cancelBtn, form });
+    
 
     function hideModal() {
         modal.classList.add('hidden');
@@ -422,6 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
 
