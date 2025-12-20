@@ -37,7 +37,7 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <p class="text-sm text-gray-600">Client Name</p>
-                            <p class="font-semibold">{{ $deliveryRequest->client->name }}</p>
+                            <p class="font-semibold">{{ $deliveryRequest->client?->name ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-600">Contact Method</p>
@@ -110,13 +110,13 @@
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="text-sm text-gray-600">Driver</p>
-                                <p class="font-semibold">{{ $deliveryRequest->trip->driver->name }}</p>
-                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip->driver->mobile }}</p>
+                                <p class="font-semibold">{{ $deliveryRequest->trip?->driver?->name ?? 'Not Assigned' }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip?->driver?->mobile ?? 'N/A' }}</p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-600">Vehicle</p>
-                                <p class="font-semibold">{{ $deliveryRequest->trip->vehicle->plate_number }}</p>
-                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip->vehicle->trailer_type }}</p>
+                                <p class="font-semibold">{{ $deliveryRequest->trip?->vehicle?->plate_number ?? 'N/A' }}</p>
+                                <p class="text-xs text-gray-500">{{ $deliveryRequest->trip?->vehicle?->trailer_type ?? 'N/A' }}</p>
                             </div>
                         </div>
                         <div class="mt-4">
@@ -469,6 +469,8 @@
     }
 </script>
 @endpush
+
+
 
 
 
