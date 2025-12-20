@@ -198,7 +198,7 @@
             </a>
 
             <!-- Drivers - Available to Head Dispatcher (Admin) -->
-            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatcher')
+            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
             <a href="{{ route('drivers.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('drivers.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
                 <i class="fas fa-user-tie w-5 {{ request()->routeIs('drivers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
@@ -207,7 +207,7 @@
             @endif
 
             <!-- Vehicles - Available to Head Dispatcher (Admin) -->
-            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatcher')
+            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
             <a href="{{ route('vehicles.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('vehicles.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
                 <i class="fas fa-truck w-5 {{ request()->routeIs('vehicles.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
@@ -216,7 +216,7 @@
             @endif
 
             <!-- Clients - Available to Head Dispatcher (Admin) -->
-            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatcher')
+            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
             <a href="{{ route('clients.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('clients.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
                 <i class="fas fa-building w-5 {{ request()->routeIs('clients.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
@@ -225,7 +225,7 @@
             @endif
 
             <!-- Dispatchers - ADMIN ONLY (Full Admin Control) -->
-            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatcher')
+            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
             <a href="{{ route('admin.dispatchers.index') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('admin.dispatchers.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
                 <i class="fas fa-users-cog w-5 {{ request()->routeIs('admin.dispatchers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
@@ -246,7 +246,7 @@
                 <span class="ml-3 font-medium">Profile</span>
             </a>
 
-            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatcher')
+            @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
             <!-- Settings - ADMIN ONLY -->
             <a href="{{ route('utils.settings') }}"
                 class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('utils.settings') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
