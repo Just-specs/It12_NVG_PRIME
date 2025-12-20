@@ -163,18 +163,17 @@ async function openAssignModalForRequest(requestId) {
     try {
         summaryContainer.innerHTML = '<p class="text-gray-500">Loading request details...</p>';
         
-        const response = await fetch(`/requests/${requestId}`);
-        const html = await response.text();
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
+        const response = await fetch(`/api/requests/${requestId}`);
+        const result = await response.json();
+        if (!result.success) { throw new Error('Failed to load request details'); } const request = result.data;
         
         // Extract request data from the HTML
-        const atwReference = doc.querySelector('[data-atw-reference]')?.textContent.trim() || 'N/A';
-        const clientName = doc.querySelector('[data-client-name]')?.textContent.trim() || 'N/A';
-        const containerSize = doc.querySelector('[data-container-size]')?.textContent.trim() || 'N/A';
-        const pickup = doc.querySelector('[data-pickup]')?.textContent.trim() || 'N/A';
-        const delivery = doc.querySelector('[data-delivery]')?.textContent.trim() || 'N/A';
-        const preferredSchedule = doc.querySelector('[data-preferred-schedule]')?.getAttribute('data-preferred-schedule');
+        const atwReference = request.atw_reference;
+        const clientName = request.client_name;
+        const containerSize = `${request.container_size} - ${request.container_type}`;
+        const pickup = request.pickup_location;
+        const delivery = request.delivery_location;
+        const preferredSchedule = request.preferred_schedule;
         
         // Populate summary
         summaryContainer.innerHTML = `
@@ -464,6 +463,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+
 
 
 
