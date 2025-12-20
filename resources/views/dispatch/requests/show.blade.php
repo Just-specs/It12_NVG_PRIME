@@ -138,7 +138,7 @@
                 @if($deliveryRequest->status === 'pending' && !$deliveryRequest->atw_verified)
                     @if(auth()->user()->canVerifyRequests())
                     {{-- Only Admin can verify --}}
-                    <form method="POST" action="{{ route('requests.verify', $deliveryRequest) }}" class="mb-3" id="verify-atw-form">
+                    <form method="POST" action="{{ route('requests.verify', ['request' => $deliveryRequest->id]) }}" class="mb-3" id="verify-atw-form">
                         @csrf
                         <button type="button" id="open-verify-modal" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                             <i class="fas fa-check-circle"></i> Verify ATW
@@ -249,7 +249,7 @@
 
             <!-- Modal Body -->
             <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-                <form id="edit-request-form" method="POST" action="{{ route('requests.update', $deliveryRequest) }}">
+                <form id="edit-request-form" method="POST" action="{{ route('requests.update', ['request' => $deliveryRequest->id]) }}">
                     @csrf
                     @method('PUT')
 
@@ -469,6 +469,7 @@
     }
 </script>
 @endpush
+
 
 
 
