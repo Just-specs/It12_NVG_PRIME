@@ -103,6 +103,40 @@
 </div>
 
 <script>
+
+    // Toast notification function
+    function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container') || createToastContainer();
+        const toast = document.createElement('div');
+        toast.className = `toast-notification bg-${type === 'success' ? 'green' : type === 'error' ? 'red' : 'blue'}-600 text-white px-6 py-4 rounded-lg shadow-lg flex items-center justify-between transform transition-all duration-300 ease-in-out`;
+        
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'} mr-3"></i>
+                <span>${message}</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="ml-4 text-white hover:text-gray-200">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        container.appendChild(toast);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            toast.classList.add('hiding');
+            setTimeout(() => toast.remove(), 300);
+        }, 5000);
+    }
+
+    function createToastContainer() {
+        const container = document.createElement('div');
+        container.id = 'toast-container';
+        container.className = 'fixed top-4 right-4 z-50 space-y-2';
+        container.style.maxWidth = '400px';
+        document.body.appendChild(container);
+        return container;
+    }
 let currentRequestData = null;
 
 async function openAssignModalForRequest(requestId) {
@@ -445,24 +479,32 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             console.log('Response data:', data);
             if (data.success || data.success === undefined) {
-                // Success! Redirect to trips page
-                window.location.href = data.redirect || '/trips';
+                // Show success toast
+                showToast('Trip assigned successfully! Redirecting...', 'success');
+                
+                // Wait a moment before redirecting so user sees the toast
+                setTimeout(() => {
+                    window.location.href = data.redirect || '/trips';
+                }, 1500);
             } else {
-                alert('Error: ' + (data.message || 'Failed to assign trip'));
+                // Show error toast
+                showToast(data.message || 'Failed to assign trip', 'error');
                 submitBtn.disabled = false;
                 submitBtn.innerHTML = '<i class="fas fa-check"></i> Assign Trip & Notify Driver';
             }
         })
         .catch(error => {
             console.error('Fetch error:', error);
-            // Even if there's an error, the trip might have been created
-            // Let's redirect to check
-            alert('Request completed but response handling failed. Redirecting to trips page...');
+            // Show warning toast
+            showToast('Request completed but response handling failed. Redirecting to trips page...', 'info');
             window.location.href = '/trips';
         });
     });
 });
 </script>
+
+
+
 
 
 
