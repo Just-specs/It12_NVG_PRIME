@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 // Test script to check driver creation on Railway
 // Run with: railway run php test_driver_creation.php
 
