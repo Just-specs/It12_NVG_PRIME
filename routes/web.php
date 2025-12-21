@@ -70,14 +70,14 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{request}/cancel', [DeliveryRequestController::class, 'cancel'])->name('cancel');
 
         // VERIFICATION - Only Admin & Head of Dispatch can verify
-        Route::middleware([CheckRole::class . ':admin'])->group(function () {
+        Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
             Route::post('/{request}/verify', [DeliveryRequestController::class, 'verify'])->name('verify');
             Route::post('/{request}/verify-and-assign', [DeliveryRequestController::class, 'verifyAndAssign'])->name('verify-and-assign');
             Route::post('/{request}/auto-assign', [DeliveryRequestController::class, 'autoAssign'])->name('auto-assign');
         });
 
         // Edit/Delete - Admin & Head only
-        Route::middleware([CheckRole::class . ':admin'])->group(function () {
+        Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
             Route::get('/{request}/edit', [DeliveryRequestController::class, 'edit'])->name('edit');
             Route::put('/{request}', [DeliveryRequestController::class, 'update'])->name('update');
             Route::delete('/{request}', [DeliveryRequestController::class, 'destroy'])->name('destroy');
@@ -97,7 +97,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{trip}/add-update', [TripController::class, 'addUpdate'])->name('add-update');
 
         // Edit/Delete/Cancel - Admin only
-        Route::middleware([CheckRole::class . ':admin'])->group(function () {
+        Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
             Route::get('/{trip}/edit', [TripController::class, 'edit'])->name('edit');
             Route::put('/{trip}', [TripController::class, 'update'])->name('update');
             Route::post('/{trip}/cancel', [TripController::class, 'cancelTrip'])->name('cancel');
@@ -174,7 +174,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 // ADMIN & HEAD OF DISPATCH ONLY
-Route::middleware([CheckRole::class . ':admin'])->group(function () {
+Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
 
     // DRIVERS
     Route::prefix('drivers')->name('drivers.')->group(function () {
@@ -228,7 +228,7 @@ Route::middleware([CheckRole::class . ':admin'])->group(function () {
 
 
     // ADMIN ONLY
-    Route::middleware([CheckRole::class . ':admin'])->group(function () {
+    Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
         Route::prefix('utils')->name('utils.')->group(function () {
             Route::get('/settings', [DashboardController::class, 'settings'])->name('settings');
             Route::post('/settings/update', [DashboardController::class, 'updateSettings'])->name('update-settings');
