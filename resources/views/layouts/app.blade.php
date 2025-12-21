@@ -100,6 +100,126 @@
         .toast-notification.hiding {
             animation: slideOut 0.3s ease-in forwards;
         }
+        
+        /* Table Styles for Better Readability */
+        table {
+            font-family: 'Roboto', sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        table thead {
+            background-color: #f8fafc;
+        }
+        
+        table thead th {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 600;
+            font-size: 0.875rem;
+            letter-spacing: 0.025em;
+            padding: 0.75rem 1rem;
+            text-align: left;
+            color: #1e293b;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        table tbody td {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            font-size: 0.875rem;
+            padding: 0.875rem 1rem;
+            color: #334155;
+            border-bottom: 1px solid #e2e8f0;
+            line-height: 1.5;
+        }
+        
+        table tbody tr {
+            transition: background-color 0.15s ease;
+        }
+        
+        table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+        
+        /* Badge styles in tables */
+        table .badge, table .status-badge {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            display: inline-block;
+            letter-spacing: 0.025em;
+        }
+        
+        /* Button styles in tables */
+        table button, table .btn {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        /* Improve number readability */
+        table td[class*='text-right'], table th[class*='text-right'] {
+            font-variant-numeric: tabular-nums;
+        }
+        
+        /* Headings - Improved Readability */
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            line-height: 1.3;
+            letter-spacing: -0.01em;
+        }
+        
+        h1 { font-size: 2rem; font-weight: 700; }
+        h2 { font-size: 1.5rem; font-weight: 600; }
+        h3 { font-size: 1.25rem; font-weight: 600; }
+        h4 { font-size: 1.125rem; font-weight: 500; }
+        
+        /* Form Elements - Better Readability */
+        input, textarea, select {
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        label {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            font-size: 0.875rem;
+        }
+        
+        /* Buttons - Consistent Typography */
+        button, .btn {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 500;
+            letter-spacing: 0.025em;
+        }
+        
+        /* Cards - Better Text Hierarchy */
+        .card-title {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        
+        .card-text {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+        }
+        
+        /* Small Text - Readable */
+        small, .text-sm {
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .text-xs {
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
     </style>
     @stack('styles')
 </head>
@@ -449,5 +569,7 @@
 </body>
 
 </html>
+
+
 
 
