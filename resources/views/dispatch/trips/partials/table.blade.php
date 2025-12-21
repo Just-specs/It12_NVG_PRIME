@@ -16,7 +16,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($trips as $trip)
-            <tr class="hover:bg-gray-50">
+            <tr class="hover:bg-gray-50 cursor-pointer" onclick="viewTrip({{ $trip->id }})" data-trip-id="{{ $trip->id }}">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $trip->deliveryRequest->client->name }}</div>
                 </td>
@@ -56,48 +56,18 @@
                         {{ ucfirst(str_replace('-', ' ', $trip->status)) }}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex space-x-2">
-                        <button type="button"
-                            class="text-blue-600 hover:text-blue-800 view-trip-btn"
-                            title="View"
-                            data-trip-id="{{ $trip->id }}"
-                            data-client-name="{{ $trip->deliveryRequest->client->name }}"
-                            data-atw-reference="{{ $trip->deliveryRequest->atw_reference }}"
-                            data-driver-name="{{ $trip->driver->name }}"
-                            data-driver-mobile="{{ $trip->driver->mobile }}"
-                            data-vehicle-plate="{{ $trip->vehicle->plate_number }}"
-                            data-vehicle-type="{{ $trip->vehicle->vehicle_type }}"
-                            data-container-size="{{ $trip->deliveryRequest->container_size }}"
-                            data-container-type="{{ ucfirst($trip->deliveryRequest->container_type) }}"
-                            data-pickup="{{ $trip->deliveryRequest->pickup_location }}"
-                            data-delivery="{{ $trip->deliveryRequest->delivery_location }}"
-                            data-scheduled-date="{{ $trip->scheduled_time->format('F d, Y') }}"
-                            data-scheduled-time="{{ $trip->scheduled_time->format('h:i A') }}"
-                            data-route-instructions="{{ $trip->route_instructions ?? '' }}"
-                            data-status="{{ $trip->status }}"
-                            data-created-at="{{ $trip->created_at->format('M d, Y h:i A') }}"
-                            data-start-time="{{ $trip->actual_start_time ? $trip->actual_start_time->format('M d, Y h:i A') : '' }}"
-                            data-complete-time="{{ $trip->actual_end_time ? $trip->actual_end_time->format('M d, Y h:i A') : '' }}"
-                            data-start-url="{{ $trip->status === 'scheduled' ? route('trips.start', $trip) : '' }}"
-                            data-complete-url="{{ $trip->status === 'in-transit' ? route('trips.complete', $trip) : '' }}"
-                              data-cancel-url="{{ auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']) ? route('trips.cancel', $trip) : '' }}"
-                            data-view-url="{{ route('trips.show', $trip) }}">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        @if($trip->status === 'scheduled')
-                        <form method="POST" action="{{ route('trips.start', $trip) }}" class="inline">
-                            @csrf
-                            <button type="button" class="text-green-600 hover:text-green-800 start-trip-btn" title="Start">
-                                <i class="fas fa-play"></i>
-                            </button>
-                        </form>
+                        @if($trip->status === 'scheduled' || $trip->status === 'in-transit')
+                        <a href="{{ route('trips.show', $trip) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium" title="Edit">
+                            Edit
+                        </a>
                         @endif
-                        @if($trip->status === 'in-transit')
-                        <form method="POST" action="{{ route('trips.complete', $trip) }}" class="inline">
+                        @if(auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']))
+                        <form method="POST" action="{{ route('trips.cancel', $trip) }}" class="inline">
                             @csrf
-                            <button type="button" class="text-purple-600 hover:text-purple-800 complete-trip-btn" title="Complete">
-                                <i class="fas fa-check-circle"></i>
+                            <button type="button" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium cancel-trip-btn" title="Cancel">
+                                Cancel
                             </button>
                         </form>
                         @endif
@@ -141,3 +111,21 @@
     </div>
 </div>
 @endif
+
+<script>
+function viewTrip(tripId) {
+    window.location.href = `/trips/${tripId}`;
+}
+
+// Handle cancel button confirmation
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.cancel-trip-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            if (confirm('Are you sure you want to cancel this trip?')) {
+                this.closest('form').submit();
+            }
+        });
+    });
+});
+</script>
