@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryRequestController;

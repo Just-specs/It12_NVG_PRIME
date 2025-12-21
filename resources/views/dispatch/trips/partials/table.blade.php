@@ -1,4 +1,4 @@
-﻿<div>
+<div>
     <table class="w-full">
         <thead class="bg-gray-50">
             <tr>
