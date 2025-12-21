@@ -5,6 +5,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">ATW Reference</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Container</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Shipping Line</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Pickup Location</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Delivery Location</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Schedule</th>
@@ -17,10 +18,6 @@
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $request->client->name }}</div>
-                    <div class="text-xs text-gray-500">
-                        <i class="fas fa-{{ $request->contact_method === 'mobile' ? 'phone' : ($request->contact_method === 'email' ? 'envelope' : 'comments') }}"></i>
-                        {{ ucfirst($request->contact_method) }}
-                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">{{ $request->atw_reference }}</div>
@@ -31,10 +28,13 @@
                     @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    <div>{{ $request->container_size }}</div>
-                    <div class="text-xs text-gray-500">{{ $request->container_type }}</div>
+                    <div>{{ $request->container_size }} {{ $request->container_type }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     @if($request->shipping_line)
-                    <div class="text-xs text-blue-600"><i class="fas fa-ship"></i> {{ $request->shipping_line }}</div>
+                    <div class="text-blue-600"><i class="fas fa-ship"></i> {{ $request->shipping_line }}</div>
+                    @else
+                    <span class="text-gray-400">-</span>
                     @endif
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">
@@ -46,64 +46,51 @@
                     {{ Str::limit($request->delivery_location, 30) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {{ $request->preferred_schedule->format('M d, Y') }}<br>
-                    <span class="text-xs">{{ $request->preferred_schedule->format('h:i A') }}</span>
+                    {{ $request->preferred_schedule->format('M d, h:i A') }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-3 py-1 rounded-full text-xs font-semibold
                         {{ $request->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                        {{ $request->status === 'verified' ? 'bg-green-100 text-green-800' : '' }}
-                        {{ $request->status === 'assigned' ? 'bg-blue-100 text-blue-800' : '' }}
-                        {{ $request->status === 'completed' ? 'bg-gray-100 text-gray-800' : '' }}">
+                        {{ $request->status === 'verified' ? 'bg-blue-100 text-blue-800' : '' }}
+                        {{ $request->status === 'assigned' ? 'bg-purple-100 text-purple-800' : '' }}
+                        {{ $request->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
+                        {{ $request->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
                         {{ ucfirst($request->status) }}
                     </span>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <div class="flex space-x-2">
-                        <button type="button"
-                            class="text-blue-600 hover:text-blue-800 view-request-btn"
-                            title="View"
-                            data-request-id="{{ $request->id }}"
-                            data-client-name="{{ $request->client->name }}"
-                            data-contact-method="{{ $request->contact_method }}"
-                            data-contact-method-label="{{ ucfirst(str_replace('_', ' ', $request->contact_method)) }}"
-                            data-atw-reference="{{ $request->atw_reference }}"
-                            data-atw-verified="{{ $request->atw_verified ? '1' : '0' }}"
-                            data-container-size="{{ $request->container_size }}"
-                            data-container-type="{{ ucfirst($request->container_type) }}"
-                            data-pickup="{{ $request->pickup_location }}"
-                            data-delivery="{{ $request->delivery_location }}"
-                            data-schedule-date="{{ $request->preferred_schedule->format('F d, Y') }}"
-                            data-schedule-time="{{ $request->preferred_schedule->format('h:i A') }}"
-                            data-status="{{ $request->status }}"
-                            data-notes="{{ $request->notes ?? '' }}"
-                            data-created="{{ $request->created_at->diffForHumans() }}"
-                            data-verify-url="{{ ($request->status === 'pending' && auth()->user()->canVerifyRequests()) ? route('requests.verify', $request) : '' }}">
+                        <a href="{{ route('requests.show', $request) }}" class="text-blue-600 hover:text-blue-800" title="View">
                             <i class="fas fa-eye"></i>
-                        </button>
-                        @if($request->status === 'pending' && auth()->user()->canVerifyRequests())
-                        {{-- Only Admin can verify --}}
-                        <form method="POST" action="{{ route('requests.verify', $request) }}" class="inline">
+                        </a>
+                        @if(in_array($request->status, ['pending', 'verified']))
+                        <a href="{{ route('requests.edit', $request) }}" class="text-yellow-600 hover:text-yellow-800" title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        @endif
+                        @if($request->status === 'pending')
+                        <form method="POST" action="{{ route('requests.verify', $request) }}" class="inline verify-request-form">
                             @csrf
-                            <button type="button" class="text-green-600 hover:text-green-800 verify-request-btn" title="Verify ATW">
-                                <i class="fas fa-check"></i>
+                            <button type="submit" class="text-green-600 hover:text-green-800" title="Verify">
+                                <i class="fas fa-check-circle"></i>
                             </button>
                         </form>
                         @endif
-                        @if($request->status === 'verified')
-                        <button type="button" 
-                            onclick="openAssignModalForRequest({{ $request->id }})"
-                            class="text-purple-600 hover:text-purple-800"
-                            title="Assign Driver">
-                            <i class="fas fa-user-plus"></i>
-                        </button>
+                        @if(auth()->user()->role === 'admin' && in_array($request->status, ['pending', 'verified']))
+                        <form method="POST" action="{{ route('requests.destroy', $request) }}" class="inline delete-form">
+                            @csrf
+                            @method('DELETE')
+                            <button type="button" class="text-red-600 hover:text-red-800 delete-btn" title="Delete">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                         @endif
                     </div>
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                <td colspan="9" class="px-6 py-8 text-center text-gray-500">
                     No delivery requests found
                 </td>
             </tr>
@@ -138,5 +125,3 @@
     </div>
 </div>
 @endif
-
-

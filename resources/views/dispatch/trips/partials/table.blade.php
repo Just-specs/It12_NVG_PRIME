@@ -4,10 +4,11 @@
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">ATW Reference</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Waybill / Rate</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Waybill</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Driver</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Vehicle</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Route</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Pickup</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Delivery</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Schedule</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Status</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Actions</th>
@@ -18,59 +19,33 @@
             <tr class="hover:bg-gray-50">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $trip->deliveryRequest->client->name }}</div>
-                    <div class="text-xs text-gray-500">
-                        {{ $trip->deliveryRequest->container_size }}
-                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-mono text-purple-600">{{ $trip->deliveryRequest->atw_reference }}</div>
-                    <div class="text-xs text-gray-500">Trip #{{ $trip->id }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     @if($trip->waybill_number)
                     <div class="text-sm font-medium text-gray-900">{{ $trip->waybill_number }}</div>
                     @else
-                    <span class="text-xs text-gray-400">No waybill</span>
-                    @endif
-                    @if($trip->trip_rate)
-                    <div class="text-xs text-green-600">₱{{ number_format($trip->trip_rate, 2) }}</div>
+                    <span class="text-xs text-gray-400">-</span>
                     @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $trip->driver->name }}</div>
-                    <div class="text-xs text-gray-500">
-                        <i class="fas fa-phone"></i> {{ $trip->driver->mobile }}
-                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $trip->vehicle->plate_number }}</div>
-                    <div class="text-xs text-gray-500">{{ $trip->vehicle->vehicle_type }}</div>
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">
-                    <div class="space-y-1">
-                        <div>
-                            <i class="fas fa-map-marker-alt text-green-500"></i>
-                            {{ Str::limit($trip->deliveryRequest->pickup_location, 25) }}
-                        </div>
-                        <div>
-                            <i class="fas fa-flag-checkered text-red-500"></i>
-                            {{ Str::limit($trip->deliveryRequest->delivery_location, 25) }}
-                        </div>
-                    </div>
+                    <i class="fas fa-map-marker-alt text-green-500"></i>
+                    {{ Str::limit($trip->deliveryRequest->pickup_location, 30) }}
+                </td>
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    <i class="fas fa-flag-checkered text-red-500"></i>
+                    {{ Str::limit($trip->deliveryRequest->delivery_location, 30) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    <div>{{ $trip->scheduled_time->format('M d, Y') }}</div>
-                    <div class="text-xs">{{ $trip->scheduled_time->format('h:i A') }}</div>
-                    @if($trip->actual_start_time)
-                    <div class="text-xs text-green-600 mt-1">
-                        <i class="fas fa-play"></i> Started
-                    </div>
-                    @endif
-                    @if($trip->actual_end_time)
-                    <div class="text-xs text-purple-600 mt-1">
-                        <i class="fas fa-check"></i> Completed
-                    </div>
-                    @endif
+                    {{ $trip->scheduled_time->format('M d, h:i A') }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-3 py-1 rounded-full text-xs font-semibold
@@ -131,7 +106,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="8" class="px-6 py-8 text-center text-gray-500">
+                <td colspan="10" class="px-6 py-8 text-center text-gray-500">
                     No trips found
                 </td>
             </tr>
@@ -166,4 +141,3 @@
     </div>
 </div>
 @endif
-
