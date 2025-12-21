@@ -1,9 +1,10 @@
-<div>
+﻿<div>
     <table class="w-full">
         <thead class="bg-gray-50">
             <tr>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Client</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">ATW Reference</th>
+                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Waybill / Rate</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Driver</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Vehicle</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Route</th>
@@ -24,6 +25,16 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-mono text-purple-600">{{ $trip->deliveryRequest->atw_reference }}</div>
                     <div class="text-xs text-gray-500">Trip #{{ $trip->id }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                    @if($trip->waybill_number)
+                    <div class="text-sm font-medium text-gray-900">{{ $trip->waybill_number }}</div>
+                    @else
+                    <span class="text-xs text-gray-400">No waybill</span>
+                    @endif
+                    @if($trip->trip_rate)
+                    <div class="text-xs text-green-600">₱{{ number_format($trip->trip_rate, 2) }}</div>
+                    @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $trip->driver->name }}</div>
@@ -155,3 +166,4 @@
     </div>
 </div>
 @endif
+

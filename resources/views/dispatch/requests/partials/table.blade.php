@@ -1,4 +1,4 @@
-<div class="overflow-x-auto">
+﻿<div class="overflow-x-auto">
     <table class="w-full">
         <thead class="bg-gray-50">
             <tr>
@@ -33,6 +33,9 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     <div>{{ $request->container_size }}</div>
                     <div class="text-xs text-gray-500">{{ $request->container_type }}</div>
+                    @if($request->shipping_line)
+                    <div class="text-xs text-blue-600"><i class="fas fa-ship"></i> {{ $request->shipping_line }}</div>
+                    @endif
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">
                     <i class="fas fa-map-marker-alt text-green-500"></i>
@@ -135,4 +138,5 @@
     </div>
 </div>
 @endif
+
 

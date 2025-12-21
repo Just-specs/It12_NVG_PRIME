@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Edit Delivery Request')
 
@@ -148,7 +148,54 @@
                         <option value="refrigerated">Refrigerated</option>
                         <option value="open_top">Open Top</option>
                         <option value="flat_rack">Flat Rack</option>
+                </div>
+
+                <!-- Shipping Line -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Shipping Line
+                    </label>
+                    <input type="text" name="shipping_line" value="{{ old('shipping_line', $request->shipping_line) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., WANHAI, CMA, MAERSK">
+                    @error('shipping_line')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Shipper Name -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Shipper Name
+                    </label>
+                    <input type="text" name="shipper_name" value="{{ old('shipper_name', $request->shipper_name) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Shipper company name">
+                    @error('shipper_name')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Container Status -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Container Status
+                    </label>
+                    <select name="container_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="loaded" {{ old('container_status', $request->container_status) == 'loaded' ? 'selected' : '' }}>Loaded</option>
+                        <option value="empty" {{ old('container_status', $request->container_status) == 'empty' ? 'selected' : '' }}>Empty</option>
+                        <option value="return" {{ old('container_status', $request->container_status) == 'return' ? 'selected' : '' }}>Return</option>
                     </select>
+                    @error('container_status')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- EIR Time -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        EIR Time
+                    </label>
+                    <input type="time" name="eir_time" value="{{ old('eir_time', $request->eir_time ? $request->eir_time->format('H:i') : '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    @error('eir_time')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
                 </div>
 
                 <!-- Preferred Schedule -->
@@ -286,4 +333,5 @@
     });
 </script>
 @endsection
+
 

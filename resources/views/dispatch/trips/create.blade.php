@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Assign Driver & Vehicle')
 
@@ -51,10 +51,10 @@
             <div>
                 <p class="font-semibold text-yellow-800">Limited Resources Available</p>
                 @if($drivers->isEmpty())
-                <p class="text-yellow-700 text-sm mt-1">• No available drivers found. Please set drivers to "available" status.</p>
+                <p class="text-yellow-700 text-sm mt-1">â€¢ No available drivers found. Please set drivers to "available" status.</p>
                 @endif
                 @if($vehicles->isEmpty())
-                <p class="text-yellow-700 text-sm mt-1">• No available vehicles found. Please set vehicles to "available" status.</p>
+                <p class="text-yellow-700 text-sm mt-1">â€¢ No available vehicles found. Please set vehicles to "available" status.</p>
                 @endif
             </div>
         </div>
@@ -222,6 +222,74 @@
                         <p class="text-xs text-gray-500 mt-2">
                             <i class="fas fa-lightbulb"></i>
                             Tip: Include toll road preferences, traffic-avoiding routes, or specific entry/exit instructions
+                    </div>
+
+                    <!-- Financial Information Section -->
+                    <div class="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                        <h3 class="font-semibold text-gray-800 mb-4">
+                            <i class="fas fa-dollar-sign text-green-600"></i> Financial Information
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Waybill Number -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Waybill Number
+                                </label>
+                                <input type="text" name="waybill_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Tracking number">
+                            </div>
+
+                            <!-- Trip Rate -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Trip Rate (₱)
+                                </label>
+                                <input type="number" name="trip_rate" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
+                            </div>
+
+                            <!-- Additional Charge 20ft -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Additional Charge 20ft (₱)
+                                </label>
+                                <input type="number" name="additional_charge_20ft" step="0.01" min="0" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
+                            </div>
+
+                            <!-- Additional Charge 50 -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Additional Charge 50 (₱)
+                                </label>
+                                <input type="number" name="additional_charge_50" step="0.01" min="0" value="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
+                            </div>
+
+                            <!-- Driver Payroll -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Driver Payroll (₱)
+                                </label>
+                                <input type="number" name="driver_payroll" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
+                            </div>
+
+                            <!-- Driver Allowance -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Driver Allowance (₱)
+                                </label>
+                                <input type="number" name="driver_allowance" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
+                            </div>
+
+                            <!-- Official Receipt Number -->
+                            <div class="md:col-span-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Official Receipt Number
+                                </label>
+                                <input type="text" name="official_receipt_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="OR Number">
+                            </div>
+                        </div>
+                        
+                        <p class="text-xs text-gray-600 mt-3">
+                            <i class="fas fa-info-circle"></i> Financial information can be added now or updated later after trip completion.
                         </p>
                     </div>
 
@@ -463,5 +531,6 @@
     });
 </script>
 @endsection
+
 
 
