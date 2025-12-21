@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -11,6 +11,13 @@ class Trip extends Model
         'delivery_request_id',
         'driver_id',
         'vehicle_id',
+        'waybill_number',
+        'trip_rate',
+        'additional_charge_20ft',
+        'additional_charge_50',
+        'driver_payroll',
+        'driver_allowance',
+        'official_receipt_number',
         'scheduled_time',
         'actual_start_time',
         'actual_end_time',
@@ -132,5 +139,44 @@ class Trip extends Model
     {
         return $this->hasMany(ClientNotification::class);
     }
+
+    /**
+     * Calculate total revenue for this trip
+     */
+    public function getTotalRevenueAttribute()
+    {
+        return ($this->trip_rate ?? 0) + 
+               ($this->additional_charge_20ft ?? 0) + 
+               ($this->additional_charge_50 ?? 0);
+    }
+
+    /**
+     * Calculate total cost for this trip
+     */
+    public function getTotalCostAttribute()
+    {
+        return ($this->driver_payroll ?? 0) + 
+               ($this->driver_allowance ?? 0);
+    }
+
+    /**
+     * Calculate profit margin for this trip
+     */
+    public function getProfitMarginAttribute()
+    {
+        return $this->total_revenue - $this->total_cost;
+    }
+
+    /**
+     * Check if financial data is complete
+     */
+    public function hasCompleteFinancialData()
+    {
+        return !is_null($this->trip_rate) && 
+               !is_null($this->driver_payroll) && 
+               !is_null($this->driver_allowance);
+    }
 }
+
+
 

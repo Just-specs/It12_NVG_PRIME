@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Models;
 
@@ -22,7 +22,12 @@ class DeliveryRequest extends Model
         'delivery_location',
         'container_size',
         'container_type',
+        'shipping_line',
+        'shipper_name',
         'preferred_schedule',
+        'eir_time',
+        'container_status',
+        'dispatcher_id',
         'status',
         'notes',
         'atw_verified',
@@ -126,5 +131,46 @@ class DeliveryRequest extends Model
     {
         return $this->hasOne(Trip::class);
     }
+
+    /**
+     * Get the dispatcher who served this request
+     */
+    public function dispatcher()
+    {
+        return $this->belongsTo(User::class, 'dispatcher_id');
+    }
+
+    /**
+     * Calculate total revenue for this request
+     */
+    public function getTotalRevenueAttribute()
+    {
+        return $this->trips->sum(function ($trip) {
+            return ($trip->trip_rate ?? 0) + 
+                   ($trip->additional_charge_20ft ?? 0) + 
+                   ($trip->additional_charge_50 ?? 0);
+        });
+    }
+
+    /**
+     * Calculate total cost for this request
+     */
+    public function getTotalCostAttribute()
+    {
+        return $this->trips->sum(function ($trip) {
+            return ($trip->driver_payroll ?? 0) + 
+                   ($trip->driver_allowance ?? 0);
+        });
+    }
+
+    /**
+     * Calculate profit margin
+     */
+    public function getProfitMarginAttribute()
+    {
+        return $this->total_revenue - $this->total_cost;
+    }
 }
+
+
 
