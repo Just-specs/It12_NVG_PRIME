@@ -451,16 +451,51 @@
         });
     };
 
+    // Cancel Trip Modal
+    const initCancelModal = () => {
+        const openButton = document.getElementById('open-cancel-modal');
+        const modal = document.getElementById('cancel-trip-modal');
+        const cancelButton = document.getElementById('cancel-cancel-modal');
+
+        if (!openButton || !modal || !cancelButton) return;
+
+        const showModal = () => {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        };
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        };
+
+        openButton.addEventListener('click', showModal);
+        cancelButton.addEventListener('click', hideModal);
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) hideModal();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
+                hideModal();
+            }
+        });
+    };
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
             initStartModal();
             initCompleteModal();
+            initCancelModal();
         });
     } else {
         initStartModal();
         initCompleteModal();
+        initCancelModal();
     }
 </script>
+
 <!-- Cancel Trip Modal (Admin Only) -->
 @if(auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']))
 <div id="cancel-trip-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
@@ -522,52 +557,7 @@
     </div>
 </div>
 
-<script>
-    // Cancel Trip Modal (Admin Only)
-    const initCancelModal = () => {
-        const openButton = document.getElementById('open-cancel-modal');
-        const modal = document.getElementById('cancel-trip-modal');
-        const cancelButton = document.getElementById('cancel-cancel-modal');
-
-        if (!openButton || !modal || !cancelButton) return;
-
-        const showModal = () => {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        };
-
-        const hideModal = () => {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        };
-
-        openButton.addEventListener('click', showModal);
-        cancelButton.addEventListener('click', hideModal);
-
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) hideModal();
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
-                hideModal();
-            }
-        });
-    };
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            initStartModal();
-            initCompleteModal();
-            initCancelModal();
-        });
-    } else {
-        initStartModal();
-        initCompleteModal();
-        initCancelModal();
-    }
-</script>
-@endif
-
 @endif
 @endsection
+
+
