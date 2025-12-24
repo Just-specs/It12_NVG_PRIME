@@ -15,7 +15,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($requests as $request)
-            <tr class="hover:bg-gray-50" data-request-id="{{ $request->id }}">
+            <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="viewRequest({{ $request->id }})" data-request-id="{{ $request->id }}">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $request->client->name }}</div>
                 </td>
@@ -58,7 +58,7 @@
                         {{ ucfirst($request->status) }}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex space-x-2">
                         @if($request->status === 'verified' && !$request->trip)
                         <a href="{{ route('requests.show', $request) }}" class="w-8 h-8 flex items-center justify-center bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors" title="Assign Driver">
@@ -108,3 +108,9 @@
     </div>
 </div>
 @endif
+
+<script>
+function viewRequest(requestId) {
+    window.location.href = /requests/${requestId};
+}
+</script>

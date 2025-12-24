@@ -16,7 +16,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($trips as $trip)
-            <tr class="hover:bg-gray-50 cursor-pointer" onclick="viewTrip({{ $trip->id }})" data-trip-id="{{ $trip->id }}">
+            <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="viewTrip({{ $trip->id }})" data-trip-id="{{ $trip->id }}">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $trip->deliveryRequest->client->name }}</div>
                 </td>
