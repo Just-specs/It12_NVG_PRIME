@@ -61,12 +61,12 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <div class="flex space-x-2">
                         @if($request->status === 'verified' && !$request->trip)
-                        <a href="{{ route('requests.show', $request) }}" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium" title="Assign Driver">
-                            <i class="fas fa-user-plus"></i> Assign
+                        <a href="{{ route('requests.show', $request) }}" class="w-8 h-8 flex items-center justify-center bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors" title="Assign Driver">
+                            <i class="fas fa-user-plus"></i>
                         </a>
                         @endif
-                        <a href="{{ route('requests.show', $request) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium" title="View Details">
-                            <i class="fas fa-eye"></i> View
+                        <a href="{{ route('requests.show', $request) }}" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" title="View Details">
+                            <i class="fas fa-eye"></i>
                         </a>
                     </div>
                 </td>
