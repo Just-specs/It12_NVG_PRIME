@@ -15,7 +15,7 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($requests as $request)
-            <tr class="hover:bg-gray-50 cursor-pointer" onclick="viewRequest({{ $request->id }})" data-request-id="{{ $request->id }}">
+            <tr class="hover:bg-gray-50" data-request-id="{{ $request->id }}">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">{{ $request->client->name }}</div>
                 </td>
@@ -58,22 +58,16 @@
                         {{ ucfirst($request->status) }}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <div class="flex space-x-2">
-                        @if(in_array($request->status, ['pending', 'verified']))
-                        <a href="{{ route('requests.edit', $request) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium" title="Edit">
-                            Edit
+                        @if($request->status === 'verified' && !$request->trip)
+                        <a href="{{ route('requests.show', $request) }}" class="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 text-xs font-medium" title="Assign Driver">
+                            <i class="fas fa-user-plus"></i> Assign
                         </a>
                         @endif
-                        @if(auth()->user()->role === 'admin' && in_array($request->status, ['pending', 'verified']))
-                        <form method="POST" action="{{ route('requests.destroy', $request) }}" class="inline delete-form">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium delete-btn" title="Delete">
-                                Delete
-                            </button>
-                        </form>
-                        @endif
+                        <a href="{{ route('requests.show', $request) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium" title="View Details">
+                            <i class="fas fa-eye"></i> View
+                        </a>
                     </div>
                 </td>
             </tr>
@@ -114,9 +108,3 @@
     </div>
 </div>
 @endif
-
-<script>
-function viewRequest(requestId) {
-    window.location.href = `/requests/${requestId}`;
-}
-</script>
