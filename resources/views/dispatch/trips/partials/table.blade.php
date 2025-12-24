@@ -58,16 +58,19 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex space-x-2">
+                        <a href="{{ route('trips.show', $trip) }}" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" title="View Details">
+                            <i class="fas fa-eye"></i>
+                        </a>
                         @if($trip->status === 'scheduled' || $trip->status === 'in-transit')
-                        <a href="{{ route('trips.show', $trip) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium" title="Edit">
-                            Edit
+                        <a href="{{ route('trips.show', $trip) }}" class="w-8 h-8 flex items-center justify-center bg-[#1E40AF] text-white rounded-full hover:bg-[#1A36A0] transition-colors" title="Edit Trip">
+                            <i class="fas fa-edit"></i>
                         </a>
                         @endif
                         @if(auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']))
                         <form method="POST" action="{{ route('trips.cancel', $trip) }}" class="inline">
                             @csrf
-                            <button type="button" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium cancel-trip-btn" title="Cancel">
-                                Cancel
+                            <button type="button" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors cancel-trip-btn" title="Cancel Trip">
+                                <i class="fas fa-times-circle"></i>
                             </button>
                         </form>
                         @endif
@@ -114,7 +117,7 @@
 
 <script>
 function viewTrip(tripId) {
-    window.location.href = `/trips/${tripId}`;
+    window.location.href = /trips/${tripId};
 }
 
 // Handle cancel button confirmation
