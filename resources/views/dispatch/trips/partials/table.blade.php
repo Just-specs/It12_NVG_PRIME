@@ -21,7 +21,7 @@
                     <div class="text-sm font-medium text-gray-900">{{ $trip->deliveryRequest->client->name }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-mono text-purple-600">{{ $trip->deliveryRequest->atw_reference }}</div>
+                    <div class="text-sm font-bold text-gray-900">{{ $trip->deliveryRequest->atw_reference }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     @if($trip->waybill_number)
@@ -132,3 +132,4 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
