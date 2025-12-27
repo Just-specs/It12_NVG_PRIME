@@ -58,9 +58,6 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex space-x-2">
-                        <a href="{{ route('trips.show', $trip) }}" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" title="View Details">
-                            <i class="fas fa-eye"></i>
-                        </a>
                         @if($trip->status === 'scheduled' || $trip->status === 'in-transit')
                         <a href="{{ route('trips.show', $trip) }}" class="w-8 h-8 flex items-center justify-center bg-[#1E40AF] text-white rounded-full hover:bg-[#1A36A0] transition-colors" title="Edit Trip">
                             <i class="fas fa-edit"></i>
@@ -132,5 +129,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
