@@ -18,6 +18,8 @@ class Trip extends Model
         'driver_payroll',
         'driver_allowance',
         'official_receipt_number',
+        'eir_datetime',
+        'served_by',
         'scheduled_time',
         'actual_start_time',
         'actual_end_time',
@@ -30,6 +32,7 @@ class Trip extends Model
         'scheduled_time' => 'datetime',
         'actual_start_time' => 'datetime',
         'actual_end_time' => 'datetime',
+        'eir_datetime' => 'datetime',
         'archived_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -177,6 +180,8 @@ class Trip extends Model
                !is_null($this->driver_allowance);
     }
 }
+
+
 
 
 
