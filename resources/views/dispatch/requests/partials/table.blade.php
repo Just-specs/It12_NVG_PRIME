@@ -60,6 +60,11 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex space-x-2">
+                        @if($request->status === 'verified' && !$request->trip)
+                        <button onclick="event.stopPropagation(); openAssignDriverModal({{ $request->id }}, '{{ $request->client->name }}', '{{ $request->atw_reference }}')" class="w-8 h-8 flex items-center justify-center bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors" title="Assign Driver">
+                            <i class="fas fa-user-plus"></i>
+                        </button>
+                        @endif
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
                         <a href="{{ route('requests.edit', $request) }}" class="w-8 h-8 flex items-center justify-center bg-[#1E40AF] text-white rounded-full hover:bg-[#1A36A0] transition-colors" title="Edit Request">
                             <i class="fas fa-edit"></i>
@@ -120,5 +125,6 @@ function viewRequest(requestId) {
     window.location.href = `/requests/${requestId}`;
 }
 </script>
+
 
 
