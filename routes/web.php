@@ -138,7 +138,8 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/password', [ProfileController::class, 'updatePassword'])->name('update-password');
     });
 
-    //Reports        // Phase 1: Financial & Driver Reports
+    //Reports
+        // Phase 1: Financial & Driver Reports
         Route::get('/financial', [App\Http\Controllers\Reports\FinancialReportController::class, 'index'])->name('financial');
         Route::get('/driver-earnings', [App\Http\Controllers\Reports\DriverEarningsController::class, 'index'])->name('driver-earnings');
 
@@ -193,6 +194,9 @@ Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function (
         Route::put('/{driver}', [DriverController::class, 'update'])->name('update');
         Route::delete('/{driver}', [DriverController::class, 'destroy'])->name('destroy');
         Route::post('/{driver}/update-status', [DriverController::class, 'updateStatus'])->name('update-status');
+        Route::get('/deleted', [DriverController::class, 'deleted'])->name('deleted');
+        Route::post('/restore/{id}', [DriverController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}', [DriverController::class, 'forceDelete'])->name('force-delete');
     });
 
     // VEHICLES
@@ -206,6 +210,9 @@ Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function (
         Route::delete('/{vehicle}', [VehicleController::class, 'destroy'])->name('destroy');
         Route::post('/{vehicle}/set-available', [VehicleController::class, 'setAvailable'])->name('set-available');
         Route::post('/{vehicle}/set-maintenance', [VehicleController::class, 'setMaintenance'])->name('set-maintenance');
+        Route::get('/deleted', [VehicleController::class, 'deleted'])->name('deleted');
+        Route::post('/restore/{id}', [VehicleController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}', [VehicleController::class, 'forceDelete'])->name('force-delete');
     });
 
     // CLIENTS
@@ -281,6 +288,8 @@ Route::get('/api/requests/{id}', [App\Http\Controllers\DeliveryRequestController
 // Debug routes (REMOVE IN PRODUCTION)
 Route::get('/debug/test-driver', [App\Http\Controllers\DebugController::class, 'testDriverCreation']);
 Route::post('/debug/test-driver-ajax', [App\Http\Controllers\DebugController::class, 'testAjaxDriverCreation']);
+
+
 
 
 
