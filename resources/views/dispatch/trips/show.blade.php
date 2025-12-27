@@ -496,6 +496,7 @@
     }
 </script>
 
+@endif
 <!-- Cancel Trip Modal (Admin Only) -->
 @if(auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']))
 <div id="cancel-trip-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
