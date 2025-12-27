@@ -138,7 +138,10 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/password', [ProfileController::class, 'updatePassword'])->name('update-password');
     });
 
-    //Reports
+    //Reports        // Phase 1: Financial & Driver Reports
+        Route::get('/financial', [App\Http\Controllers\Reports\FinancialReportController::class, 'index'])->name('financial');
+        Route::get('/driver-earnings', [App\Http\Controllers\Reports\DriverEarningsController::class, 'index'])->name('driver-earnings');
+
     Route::prefix('reports')->name('reports.')->group(function () {
         // Main reports page
         Route::get('/', [ReportController::class, 'index'])->name('index');
@@ -153,6 +156,10 @@ Route::middleware(['auth'])->group(function () {
         // Performance reports
         Route::get('/driver-performance', [ReportController::class, 'driverPerformance'])->name('driver-performance');
         Route::get('/vehicle-utilization', [ReportController::class, 'vehicleUtilization'])->name('vehicle-utilization');
+
+        // Phase 1: Financial & Driver Reports
+        Route::get('/financial', [App\Http\Controllers\Reports\FinancialReportController::class, 'index'])->name('financial');
+        Route::get('/driver-earnings', [App\Http\Controllers\Reports\DriverEarningsController::class, 'index'])->name('driver-earnings');
         Route::get('/client-activity', [ReportController::class, 'clientActivity'])->name('client-activity');
         Route::get('/on-time-delivery', [ReportController::class, 'onTimeDelivery'])->name('on-time-delivery');
         Route::get('/trip-summary', [ReportController::class, 'tripSummary'])->name('trip-summary');
@@ -259,9 +266,7 @@ Route::get('/api/available-vehicles', function () {
     
     return response()->json($vehicles);
 
-    // Phase 1: Reports
-    Route::get('/reports/financial', [App\Http\Controllers\Reports\FinancialReportController::class, 'index'])->name('reports.financial');
-    Route::get('/reports/driver-earnings', [App\Http\Controllers\Reports\DriverEarningsController::class, 'index'])->name('reports.driver-earnings');});
+});
 
 Route::get('/api/requests/{id}', [App\Http\Controllers\DeliveryRequestController::class, 'getRequestDetails'])->name('api.requests.details');
 
@@ -270,6 +275,10 @@ Route::get('/api/requests/{id}', [App\Http\Controllers\DeliveryRequestController
 // Debug routes (REMOVE IN PRODUCTION)
 Route::get('/debug/test-driver', [App\Http\Controllers\DebugController::class, 'testDriverCreation']);
 Route::post('/debug/test-driver-ajax', [App\Http\Controllers\DebugController::class, 'testAjaxDriverCreation']);
+
+
+
+
 
 
 
