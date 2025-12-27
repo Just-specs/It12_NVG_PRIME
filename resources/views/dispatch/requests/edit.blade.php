@@ -16,7 +16,7 @@
             <i class="fas fa-plus-circle text-blue-600"></i> New Delivery Request
         </h1>
 
-        <form id="create-request-form" method="POST" action="{{ route('requests.update', `$request) }}">
+        <form id="create-request-form" method="POST" action="{{ route('requests.update', $request) }}">
             @csrf
                 @method('PUT')
 
@@ -333,5 +333,6 @@
     });
 </script>
 @endsection
+
 
 
