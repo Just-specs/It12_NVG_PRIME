@@ -351,6 +351,44 @@
             </a>
             @endif
 
+            <!-- ADMIN ONLY SECTION -->
+            @if(auth()->user()->role === 'admin')
+            <div class="mt-6 pt-4 border-t border-blue-700">
+                <p class="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mb-2">
+                    <i class="fas fa-shield-alt"></i> Admin Only
+                </p>
+                
+                <!-- Audit Logs -->
+                <a href="{{ route('admin.audit-logs.index') }}"
+                    class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('admin.audit-logs.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
+                    <i class="fas fa-history w-5 {{ request()->routeIs('admin.audit-logs.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
+                    <span class="ml-3 font-medium">Audit Logs</span>
+                </a>
+
+                <!-- Deleted Records -->
+                <div class="mt-2">
+                    <button onclick="toggleDeletedMenu()" class="w-full flex items-center justify-between px-4 py-3 rounded-lg transition group text-white hover:bg-blue-700">
+                        <div class="flex items-center">
+                            <i class="fas fa-trash-restore w-5 text-blue-300 group-hover:text-white"></i>
+                            <span class="ml-3 font-medium">Deleted Records</span>
+                        </div>
+                        <i id="deleted-chevron" class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    <div id="deleted-submenu" class="hidden mt-1 ml-8 space-y-1">
+                        <a href="{{ route('drivers.deleted') }}" class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-user-tie w-4"></i> Deleted Drivers
+                        </a>
+                        <a href="{{ route('vehicles.deleted') }}" class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-truck w-4"></i> Deleted Vehicles
+                        </a>
+                        <a href="{{ route('clients.deleted') }}" class="block px-4 py-2 text-sm rounded-lg hover:bg-blue-700">
+                            <i class="fas fa-building w-4"></i> Deleted Clients
+                        </a>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Dispatchers - ADMIN ONLY (Full Admin Control) -->
             @if(auth()->user()->role === 'admin')
             <a href="{{ route('admin.dispatchers.index') }}"
@@ -544,6 +582,15 @@
                 });
             }
 
+            // Toggle deleted records submenu
+            window.toggleDeletedMenu = function() {
+                const submenu = document.getElementById('deleted-submenu');
+                const chevron = document.getElementById('deleted-chevron');
+                submenu.classList.toggle('hidden');
+                chevron.classList.toggle('fa-chevron-down');
+                chevron.classList.toggle('fa-chevron-up');
+            };
+
             // Mobile sidebar toggle
             const sidebar = document.getElementById('sidebar');
             const mobileToggle = document.getElementById('mobile-sidebar-toggle');
@@ -569,6 +616,8 @@
 </body>
 
 </html>
+
+
 
 
 

@@ -234,7 +234,13 @@ Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function (
     });
 
 
-    // ADMIN ONLY
+    
+    // ADMIN ONLY - Audit Logs
+    Route::prefix('admin/audit-logs')->name('admin.audit-logs.')->middleware([CheckRole::class . ':admin'])->group(function () {
+        Route::get('/', [App\Http\Controllers\AuditLogController::class, 'index'])->name('index');
+        Route::get('/{auditLog}', [App\Http\Controllers\AuditLogController::class, 'show'])->name('show');
+        Route::get('/model/{modelType}/{modelId}', [App\Http\Controllers\AuditLogController::class, 'forModel'])->name('for-model');
+    });
     Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
         Route::prefix('utils')->name('utils.')->group(function () {
             Route::get('/settings', [DashboardController::class, 'settings'])->name('settings');
@@ -275,6 +281,8 @@ Route::get('/api/requests/{id}', [App\Http\Controllers\DeliveryRequestController
 // Debug routes (REMOVE IN PRODUCTION)
 Route::get('/debug/test-driver', [App\Http\Controllers\DebugController::class, 'testDriverCreation']);
 Route::post('/debug/test-driver-ajax', [App\Http\Controllers\DebugController::class, 'testAjaxDriverCreation']);
+
+
 
 
 
