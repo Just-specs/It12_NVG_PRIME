@@ -58,7 +58,28 @@
 </div>
 
 @if($drivers->hasPages())
-<div class="px-6 py-4 bg-white border-t border-gray-200">
-    {{ $drivers->links() }}
+<div class="px-6 py-4 bg-white border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <span class="text-sm text-gray-600">
+        Showing {{ $drivers->firstItem() }} to {{ $drivers->lastItem() }} of {{ $drivers->total() }} drivers
+    </span>
+    <div class="flex gap-3">
+        @if($drivers->onFirstPage())
+        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">Previous</span>
+        @else
+        <a href="{{ $drivers->previousPageUrl() }}" data-pagination="drivers"
+            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+            Previous
+        </a>
+        @endif
+
+        @if($drivers->hasMorePages())
+        <a href="{{ $drivers->nextPageUrl() }}" data-pagination="drivers"
+            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+            Next
+        </a>
+        @else
+        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">Next</span>
+        @endif
+    </div>
 </div>
 @endif

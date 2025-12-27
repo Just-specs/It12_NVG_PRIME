@@ -53,7 +53,28 @@
 </div>
 
 @if($clients->hasPages())
-<div class="px-6 py-4 bg-white border-t border-gray-200">
-    {{ $clients->links() }}
+<div class="px-6 py-4 bg-white border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <span class="text-sm text-gray-600">
+        Showing {{ $clients->firstItem() }} to {{ $clients->lastItem() }} of {{ $clients->total() }} clients
+    </span>
+    <div class="flex gap-3">
+        @if($clients->onFirstPage())
+        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">Previous</span>
+        @else
+        <a href="{{ $clients->previousPageUrl() }}" data-pagination="clients"
+            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+            Previous
+        </a>
+        @endif
+
+        @if($clients->hasMorePages())
+        <a href="{{ $clients->nextPageUrl() }}" data-pagination="clients"
+            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
+            Next
+        </a>
+        @else
+        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">Next</span>
+        @endif
+    </div>
 </div>
 @endif
