@@ -117,7 +117,7 @@
 
 <script>
 function viewTrip(tripId) {
-    window.location.href = /trips/${tripId};
+    window.location.href = `/trips/${tripId}`;
 }
 
 // Handle cancel button confirmation
@@ -132,4 +132,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 

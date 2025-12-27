@@ -111,6 +111,7 @@
 
 <script>
 function viewRequest(requestId) {
-    window.location.href = /requests/${requestId};
+    window.location.href = `/requests/${requestId}`;
 }
 </script>
+
