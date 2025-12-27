@@ -279,6 +279,26 @@
                                 <input type="number" name="driver_allowance" step="0.01" min="0" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="0.00">
                             </div>
 
+                            <!-- EIR Date/Time -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    EIR Date & Time
+                                </label>
+                                <input type="datetime-local" name="eir_datetime" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            </div>
+
+                            <!-- Served By -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Served By (Branch)
+                                </label>
+                                <select name="served_by" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                    <option value="">Select Branch</option>
+                                    <option value="LOR">LOR</option>
+                                    <option value="JUNA">JUNA</option>
+                                    <option value="EPOY">EPOY</option>
+                                </select>
+                            </div>
                             <!-- Official Receipt Number -->
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -531,6 +551,7 @@
     });
 </script>
 @endsection
+
 
 
 

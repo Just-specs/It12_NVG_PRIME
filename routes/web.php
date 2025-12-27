@@ -258,7 +258,10 @@ Route::get('/api/available-vehicles', function () {
         ->get(['id', 'plate_number', 'vehicle_type', 'trailer_type']);
     
     return response()->json($vehicles);
-});
+
+    // Phase 1: Reports
+    Route::get('/reports/financial', [App\Http\Controllers\Reports\FinancialReportController::class, 'index'])->name('reports.financial');
+    Route::get('/reports/driver-earnings', [App\Http\Controllers\Reports\DriverEarningsController::class, 'index'])->name('reports.driver-earnings');});
 
 Route::get('/api/requests/{id}', [App\Http\Controllers\DeliveryRequestController::class, 'getRequestDetails'])->name('api.requests.details');
 
@@ -267,6 +270,7 @@ Route::get('/api/requests/{id}', [App\Http\Controllers\DeliveryRequestController
 // Debug routes (REMOVE IN PRODUCTION)
 Route::get('/debug/test-driver', [App\Http\Controllers\DebugController::class, 'testDriverCreation']);
 Route::post('/debug/test-driver-ajax', [App\Http\Controllers\DebugController::class, 'testAjaxDriverCreation']);
+
 
 
 

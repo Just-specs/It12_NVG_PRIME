@@ -100,6 +100,56 @@
                     </div>
                 </div>
 
+                <!-- Phase 1: Shipping Documentation -->
+                <div class="mb-6 border-t pt-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-ship text-blue-600"></i> Shipping Documentation
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        @if($deliveryRequest->shipping_line)
+                        <div>
+                            <p class="text-sm text-gray-600">Shipping Line</p>
+                            <p class="font-semibold">{{ $deliveryRequest->shipping_line }}</p>
+                        </div>
+                        @endif
+                        @if($deliveryRequest->shipper_name)
+                        <div>
+                            <p class="text-sm text-gray-600">Shipper</p>
+                            <p class="font-semibold">{{ $deliveryRequest->shipper_name }}</p>
+                        </div>
+                        @endif
+                        @if($deliveryRequest->booking_number)
+                        <div>
+                            <p class="text-sm text-gray-600">Booking Number</p>
+                            <p class="font-semibold font-mono">{{ $deliveryRequest->booking_number }}</p>
+                        </div>
+                        @endif
+                        @if($deliveryRequest->eir_number)
+                        <div>
+                            <p class="text-sm text-gray-600">EIR Number</p>
+                            <p class="font-semibold font-mono">{{ $deliveryRequest->eir_number }}</p>
+                        </div>
+                        @endif
+                        @if($deliveryRequest->container_number)
+                        <div>
+                            <p class="text-sm text-gray-600">Container Number</p>
+                            <p class="font-semibold font-mono">{{ $deliveryRequest->container_number }}</p>
+                        </div>
+                        @endif
+                        @if($deliveryRequest->seal_number)
+                        <div>
+                            <p class="text-sm text-gray-600">Seal Number</p>
+                            <p class="font-semibold font-mono">{{ $deliveryRequest->seal_number }}</p>
+                        </div>
+                        @endif
+                        @if($deliveryRequest->container_status)
+                        <div>
+                            <p class="text-sm text-gray-600">Container Status</p>
+                            <p class="font-semibold">{{ ucfirst($deliveryRequest->container_status) }}</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
                 <!-- Trip Information (if assigned) -->
                 @if($deliveryRequest->trip)
                 <div class="border-t pt-6">
@@ -469,6 +519,7 @@
     }
 </script>
 @endpush
+
 
 
 

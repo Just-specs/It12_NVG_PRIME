@@ -117,6 +117,122 @@
                     </div>
                 </div>
 
+                <!-- Phase 1: Shipping Documentation -->
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-file-alt text-blue-600"></i> Shipping Documentation
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        @if($trip->waybill_number)
+                        <div>
+                            <p class="text-sm text-gray-600">Waybill Number</p>
+                            <p class="font-semibold font-mono">{{ $trip->waybill_number }}</p>
+                        </div>
+                        @endif
+                        @if($trip->deliveryRequest->eir_number)
+                        <div>
+                            <p class="text-sm text-gray-600">EIR Number</p>
+                            <p class="font-semibold font-mono">{{ $trip->deliveryRequest->eir_number }}</p>
+                        </div>
+                        @endif
+                        @if($trip->eir_datetime)
+                        <div>
+                            <p class="text-sm text-gray-600">EIR Date & Time</p>
+                            <p class="font-semibold">{{ $trip->eir_datetime->format('M d, Y h:i A') }}</p>
+                        </div>
+                        @endif
+                        @if($trip->deliveryRequest->booking_number)
+                        <div>
+                            <p class="text-sm text-gray-600">Booking Number</p>
+                            <p class="font-semibold font-mono">{{ $trip->deliveryRequest->booking_number }}</p>
+                        </div>
+                        @endif
+                        @if($trip->deliveryRequest->seal_number)
+                        <div>
+                            <p class="text-sm text-gray-600">Seal Number</p>
+                            <p class="font-semibold font-mono">{{ $trip->deliveryRequest->seal_number }}</p>
+                        </div>
+                        @endif
+                        @if($trip->deliveryRequest->container_number)
+                        <div>
+                            <p class="text-sm text-gray-600">Container Number</p>
+                            <p class="font-semibold font-mono">{{ $trip->deliveryRequest->container_number }}</p>
+                        </div>
+                        @endif
+                        @if($trip->deliveryRequest->shipping_line)
+                        <div>
+                            <p class="text-sm text-gray-600">Shipping Line</p>
+                            <p class="font-semibold">{{ $trip->deliveryRequest->shipping_line }}</p>
+                        </div>
+                        @endif
+                        @if($trip->deliveryRequest->shipper_name)
+                        <div>
+                            <p class="text-sm text-gray-600">Shipper</p>
+                            <p class="font-semibold">{{ $trip->deliveryRequest->shipper_name }}</p>
+                        </div>
+                        @endif
+                        @if($trip->served_by)
+                        <div>
+                            <p class="text-sm text-gray-600">Served By (Branch)</p>
+                            <p class="font-semibold">{{ $trip->served_by }}</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Phase 1: Financial Information -->
+                <div class="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-3">
+                        <i class="fas fa-dollar-sign text-green-600"></i> Financial Information
+                    </h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        @if($trip->trip_rate)
+                        <div>
+                            <p class="text-sm text-gray-600">Client Rate</p>
+                            <p class="font-bold text-lg text-green-700">?{{ number_format($trip->trip_rate, 2) }}</p>
+                        </div>
+                        @endif
+                        @if($trip->driver_payroll)
+                        <div>
+                            <p class="text-sm text-gray-600">Driver Payroll</p>
+                            <p class="font-bold text-lg text-blue-700">?{{ number_format($trip->driver_payroll, 2) }}</p>
+                        </div>
+                        @endif
+                        @if($trip->driver_allowance)
+                        <div>
+                            <p class="text-sm text-gray-600">Driver Allowance</p>
+                            <p class="font-semibold">?{{ number_format($trip->driver_allowance, 2) }}</p>
+                        </div>
+                        @endif
+                        @if($trip->additional_charge_20ft)
+                        <div>
+                            <p class="text-sm text-gray-600">Additional Charge (20ft)</p>
+                            <p class="font-semibold">?{{ number_format($trip->additional_charge_20ft, 2) }}</p>
+                        </div>
+                        @endif
+                        @if($trip->additional_charge_50)
+                        <div>
+                            <p class="text-sm text-gray-600">Additional Charge (50ft)</p>
+                            <p class="font-semibold">?{{ number_format($trip->additional_charge_50, 2) }}</p>
+                        </div>
+                        @endif
+                        @if($trip->official_receipt_number)
+                        <div>
+                            <p class="text-sm text-gray-600">Official Receipt (OR)</p>
+                            <p class="font-semibold font-mono">{{ $trip->official_receipt_number }}</p>
+                        </div>
+                        @endif
+                        @if($trip->trip_rate && $trip->driver_payroll)
+                        <div class="col-span-2 pt-3 border-t border-green-300">
+                            <p class="text-sm text-gray-600">Estimated Profit</p>
+                            <p class="font-bold text-2xl text-green-800">
+                                ?{{ number_format($trip->trip_rate - $trip->driver_payroll - ($trip->driver_allowance ?? 0), 2) }}
+                            </p>
+                            <p class="text-xs text-gray-500 mt-1">Rate - Payroll - Allowance</p>
+                        </div>
+                        @endif
+                    </div>
+                </div>
                 <!-- Timing Information -->
                 @if($trip->actual_start_time || $trip->actual_end_time)
                 <div class="border-t pt-6">
@@ -560,5 +676,6 @@
 
 @endif
 @endsection
+
 
 
