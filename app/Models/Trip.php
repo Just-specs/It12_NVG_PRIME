@@ -3,10 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Auditable;
 use Carbon\Carbon;
 
 class Trip extends Model
 {
+    use SoftDeletes, Auditable;
     protected $fillable = [
         'delivery_request_id',
         'driver_id',
@@ -26,6 +29,7 @@ class Trip extends Model
         'status',
         'route_instructions',
         'archived_at',
+        'deleted_by',
     ];
 
     protected $casts = [
@@ -180,6 +184,8 @@ class Trip extends Model
                !is_null($this->driver_allowance);
     }
 }
+
+
 
 
 

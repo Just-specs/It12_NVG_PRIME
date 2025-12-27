@@ -4,10 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Auditable;
 use Carbon\Carbon;
 
 class DeliveryRequest extends Model
 {
+    use SoftDeletes, Auditable;
     use HasFactory;
     
     protected $fillable = [
@@ -30,6 +33,7 @@ class DeliveryRequest extends Model
         'dispatcher_id',
         'status',
         'notes',
+        'deleted_by',
         'atw_verified',
         'archived_at',
     ];
@@ -171,6 +175,8 @@ class DeliveryRequest extends Model
         return $this->total_revenue - $this->total_cost;
     }
 }
+
+
 
 
 

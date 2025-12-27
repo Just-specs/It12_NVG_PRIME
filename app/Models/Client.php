@@ -4,15 +4,23 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Auditable;
 
 class Client extends Model
 {
+    use SoftDeletes, Auditable;
     use HasFactory;
-    protected $fillable = ['name', 'email', 'mobile', 'company'];
+    protected $fillable = ['name', 'email', 'mobile', 'company', 'deleted_by'];
 
     public function deliveryRequests()
     {
         return $this->hasMany(DeliveryRequest::class);
+    }
+
+    public function activeDeliveryRequests()
+    {
+        return $this->hasMany(DeliveryRequest::class)->whereNull('delivery_requests.deleted_at');
     }
 
     public function notifications()
@@ -35,3 +43,6 @@ class Client extends Model
         return $query->get(['id', 'name', 'email', 'company'])->toArray();
     }
 }
+
+
+

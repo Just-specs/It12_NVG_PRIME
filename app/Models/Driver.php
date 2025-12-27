@@ -3,14 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Traits\Auditable;
 
 class Driver extends Model
 {
-    protected $fillable = ['name', 'mobile', 'license_number', 'status'];
+    use SoftDeletes, Auditable;
+    protected $fillable = ['name', 'mobile', 'license_number', 'status', 'deleted_by'];
 
     public function trips()
     {
         return $this->hasMany(Trip::class);
+    }
+
+    public function activeTrips()
+    {
+        return $this->hasMany(Trip::class)->whereNull('trips.deleted_at');
     }
 
     public function scopeAvailable($query)
@@ -49,3 +57,6 @@ class Driver extends Model
         return $query->get(['id', 'name', 'mobile', 'license_number', 'status'])->toArray();
     }
 }
+
+
+

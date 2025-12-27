@@ -183,13 +183,14 @@ class ClientController extends Controller
 
     public function destroy(Client $client)
     {
-        // Check if client has any requests
-        if ($client->deliveryRequests()->exists()) {
+        // Check if client has any active delivery requests
+        if ($client->deliveryRequests()->whereNotIn('status', ['completed', 'cancelled'])->exists()) {
             return redirect()
                 ->back()
-                ->with('error', 'Cannot delete client with existing delivery requests.');
+                ->with('error', 'Cannot delete client with active delivery requests. Complete or cancel active requests first.');
         }
 
+        // Soft delete the client (audit log is automatic via Auditable trait)
         $client->delete();
 
         return redirect()
@@ -275,4 +276,53 @@ class ClientController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Show deleted clients
+     */
+    public function deleted()
+    {
+        $clients = Client::onlyTrashed()
+            ->with('deletedBy')
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(15);
+        
+        return view('dispatch.clients.deleted', compact('clients'));
+    }
+
+    /**
+     * Restore a soft-deleted client
+     */
+    public function restore($id)
+    {
+        $client = Client::onlyTrashed()->findOrFail($id);
+        $client->restore();
+        
+        return redirect()
+            ->route('clients.index')
+            ->with('success', 'Client restored successfully.');
+    }
+
+    /**
+     * Permanently delete a client
+     */
+    public function forceDelete($id)
+    {
+        $client = Client::onlyTrashed()->findOrFail($id);
+        
+        // Check if client has any delivery requests
+        if ($client->deliveryRequests()->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Cannot permanently delete client with existing delivery requests.');
+        }
+        
+        $client->forceDelete();
+        
+        return redirect()
+            ->route('clients.deleted')
+            ->with('success', 'Client permanently deleted.');
+    }
 }
+
+

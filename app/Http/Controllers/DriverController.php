@@ -189,9 +189,10 @@ class DriverController extends Controller
         if ($driver->trips()->whereIn('status', ['scheduled', 'in-transit'])->exists()) {
             return redirect()
                 ->back()
-                ->with('error', 'Cannot delete driver with active trips.');
+                ->with('error', 'Cannot delete driver with active trips. Complete or cancel active trips first.');
         }
 
+        // Soft delete the driver (audit log is automatic via Auditable trait)
         $driver->delete();
 
         return redirect()
@@ -274,4 +275,53 @@ class DriverController extends Controller
 
         return view('dispatch.drivers.on-trip', compact('drivers'));
     }
+
+    /**
+     * Show deleted drivers
+     */
+    public function deleted()
+    {
+        $drivers = Driver::onlyTrashed()
+            ->with('deletedBy')
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(15);
+        
+        return view('dispatch.drivers.deleted', compact('drivers'));
+    }
+
+    /**
+     * Restore a soft-deleted driver
+     */
+    public function restore($id)
+    {
+        $driver = Driver::onlyTrashed()->findOrFail($id);
+        $driver->restore();
+        
+        return redirect()
+            ->route('drivers.index')
+            ->with('success', 'Driver restored successfully.');
+    }
+
+    /**
+     * Permanently delete a driver
+     */
+    public function forceDelete($id)
+    {
+        $driver = Driver::onlyTrashed()->findOrFail($id);
+        
+        // Check if driver has any trips
+        if ($driver->trips()->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Cannot permanently delete driver with existing trips.');
+        }
+        
+        $driver->forceDelete();
+        
+        return redirect()
+            ->route('drivers.deleted')
+            ->with('success', 'Driver permanently deleted.');
+    }
 }
+
+

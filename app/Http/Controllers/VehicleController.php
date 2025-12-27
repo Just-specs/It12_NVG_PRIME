@@ -183,9 +183,10 @@ class VehicleController extends Controller
         if ($vehicle->trips()->whereIn('status', ['scheduled', 'in-transit'])->exists()) {
             return redirect()
                 ->back()
-                ->with('error', 'Cannot delete vehicle with active trips.');
+                ->with('error', 'Cannot delete vehicle with active trips. Complete or cancel active trips first.');
         }
 
+        // Soft delete the vehicle (audit log is automatic via Auditable trait)
         $vehicle->delete();
 
         return redirect()
@@ -309,4 +310,53 @@ class VehicleController extends Controller
         $vehicles = Vehicle::available()->get();
         return response()->json($vehicles);
     }
+
+    /**
+     * Show deleted vehicles
+     */
+    public function deleted()
+    {
+        $vehicles = Vehicle::onlyTrashed()
+            ->with('deletedBy')
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(15);
+        
+        return view('dispatch.vehicles.deleted', compact('vehicles'));
+    }
+
+    /**
+     * Restore a soft-deleted vehicle
+     */
+    public function restore($id)
+    {
+        $vehicle = Vehicle::onlyTrashed()->findOrFail($id);
+        $vehicle->restore();
+        
+        return redirect()
+            ->route('vehicles.index')
+            ->with('success', 'Vehicle restored successfully.');
+    }
+
+    /**
+     * Permanently delete a vehicle
+     */
+    public function forceDelete($id)
+    {
+        $vehicle = Vehicle::onlyTrashed()->findOrFail($id);
+        
+        // Check if vehicle has any trips
+        if ($vehicle->trips()->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Cannot permanently delete vehicle with existing trips.');
+        }
+        
+        $vehicle->forceDelete();
+        
+        return redirect()
+            ->route('vehicles.deleted')
+            ->with('success', 'Vehicle permanently deleted.');
+    }
 }
+
+
