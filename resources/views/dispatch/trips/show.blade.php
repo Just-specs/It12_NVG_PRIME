@@ -478,6 +478,71 @@
     </div>
 </div>
 
+
+
+@endif
+<!-- Cancel Trip Modal (Admin Only) -->
+@if(auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']))
+<div id="cancel-trip-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
+        <div class="mb-6 text-center">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-times-circle text-red-600 text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Cancel Trip?</h3>
+            <p class="text-gray-600">This will cancel the trip and free up the driver and vehicle. This action cannot be undone.</p>
+        </div>
+
+        <div class="bg-red-50 rounded-lg p-4 mb-6 border-l-4 border-red-500">
+            <p class="text-sm text-red-800 font-semibold mb-2">
+                <i class="fas fa-exclamation-triangle"></i> Warning
+            </p>
+            <ul class="text-sm text-red-700 space-y-1 ml-4 list-disc">
+                <li>Driver will be set to available</li>
+                <li>Vehicle will be set to available</li>
+                <li>Client will be notified of cancellation</li>
+                <li>Request status will be updated</li>
+            </ul>
+        </div>
+
+        <div class="bg-gray-50 rounded-lg p-4 mb-6">
+            <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Trip ID:</span>
+                    <span class="font-semibold text-gray-800">#{{ $trip->id }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Driver:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->driver->name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Vehicle:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->vehicle->plate_number }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-gray-600">Client:</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->client->name }}</span>
+                </div>
+            </div>
+        </div>
+
+        <form method="POST" action="{{ route('trips.cancel', $trip) }}">
+            @csrf
+            <div class="flex gap-3">
+                <button type="button" id="cancel-cancel-modal"
+                    class="flex-1 px-6 py-3 rounded-full bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
+                    Keep Trip
+                </button>
+                <button type="submit"
+                    class="flex-1 px-6 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg">
+                    <i class="fas fa-times-circle mr-2"></i>Cancel Trip
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@endif
 <script>
     // Start Trip Modal
     const initStartModal = () => {
@@ -612,70 +677,8 @@
     }
 </script>
 
-@endif
-<!-- Cancel Trip Modal (Admin Only) -->
-@if(auth()->user()->role === 'admin' && in_array($trip->status, ['scheduled', 'in-transit']))
-<div id="cancel-trip-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <div class="mb-6 text-center">
-            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <i class="fas fa-times-circle text-red-600 text-2xl"></i>
-            </div>
-            <h3 class="text-2xl font-bold text-gray-800 mb-2">Cancel Trip?</h3>
-            <p class="text-gray-600">This will cancel the trip and free up the driver and vehicle. This action cannot be undone.</p>
-        </div>
-
-        <div class="bg-red-50 rounded-lg p-4 mb-6 border-l-4 border-red-500">
-            <p class="text-sm text-red-800 font-semibold mb-2">
-                <i class="fas fa-exclamation-triangle"></i> Warning
-            </p>
-            <ul class="text-sm text-red-700 space-y-1 ml-4 list-disc">
-                <li>Driver will be set to available</li>
-                <li>Vehicle will be set to available</li>
-                <li>Client will be notified of cancellation</li>
-                <li>Request status will be updated</li>
-            </ul>
-        </div>
-
-        <div class="bg-gray-50 rounded-lg p-4 mb-6">
-            <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Trip ID:</span>
-                    <span class="font-semibold text-gray-800">#{{ $trip->id }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Driver:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->driver->name }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Vehicle:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->vehicle->plate_number }}</span>
-                </div>
-                <div class="flex justify-between">
-                    <span class="text-gray-600">Client:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->client->name }}</span>
-                </div>
-            </div>
-        </div>
-
-        <form method="POST" action="{{ route('trips.cancel', $trip) }}">
-            @csrf
-            <div class="flex gap-3">
-                <button type="button" id="cancel-cancel-modal"
-                    class="flex-1 px-6 py-3 rounded-full bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition-colors">
-                    Keep Trip
-                </button>
-                <button type="submit"
-                    class="flex-1 px-6 py-3 rounded-full bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors shadow-lg">
-                    <i class="fas fa-times-circle mr-2"></i>Cancel Trip
-                </button>
-            </div>
-        </form>
-    </div>
-</div>
-
-@endif
 @endsection
+
 
 
 
