@@ -61,6 +61,95 @@
                                 class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         </div>
 
+                        <!-- Phase 1: Financial & Documentation Section -->
+                        <div class="p-4 bg-green-50 rounded-lg border border-green-200">
+                            <h3 class="text-sm font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-dollar-sign text-green-600"></i> Financial Information
+                            </h3>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- Client Rate -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        Client Rate (?)
+                                    </label>
+                                    <input type="number" name="trip_rate" step="0.01" min="0" 
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                                        placeholder="0.00">
+                                </div>
+
+                                <!-- Driver Payroll -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        Driver Payroll (?)
+                                    </label>
+                                    <input type="number" name="driver_payroll" step="0.01" min="0"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                                        placeholder="0.00">
+                                </div>
+
+                                <!-- Driver Allowance -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        Driver Allowance (?)
+                                    </label>
+                                    <input type="number" name="driver_allowance" step="0.01" min="0"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                                        placeholder="0.00">
+                                </div>
+
+                                <!-- OR Number -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        OR Number
+                                    </label>
+                                    <input type="text" name="official_receipt_number"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 text-sm"
+                                        placeholder="OR-000000">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Phase 1: Shipping Documentation Section -->
+                        <div class="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <h3 class="text-sm font-semibold text-gray-800 mb-4">
+                                <i class="fas fa-ship text-blue-600"></i> Shipping Documentation
+                            </h3>
+                            
+                            <div class="grid grid-cols-2 gap-4">
+                                <!-- Waybill Number -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        Waybill Number
+                                    </label>
+                                    <input type="text" name="waybill_number"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm"
+                                        placeholder="WB-000000">
+                                </div>
+
+                                <!-- EIR Date/Time -->
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        EIR Date & Time
+                                    </label>
+                                    <input type="datetime-local" name="eir_datetime"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                </div>
+
+                                <!-- Served By -->
+                                <div class="col-span-2">
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        Served By (Branch)
+                                    </label>
+                                    <select name="served_by" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-sm">
+                                        <option value="">Select Branch</option>
+                                        <option value="LOR">LOR</option>
+                                        <option value="JUNA">JUNA</option>
+                                        <option value="EPOY">EPOY</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Route Instructions -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -497,6 +586,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 
 
 

@@ -816,6 +816,60 @@
                         <input type="datetime-local" name="preferred_schedule" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
 
+                    <!-- Phase 1: Shipping Documentation Section -->
+                    <div class="md:col-span-2 pt-4 border-t">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            <i class="fas fa-ship text-blue-600"></i> Shipping Documentation
+                        </h3>
+                    </div>
+
+                    <!-- Shipping Line -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Shipping Line
+                        </label>
+                        <input type="text" name="shipping_line" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., WANHAI, CMA, MSC">
+                    </div>
+
+                    <!-- Shipper Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Shipper Name
+                        </label>
+                        <input type="text" name="shipper_name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter shipper company name">
+                    </div>
+
+                    <!-- Booking Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Booking Number
+                        </label>
+                        <input type="text" name="booking_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter booking reference">
+                    </div>
+
+                    <!-- Container Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Container Number
+                        </label>
+                        <input type="text" name="container_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter container ID">
+                    </div>
+
+                    <!-- EIR Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            EIR Number
+                        </label>
+                        <input type="text" name="eir_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter EIR number">
+                    </div>
+
+                    <!-- Seal Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Seal Number
+                        </label>
+                        <input type="text" name="seal_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter seal number">
+                    </div>
                     <!-- Notes -->
                     <div class="md:col-span-2">
                         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -883,3 +937,4 @@
 @include('dispatch.requests.partials.assign-driver-modal-table')
 
 @endsection
+
