@@ -228,6 +228,9 @@ Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function (
         Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
         Route::put('/{client}', [ClientController::class, 'update'])->name('update');
         Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+        Route::get('/deleted', [ClientController::class, 'deleted'])->name('deleted');
+        Route::post('/restore/{id}', [ClientController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}', [ClientController::class, 'forceDelete'])->name('force-delete');
 });
 
     // ADMIN - Dispatcher Management
