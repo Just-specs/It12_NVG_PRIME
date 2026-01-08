@@ -68,6 +68,18 @@
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    </label>
+                        @foreach($availableDrivers as $availableDriver)
+                                {{ $availableDriver->name }} ({{ ucfirst($availableDriver->status) }})
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
 
             <!-- Submit Button -->

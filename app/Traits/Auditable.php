@@ -14,7 +14,7 @@ trait Auditable
         // Log when model is created
         static::created(function ($model) {
             AuditLog::log('created', $model, 
-                "{->getAuditName()} was created", 
+                $model->getAuditName() . " was created", 
                 null, 
                 $model->getAttributes()
             );
@@ -24,7 +24,7 @@ trait Auditable
         static::updated(function ($model) {
             if ($model->isDirty() && !$model->isDeleting) {
                 AuditLog::log('updated', $model, 
-                    "{->getAuditName()} was updated", 
+                    $model->getAuditName() . " was updated", 
                     $model->getOriginal(), 
                     $model->getChanges()
                 );
@@ -41,14 +41,14 @@ trait Auditable
                 }
                 
                 AuditLog::log('deleted', $model, 
-                    "{->getAuditName()} was deleted", 
+                    $model->getAuditName() . " was deleted", 
                     $model->getAttributes(), 
                     null
                 );
             } else {
                 // Permanent delete
                 AuditLog::log('permanently_deleted', $model, 
-                    "{->getAuditName()} was permanently deleted", 
+                    $model->getAuditName() . " was permanently deleted", 
                     $model->getAttributes(), 
                     null
                 );
@@ -61,7 +61,7 @@ trait Auditable
             $model->saveQuietly();
             
             AuditLog::log('restored', $model, 
-                "{->getAuditName()} was restored", 
+                $model->getAuditName() . " was restored", 
                 null, 
                 $model->getAttributes()
             );
@@ -75,7 +75,7 @@ trait Auditable
     {
         $class = class_basename($this);
         $name = $this->name ?? $this->plate_number ?? $this->id ?? 'Unknown';
-        return "{} #{->id} ({})";
+        return "$class #$this->id ($name)";
     }
 
     /**

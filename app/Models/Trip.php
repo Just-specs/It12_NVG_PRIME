@@ -26,6 +26,11 @@ class Trip extends Model
         'scheduled_time',
         'actual_start_time',
         'actual_end_time',
+        'is_delayed',
+        'delay_detected_at',
+        'delay_reason',
+        'delay_reason_by',
+        'delay_minutes',
         'status',
         'route_instructions',
         'archived_at',
@@ -37,9 +42,11 @@ class Trip extends Model
         'actual_start_time' => 'datetime',
         'actual_end_time' => 'datetime',
         'eir_datetime' => 'datetime',
+        'delay_detected_at' => 'datetime',
         'archived_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_delayed' => 'boolean',
     ];
 
     /**
@@ -137,6 +144,11 @@ class Trip extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
+    public function delayReasonBy()
+    {
+        return $this->belongsTo(User::class, 'delay_reason_by');
+    }
+
     public function updates()
     {
         return $this->hasMany(TripUpdate::class);
@@ -182,6 +194,69 @@ class Trip extends Model
         return !is_null($this->trip_rate) && 
                !is_null($this->driver_payroll) && 
                !is_null($this->driver_allowance);
+    }
+
+
+    /**
+     * Check if trip is delayed (30+ minutes past scheduled time without starting)
+     */
+    public function isDelayed(): bool
+    {
+        if ($this->status === 'completed' || $this->status === 'cancelled') {
+            return false;
+        }
+
+        if ($this->actual_start_time) {
+            // Already started, check delay minutes
+            return $this->delay_minutes > 0;
+        }
+
+        // Not started yet, check if 30+ minutes past scheduled time
+        if ($this->scheduled_time) {
+            $scheduledTime = \Carbon\Carbon::parse($this->scheduled_time);
+            $now = \Carbon\Carbon::now();
+            return $now->diffInMinutes($scheduledTime, false) >= 30;
+        }
+
+        return false;
+    }
+
+    /**
+     * Calculate delay in minutes
+     */
+    public function calculateDelayMinutes(): int
+    {
+        if (!$this->scheduled_time) {
+            return 0;
+        }
+
+        $scheduledTime = \Carbon\Carbon::parse($this->scheduled_time);
+        
+        if ($this->actual_start_time) {
+            $actualTime = \Carbon\Carbon::parse($this->actual_start_time);
+            $delay = $actualTime->diffInMinutes($scheduledTime, false);
+            return $delay > 0 ? $delay : 0;
+        }
+
+        // Not started yet
+        $now = \Carbon\Carbon::now();
+        $delay = $now->diffInMinutes($scheduledTime, false);
+        return $delay > 0 ? $delay : 0;
+    }
+
+    /**
+     * Mark trip as delayed
+     */
+    public function markAsDelayed(string $reason = null, int $userId = null): void
+    {
+        $this->update([
+            'is_delayed' => true,
+            'status' => 'delayed',
+            'delay_detected_at' => now(),
+            'delay_reason' => $reason,
+            'delay_reason_by' => $userId,
+            'delay_minutes' => $this->calculateDelayMinutes(),
+        ]);
     }
 }
 

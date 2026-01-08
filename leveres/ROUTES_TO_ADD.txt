@@ -1,0 +1,63 @@
+# MANUAL ROUTE ADDITION GUIDE
+
+The deletion approval system has been successfully implemented. However, the deletion request routes 
+for individual resources need to be manually added to routes/web.php.
+
+## Routes to Add:
+
+### 1. In the DRIVERS section (around line 250):
+After: Route::delete('/{driver}', [DriverController::class, 'destroy'])->name('destroy');
+Add:
+        Route::get('/{driver}/request-delete', [DriverController::class, 'requestDelete'])->name('requestDelete');
+        Route::post('/{driver}/submit-delete-request', [DriverController::class, 'submitDeleteRequest'])->name('submitDeleteRequest');
+
+### 2. In the VEHICLES section (around line 270):
+After: Route::delete('/{vehicle}', [VehicleController::class, 'destroy'])->name('destroy');
+Add:
+        Route::get('/{vehicle}/request-delete', [VehicleController::class, 'requestDelete'])->name('requestDelete');
+        Route::post('/{vehicle}/submit-delete-request', [VehicleController::class, 'submitDeleteRequest'])->name('submitDeleteRequest');
+
+### 3. In the CLIENTS section (around line 290):
+After: Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
+Add:
+        Route::get('/{client}/request-delete', [ClientController::class, 'requestDelete'])->name('requestDelete');
+        Route::post('/{client}/submit-delete-request', [ClientController::class, 'submitDeleteRequest'])->name('submitDeleteRequest');
+
+### 4. In the DELIVERY REQUESTS section (around line 95, inside the CheckRole middleware):
+After: Route::delete('/{request}', [DeliveryRequestController::class, 'destroy'])->name('destroy');
+Add:
+            Route::get('/{request}/request-delete', [DeliveryRequestController::class, 'requestDelete'])->name('requestDelete');
+            Route::post('/{request}/submit-delete-request', [DeliveryRequestController::class, 'submitDeleteRequest'])->name('submitDeleteRequest');
+
+Note: The requests section has 12 spaces of indentation (3 tabs) because it's inside a middleware group.
+
+## How Head Dispatch Deletion Currently Works:
+
+WITHOUT these routes:
+- Head dispatch clicks delete ? Redirected to request-delete page ? 404 error
+
+WITH these routes (once added):
+- Head dispatch clicks delete ? Redirected to request-delete form ? Submits reason ? Admin approves/rejects
+
+## What's Already Working:
+
+? Admin can view all deletion requests at /deletion-requests
+? Admin can approve/reject deletion requests
+? Database table created
+? Models and controllers created
+? Views created
+? Sidebar menu with notification badge
+? Verification permissions updated (admin + head_dispatch can verify)
+
+## Quick Fix Option:
+
+If you have direct access to the file, simply open:
+C:\IT12_project\IT12_updated\IT12-\routes\web.php
+
+And add the 4 sets of routes shown above in their respective sections.
+
+After adding, run:
+php artisan route:clear
+php artisan route:list | grep request-delete
+
+You should see 8 new routes (2 per resource type).

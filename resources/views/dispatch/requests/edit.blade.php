@@ -155,7 +155,21 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         Shipping Line
                     </label>
-                    <input type="text" name="shipping_line" value="{{ old('shipping_line', $request->shipping_line) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., WANHAI, CMA, MAERSK">
+                    <select name="shipping_line" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">-- Select Shipping Line --</option>
+                        <option value="WANHAI" {{ old('shipping_line', $request->shipping_line) == 'WANHAI' ? 'selected' : '' }}>WANHAI</option>
+                        <option value="CMA" {{ old('shipping_line', $request->shipping_line) == 'CMA' ? 'selected' : '' }}>CMA</option>
+                        <option value="COSCO" {{ old('shipping_line', $request->shipping_line) == 'COSCO' ? 'selected' : '' }}>COSCO</option>
+                        <option value="EVERGREEN" {{ old('shipping_line', $request->shipping_line) == 'EVERGREEN' ? 'selected' : '' }}>EVERGREEN</option>
+                        <option value="MCC" {{ old('shipping_line', $request->shipping_line) == 'MCC' ? 'selected' : '' }}>MCC</option>
+                        <option value="ONE" {{ old('shipping_line', $request->shipping_line) == 'ONE' ? 'selected' : '' }}>ONE</option>
+                        <option value="OOCL" {{ old('shipping_line', $request->shipping_line) == 'OOCL' ? 'selected' : '' }}>OOCL</option>
+                        <option value="SITC" {{ old('shipping_line', $request->shipping_line) == 'SITC' ? 'selected' : '' }}>SITC</option>
+                        <option value="MAERSK" {{ old('shipping_line', $request->shipping_line) == 'MAERSK' ? 'selected' : '' }}>MAERSK</option>
+                        <option value="MSC" {{ old('shipping_line', $request->shipping_line) == 'MSC' ? 'selected' : '' }}>MSC</option>
+                        <option value="YANGMING" {{ old('shipping_line', $request->shipping_line) == 'YANGMING' ? 'selected' : '' }}>YANGMING</option>
+                        <option value="Other" {{ old('shipping_line', $request->shipping_line) == 'Other' ? 'selected' : '' }}>Other</option>
+                    </select>
                     @error('shipping_line')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -192,7 +206,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         EIR Time
                     </label>
-                    <input type="time" name="eir_time" value="{{ old('eir_time', $request->eir_time ? $request->eir_time->format('H:i') : '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <input type="time" name="eir_time" value="{{ old('eir_time', $request->eir_time ?? '') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     @error('eir_time')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -333,6 +347,7 @@
     });
 </script>
 @endsection
+
 
 
 

@@ -36,6 +36,10 @@ class DeliveryRequest extends Model
         'deleted_by',
         'atw_verified',
         'archived_at',
+        'is_delayed',
+        'delay_detected_at',
+        'delay_reason',
+        'delay_reason_by',
     ];
 
     protected $casts = [
@@ -173,6 +177,43 @@ class DeliveryRequest extends Model
     public function getProfitMarginAttribute()
     {
         return $this->total_revenue - $this->total_cost;
+    }
+
+
+    /**
+     * Check if delivery request is delayed
+     */
+    public function isDelayed(): bool
+    {
+        if ($this->status === 'completed' || $this->status === 'cancelled') {
+            return false;
+        }
+
+        // Check if any associated trip is delayed
+        if ($this->trip && $this->trip->isDelayed()) {
+            return true;
+        }
+
+        return $this->is_delayed;
+    }
+
+    /**
+     * Mark delivery request as delayed
+     */
+    public function markAsDelayed(string $reason = null, int $userId = null): void
+    {
+        $this->update([
+            'is_delayed' => true,
+            'status' => 'delayed',
+            'delay_detected_at' => now(),
+            'delay_reason' => $reason,
+            'delay_reason_by' => $userId,
+        ]);
+
+        // Also mark the associated trip as delayed
+        if ($this->trip) {
+            $this->trip->markAsDelayed($reason, $userId);
+        }
     }
 }
 

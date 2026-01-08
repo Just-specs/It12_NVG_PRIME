@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryRequestController;
 use App\Http\Controllers\TripController;
 use App\Http\Controllers\DriverController;
+use App\Http\Controllers\CoDriverController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\ClientController;
 use App\Http\Controllers\ReportController;
@@ -76,13 +77,19 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{request}/auto-assign', [DeliveryRequestController::class, 'autoAssign'])->name('auto-assign');
         });
 
-        // Edit/Delete - Admin & Head only
+        // Edit - Admin & Head Dispatch
         Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
             Route::get('/{request}/edit', [DeliveryRequestController::class, 'edit'])->name('edit');
             Route::put('/{request}', [DeliveryRequestController::class, 'update'])->name('update');
-            Route::delete('/{request}', [DeliveryRequestController::class, 'destroy'])->name('destroy');
+            Route::get('/{request}/request-delete', [DeliveryRequestController::class, 'requestDelete'])->name('requestDelete');
+            Route::post('/{request}/submit-delete-request', [DeliveryRequestController::class, 'submitDeleteRequest'])->name('submitDeleteRequest');
             Route::get('/export/excel', [DeliveryRequestController::class, 'exportExcel'])->name('export-excel');
             Route::get('/export/pdf', [DeliveryRequestController::class, 'exportPdf'])->name('export-pdf');
+        });
+
+        // Delete - Admin only
+        Route::middleware([CheckRole::class . ':admin'])->group(function () {
+            // Route::delete('/{request}', [DeliveryRequestController::class, 'destroy'])->name('destroy');
         });
     });
 
@@ -95,6 +102,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{trip}/start', [TripController::class, 'startTrip'])->name('start');
         Route::post('/{trip}/complete', [TripController::class, 'completeTrip'])->name('complete');
         Route::post('/{trip}/add-update', [TripController::class, 'addUpdate'])->name('add-update');
+        Route::get('/{trip}/delay-reason', [TripController::class, 'showDelayReasonForm'])->name('delay-reason');
+        Route::post('/{trip}/delay-reason', [TripController::class, 'submitDelayReason'])->name('submit-delay-reason');
 
         // Edit/Delete/Cancel - Admin only
         Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
@@ -139,8 +148,8 @@ Route::middleware(['auth'])->group(function () {
     });
 
     //Reports
-        // Phase 1: Financial & Driver Reports
-        Route::get('/financial', [App\Http\Controllers\Reports\FinancialReportController::class, 'index'])->name('financial');
+        // Phase 1: Operational & Driver Reports
+        Route::get('/operational-summary', [App\Http\Controllers\Reports\OperationalReportController::class, 'index'])->name('operational-summary');
         Route::get('/driver-earnings', [App\Http\Controllers\Reports\DriverEarningsController::class, 'index'])->name('driver-earnings');
 
     Route::prefix('reports')->name('reports.')->group(function () {
@@ -158,8 +167,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/driver-performance', [ReportController::class, 'driverPerformance'])->name('driver-performance');
         Route::get('/vehicle-utilization', [ReportController::class, 'vehicleUtilization'])->name('vehicle-utilization');
 
-        // Phase 1: Financial & Driver Reports
-        Route::get('/financial', [App\Http\Controllers\Reports\FinancialReportController::class, 'index'])->name('financial');
+        // Phase 1: Operational & Driver Reports
+        Route::get('/operational-summary', [App\Http\Controllers\Reports\OperationalReportController::class, 'index'])->name('operational-summary');
         Route::get('/driver-earnings', [App\Http\Controllers\Reports\DriverEarningsController::class, 'index'])->name('driver-earnings');
         Route::get('/client-activity', [ReportController::class, 'clientActivity'])->name('client-activity');
         Route::get('/on-time-delivery', [ReportController::class, 'onTimeDelivery'])->name('on-time-delivery');
@@ -178,6 +187,22 @@ Route::middleware(['auth'])->group(function () {
         // Google Sheets integration
         Route::post('/google-sheets/sync', [ReportController::class, 'syncToGoogleSheets'])->name('google-sheets.sync');
         Route::post('/google-sheets/export', [ReportController::class, 'exportToGoogleSheets'])->name('google-sheets.export');
+        
+        // Accident Reports
+        Route::prefix('accidents')->name('accidents.')->group(function () {
+            Route::get('/', [App\Http\Controllers\AccidentReportController::class, 'index'])->name('index');
+            Route::get('/create', [App\Http\Controllers\AccidentReportController::class, 'create'])->name('create');
+            Route::post('/', [App\Http\Controllers\AccidentReportController::class, 'store'])->name('store');
+            Route::get('/{accident}/export-pdf', [App\Http\Controllers\AccidentReportController::class, 'exportPdf'])->name('export-pdf');
+            Route::get('/{accident}', [App\Http\Controllers\AccidentReportController::class, 'show'])->name('show');
+            
+            // Admin and Head Dispatch only
+            Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
+                Route::get('/{accident}/edit', [App\Http\Controllers\AccidentReportController::class, 'edit'])->name('edit');
+                Route::put('/{accident}', [App\Http\Controllers\AccidentReportController::class, 'update'])->name('update');
+                Route::delete('/{accident}', [App\Http\Controllers\AccidentReportController::class, 'destroy'])->name('destroy');
+            });
+        });
     });
 });
 
@@ -189,14 +214,29 @@ Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function (
         Route::get('/', [DriverController::class, 'index'])->name('index');
         Route::get('/create', [DriverController::class, 'create'])->name('create');
         Route::post('/', [DriverController::class, 'store'])->name('store');
-        Route::get('/{driver}', [DriverController::class, 'show'])->name('show');
-        Route::get('/{driver}/edit', [DriverController::class, 'edit'])->name('edit');
-        Route::put('/{driver}', [DriverController::class, 'update'])->name('update');
-        Route::delete('/{driver}', [DriverController::class, 'destroy'])->name('destroy');
-        Route::post('/{driver}/update-status', [DriverController::class, 'updateStatus'])->name('update-status');
         Route::get('/deleted', [DriverController::class, 'deleted'])->name('deleted');
         Route::post('/restore/{id}', [DriverController::class, 'restore'])->name('restore');
         Route::delete('/force-delete/{id}', [DriverController::class, 'forceDelete'])->name('force-delete');
+        Route::get('/{driver}', [DriverController::class, 'show'])->name('show');
+        Route::get('/{driver}/edit', [DriverController::class, 'edit'])->name('edit');
+        Route::put('/{driver}', [DriverController::class, 'update'])->name('update');
+        // Route::delete('/{driver}', [DriverController::class, 'destroy'])->name('destroy'); // Disabled: Use deletion request workflow instead
+        Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
+            Route::get('/{driver}/request-delete', [DriverController::class, 'requestDelete'])->name('requestDelete');
+            Route::post('/{driver}/submit-delete-request', [DriverController::class, 'submitDeleteRequest'])->name('submitDeleteRequest');
+        });
+        Route::post('/{driver}/update-status', [DriverController::class, 'updateStatus'])->name('update-status');
+        Route::get('/{driver}/co-drivers', [DriverController::class, 'manageCoDrivers'])->name('coDrivers');
+        Route::post('/{driver}/co-drivers/add', [DriverController::class, 'addCoDriver'])->name('addCoDriver');
+        Route::delete('/{driver}/co-drivers/{coDriver}', [DriverController::class, 'removeCoDriver'])->name('removeCoDriver');
+    });
+
+    // CO-DRIVERS MANAGEMENT
+    Route::prefix('co-drivers')->name('co-drivers.')->middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
+        Route::get('/', [CoDriverController::class, 'index'])->name('index');
+        Route::post('/assign', [CoDriverController::class, 'assign'])->name('assign');
+        Route::post('/remove', [CoDriverController::class, 'remove'])->name('remove');
+        Route::get('/stats', [CoDriverController::class, 'stats'])->name('stats');
     });
 
     // VEHICLES
@@ -204,21 +244,28 @@ Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function (
         Route::get('/', [VehicleController::class, 'index'])->name('index');
         Route::get('/create', [VehicleController::class, 'create'])->name('create');
         Route::post('/', [VehicleController::class, 'store'])->name('store');
-        Route::get('/{vehicle}', [VehicleController::class, 'show'])->name('show');
-        Route::get('/{vehicle}/edit', [VehicleController::class, 'edit'])->name('edit');
-        Route::put('/{vehicle}', [VehicleController::class, 'update'])->name('update');
-        Route::delete('/{vehicle}', [VehicleController::class, 'destroy'])->name('destroy');
-        Route::post('/{vehicle}/set-available', [VehicleController::class, 'setAvailable'])->name('set-available');
-        Route::post('/{vehicle}/set-maintenance', [VehicleController::class, 'setMaintenance'])->name('set-maintenance');
         Route::get('/deleted', [VehicleController::class, 'deleted'])->name('deleted');
         Route::post('/restore/{id}', [VehicleController::class, 'restore'])->name('restore');
         Route::delete('/force-delete/{id}', [VehicleController::class, 'forceDelete'])->name('force-delete');
+        Route::get('/{vehicle}', [VehicleController::class, 'show'])->name('show');
+        Route::get('/{vehicle}/edit', [VehicleController::class, 'edit'])->name('edit');
+        Route::put('/{vehicle}', [VehicleController::class, 'update'])->name('update');
+        // Route::delete('/{vehicle}', [VehicleController::class, 'destroy'])->name('destroy'); // Disabled: Use deletion request workflow instead
+        Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
+            Route::get('/{vehicle}/request-delete', [VehicleController::class, 'requestDelete'])->name('requestDelete');
+            Route::post('/{vehicle}/submit-delete-request', [VehicleController::class, 'submitDeleteRequest'])->name('submitDeleteRequest');
+        });
+        Route::post('/{vehicle}/set-available', [VehicleController::class, 'setAvailable'])->name('set-available');
+        Route::post('/{vehicle}/set-maintenance', [VehicleController::class, 'setMaintenance'])->name('set-maintenance');
     });
 
     // CLIENTS
     Route::prefix('clients')->name('clients.')->group(function () {
         Route::get('/', [ClientController::class, 'index'])->name('index');
         Route::get('/create', [ClientController::class, 'create'])->name('create');
+        Route::get('/deleted', [ClientController::class, 'deleted'])->name('deleted');
+        Route::post('/restore/{id}', [ClientController::class, 'restore'])->name('restore');
+        Route::delete('/force-delete/{id}', [ClientController::class, 'forceDelete'])->name('force-delete');
         Route::get('/export/excel', [ClientController::class, 'exportExcel'])->name('export-excel');
         Route::get('/export/pdf', [ClientController::class, 'exportPdf'])->name('export-pdf');
         Route::post('/', [ClientController::class, 'store'])->name('store');
@@ -227,10 +274,11 @@ Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function (
         Route::get('/{client}/recent-requests', [ClientController::class, 'recentRequests'])->name('recent-requests');
         Route::get('/{client}/edit', [ClientController::class, 'edit'])->name('edit');
         Route::put('/{client}', [ClientController::class, 'update'])->name('update');
-        Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy');
-        Route::get('/deleted', [ClientController::class, 'deleted'])->name('deleted');
-        Route::post('/restore/{id}', [ClientController::class, 'restore'])->name('restore');
-        Route::delete('/force-delete/{id}', [ClientController::class, 'forceDelete'])->name('force-delete');
+        // Route::delete('/{client}', [ClientController::class, 'destroy'])->name('destroy'); // Disabled: Use deletion request workflow instead
+        Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
+            Route::get('/{client}/request-delete', [ClientController::class, 'requestDelete'])->name('requestDelete');
+            Route::post('/{client}/submit-delete-request', [ClientController::class, 'submitDeleteRequest'])->name('submitDeleteRequest');
+        });
 });
 
     // ADMIN - Dispatcher Management
@@ -245,8 +293,22 @@ Route::middleware([CheckRole::class . ':admin,head_dispatch'])->group(function (
 
 
     
-    // ADMIN ONLY - Audit Logs
-    Route::prefix('admin/audit-logs')->name('admin.audit-logs.')->middleware([CheckRole::class . ':admin'])->group(function () {
+    // DELETION REQUESTS - Admin can manage, head_dispatch can create
+    Route::prefix('deletion-requests')->name('deletion-requests.')->group(function () {
+        // Admin only - view and manage deletion requests
+        Route::middleware([CheckRole::class . ':admin'])->group(function () {
+            Route::get('/', [App\Http\Controllers\DeletionRequestController::class, 'index'])->name('index');
+            Route::get('/{deletionRequest}', [App\Http\Controllers\DeletionRequestController::class, 'show'])->name('show');
+            Route::post('/{deletionRequest}/approve', [App\Http\Controllers\DeletionRequestController::class, 'approve'])->name('approve');
+            Route::post('/{deletionRequest}/reject', [App\Http\Controllers\DeletionRequestController::class, 'reject'])->name('reject');
+            Route::get('/ajax/pending-count', [App\Http\Controllers\DeletionRequestController::class, 'getPendingCount'])->name('ajax.pending-count');
+        });
+        
+        // Head dispatch deletion request routes (already added to individual resource controllers)
+    });
+
+        // ADMIN ONLY - Audit Logs
+    Route::prefix('admin/audit-logs')->name('admin.audit-logs.')->middleware([CheckRole::class . ':admin,head_dispatch'])->group(function () {
         Route::get('/', [App\Http\Controllers\AuditLogController::class, 'index'])->name('index');
         Route::get('/{auditLog}', [App\Http\Controllers\AuditLogController::class, 'show'])->name('show');
         Route::get('/model/{modelType}/{modelId}', [App\Http\Controllers\AuditLogController::class, 'forModel'])->name('for-model');
@@ -291,6 +353,14 @@ Route::get('/api/requests/{id}', [App\Http\Controllers\DeliveryRequestController
 // Debug routes (REMOVE IN PRODUCTION)
 Route::get('/debug/test-driver', [App\Http\Controllers\DebugController::class, 'testDriverCreation']);
 Route::post('/debug/test-driver-ajax', [App\Http\Controllers\DebugController::class, 'testAjaxDriverCreation']);
+
+
+
+
+
+
+
+
 
 
 

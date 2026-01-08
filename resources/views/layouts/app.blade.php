@@ -331,8 +331,14 @@
                 <i class="fas fa-user-tie w-5 {{ request()->routeIs('drivers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
                 <span class="ml-3 font-medium">Drivers</span>
             </a>
-            @endif
 
+            <!-- Co-Drivers -->
+            <a href="{{ route('co-drivers.index') }}"
+                class="flex items-center px-4 py-3 rounded-lg transition group {{ request()->routeIs('co-drivers.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
+                <i class="fas fa-users w-5 {{ request()->routeIs('co-drivers.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
+                <span class="ml-3 font-medium">Co-Drivers</span>
+            </a>
+            @endif
             <!-- Vehicles - Available to Head Dispatcher (Admin) -->
             @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
             <a href="{{ route('vehicles.index') }}"
@@ -357,6 +363,23 @@
                 <p class="px-4 text-xs font-semibold text-blue-300 uppercase tracking-wider mb-2">
                     <i class="fas fa-shield-alt"></i> Admin Only
                 </p>
+                
+                <!-- Deletion Requests -->
+                <a href="{{ route('deletion-requests.index') }}"
+                    class="flex items-center justify-between px-4 py-3 rounded-lg transition group {{ request()->routeIs('deletion-requests.*') ? 'bg-white text-blue-800 shadow-lg' : 'text-white hover:bg-blue-700' }}">
+                    <div class="flex items-center">
+                        <i class="fas fa-trash-alt w-5 {{ request()->routeIs('deletion-requests.*') ? 'text-blue-800' : 'text-blue-300 group-hover:text-white' }}"></i>
+                        <span class="ml-3 font-medium">Deletion Requests</span>
+                    </div>
+                    @php
+                    $pendingDeletions = \App\Models\DeletionRequest::where('status', 'pending')->count();
+                    @endphp
+                    @if($pendingDeletions > 0)
+                    <span class="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse">
+                        {{ $pendingDeletions }}
+                    </span>
+                    @endif
+                </a>
                 
                 <!-- Audit Logs -->
                 <a href="{{ route('admin.audit-logs.index') }}"
@@ -616,6 +639,7 @@
 </body>
 
 </html>
+
 
 
 

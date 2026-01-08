@@ -556,10 +556,10 @@
                             <div class="trip-date">{{ $trip->scheduled_time->format('M d, Y') }}</div>
                             <div class="trip-time">{{ $trip->scheduled_time->format('h:i A') }}</div>
                         </td>
-                        <td><span class="client-name">{{ $trip->deliveryRequest->client->name }}</span></td>
-                        <td>{{ $trip->deliveryRequest->atw_reference }}</td>
+                        <td><span class="client-name">{{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}</span></td>
+                        <td>{{ $trip->deliveryRequest?->atw_reference ?? 'N/A' }}</td>
                         <td>{{ $trip->driver->name }}</td>
-                        <td><span class="vehicle-plate">{{ $trip->vehicle->plate_number }}</span></td>
+                        <td><span class="vehicle-plate">{{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}</span></td>
                         <td><div class="location-text">{{ Str::limit($trip->deliveryRequest->pickup_location, 45) }}</div></td>
                         <td><div class="location-text">{{ Str::limit($trip->deliveryRequest->delivery_location, 45) }}</div></td>
                         <td>

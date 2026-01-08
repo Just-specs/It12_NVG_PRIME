@@ -1,12 +1,28 @@
 @forelse($activeTrips as $trip)
 <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
     <div class="flex-1">
-        <p class="font-semibold text-gray-800">{{ $trip->driver->name }}</p>
+        <p class="font-semibold text-gray-800">
+            @if($trip->driver)
+                {{ $trip->driver->name }}
+            @else
+                <span class="text-red-500">Driver Deleted</span>
+            @endif
+        </p>
         <p class="text-sm text-gray-600">
-            <i class="fas fa-truck"></i> {{ $trip->vehicle->plate_number }}
+            <i class="fas fa-truck"></i> 
+            @if($trip->vehicle)
+                {{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}
+            @else
+                <span class="text-red-500">Vehicle Deleted</span>
+            @endif
         </p>
         <p class="text-xs text-gray-500 mt-1">
-            Client: {{ $trip->deliveryRequest->client->name }}
+            Client: 
+            @if($trip->deliveryRequest && $trip->deliveryRequest->client)
+                {{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}
+            @else
+                <span class="text-red-500">Client Deleted</span>
+            @endif
         </p>
     </div>
     <div class="text-right ml-4">

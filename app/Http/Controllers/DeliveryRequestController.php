@@ -149,6 +149,8 @@ class DeliveryRequestController extends Controller
             'delivery_location' => 'required|string',
             'container_size' => 'required|string',
             'container_type' => 'required|string',
+            'shipping_line' => 'nullable|string',
+            'shipper_name' => 'nullable|string',
             'preferred_schedule' => 'required|date|after_or_equal:today',
             'notes' => 'nullable|string',
             'auto_assign' => 'nullable|boolean',
@@ -183,6 +185,8 @@ class DeliveryRequestController extends Controller
             'preferred_schedule' => $validated['preferred_schedule'],
             'container_size' => $validated['container_size'],
             'container_type' => $validated['container_type'],
+            'shipping_line' => $request->input('shipping_line'),
+            'shipper_name' => $request->input('shipper_name'),
             'notes' => $validated['notes'] ?? '',
             'status' => 'pending',
         ]);
@@ -236,7 +240,7 @@ class DeliveryRequestController extends Controller
         
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
-            abort(403, 'Only Admin can verify delivery requests.');
+            abort(403, 'Only Admin and Head Dispatch can verify delivery requests.');
         }
 
         $deliveryRequest->update([
@@ -258,7 +262,7 @@ class DeliveryRequestController extends Controller
         
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
-            abort(403, 'Only Admin can verify delivery requests.');
+            abort(403, 'Only Admin and Head Dispatch can verify delivery requests.');
         }
 
         // First verify
@@ -280,7 +284,7 @@ class DeliveryRequestController extends Controller
         
         // Authorization: Only admin and head-of-dispatch can verify
         if (!auth()->user()->canVerifyRequests()) {
-            abort(403, 'Only Admin can verify and auto-assign delivery requests.');
+            abort(403, 'Only Admin and Head Dispatch can verify and auto-assign delivery requests.');
         }
 
         if (!in_array($deliveryRequest->status, ['pending', 'verified'])) {
@@ -388,10 +392,16 @@ class DeliveryRequestController extends Controller
             'client_id' => 'required|exists:clients,id',
             'contact_method' => 'required|in:mobile,email,group_chat',
             'atw_reference' => 'required|string',
+            'eir_number' => 'nullable|string',
+            'booking_number' => 'nullable|string',
+            'container_number' => 'nullable|string',
+            'seal_number' => 'nullable|string',
             'pickup_location' => 'required|string',
             'delivery_location' => 'required|string',
             'container_size' => 'required|string',
             'container_type' => 'required|string',
+            'shipping_line' => 'nullable|string',
+            'shipper_name' => 'nullable|string',
             'preferred_schedule' => 'required|date',
             'notes' => 'nullable|string'
         ]);
@@ -420,6 +430,14 @@ class DeliveryRequestController extends Controller
     public function destroy(DeliveryRequest $request)
     {
         $deliveryRequest = $request;
+        
+        // Only admin can directly delete requests
+        // Head dispatch must go through deletion approval process
+        if (!auth()->user()->isAdmin()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Only Admin can directly delete requests. Please use the deletion request process.');
+        }
         
         // Check if request has a trip assigned
         if ($deliveryRequest->trip && $deliveryRequest->trip->status !== 'cancelled') {
@@ -583,20 +601,65 @@ class DeliveryRequestController extends Controller
             ], 404);
         }
     }
+
+    /**
+     * Show deletion request form for head_dispatch
+     */
+    public function requestDelete(DeliveryRequest $request)
+    {
+        $deliveryRequest = $request;
+        
+        // Only head_dispatch can request deletion
+        if (!in_array(auth()->user()->role, ['admin', 'head_dispatch'])) {
+            abort(403, 'Only Admin and Head Dispatch can request deletions.');
+        }
+
+        // Check if request has active trip
+        if ($deliveryRequest->trip && $deliveryRequest->trip->status !== 'cancelled') {
+            return redirect()
+                ->back()
+                ->with('error', 'Cannot request deletion for request with active trip.');
+        }
+
+        return view('dispatch.requests.request-delete', compact('deliveryRequest'));
+    }
+
+    /**
+     * Submit deletion request for admin approval
+     */
+    public function submitDeleteRequest(Request $request, DeliveryRequest $deliveryRequest)
+    {
+        // Only head_dispatch can submit deletion requests
+        if (!in_array(auth()->user()->role, ['admin', 'head_dispatch'])) {
+            abort(403, 'Only Admin and Head Dispatch can request deletions.');
+        }
+
+        $validated = $request->validate([
+            'reason' => 'required|string|min:10|max:500',
+        ]);
+
+        // Check for existing pending request
+        $existingRequest = \App\Models\DeletionRequest::where('resource_type', 'delivery_request')
+            ->where('resource_id', $deliveryRequest->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRequest) {
+            return redirect()
+                ->route('requests.index')
+                ->with('error', 'A deletion request for this delivery request is already pending approval.');
+        }
+
+        \App\Models\DeletionRequest::create([
+            'requested_by' => auth()->id(),
+            'resource_type' => 'delivery_request',
+            'resource_id' => $deliveryRequest->id,
+            'reason' => $validated['reason'],
+            'status' => 'pending',
+        ]);
+
+        return redirect()
+            ->route('requests.index')
+            ->with('success', 'Deletion request submitted successfully. Waiting for admin approval.');
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

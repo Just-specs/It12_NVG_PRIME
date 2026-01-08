@@ -23,6 +23,7 @@
                     <span class="px-4 py-2 rounded-full text-sm font-semibold
                         {{ $trip->status === 'scheduled' ? 'bg-gray-100 text-gray-800' : '' }}
                         {{ $trip->status === 'in-transit' ? 'bg-blue-100 text-blue-800' : '' }}
+                        {{ $trip->status === 'delayed' ? 'bg-orange-100 text-orange-800' : '' }}
                         {{ $trip->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
                         {{ $trip->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
                         {{ ucfirst(str_replace('-', ' ', $trip->status)) }}
@@ -37,11 +38,11 @@
                     <div class="grid grid-cols-2 gap-4">
                         <div>
                             <p class="text-sm text-gray-600">Client Name</p>
-                            <p class="font-semibold">{{ $trip->deliveryRequest->client->name }}</p>
+                            <p class="font-semibold">{{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <p class="text-sm text-gray-600">ATW Reference</p>
-                            <p class="font-semibold font-mono text-purple-600">{{ $trip->deliveryRequest->atw_reference }}</p>
+                            <p class="font-semibold font-mono text-purple-600">{{ $trip->deliveryRequest?->atw_reference ?? 'N/A' }}</p>
                         </div>
                     </div>
                 </div>
@@ -63,12 +64,31 @@
                             <p class="text-xs text-gray-500">
                                 <i class="fas fa-id-card"></i> {{ $trip->driver->license_number }}
                             </p>
+                            
+                            @php
+                                $allCoDrivers = $trip->driver->getAllCoDrivers();
+                            @endphp
+                            
+                            @if($allCoDrivers->count() > 0)
+                            <div class="mt-3 pt-3 border-t border-blue-200">
+                                <p class="text-xs text-gray-600 mb-2">
+                                    <i class="fas fa-user-friends text-blue-400"></i> Co-Drivers
+                                </p>
+                                <div class="flex flex-wrap gap-1">
+                                    @foreach($allCoDrivers as $coDriver)
+                                        <span class="text-xs bg-blue-200 text-blue-900 px-2 py-1 rounded-full">
+                                            {{ $coDriver->name }}
+                                        </span>
+                                    @endforeach
+                                </div>
+                            </div>
+                            @endif
                         </div>
                         <div class="p-4 bg-purple-50 rounded-lg">
                             <p class="text-sm text-gray-600 mb-2">
                                 <i class="fas fa-truck text-purple-500"></i> Vehicle
                             </p>
-                            <p class="font-semibold">{{ $trip->vehicle->plate_number }}</p>
+                            <p class="font-semibold">{{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}</p>
                             <p class="text-xs text-gray-500 mt-1">{{ $trip->vehicle->vehicle_type }}</p>
                             <p class="text-xs text-gray-500">{{ $trip->vehicle->trailer_type }}</p>
                         </div>
@@ -180,24 +200,7 @@
                     </div>
                 </div>
 
-                <!-- Phase 1: Financial Information -->
-                <div class="mb-6 p-4 bg-green-50 rounded-lg border border-green-200">
-                    <h3 class="text-lg font-semibold text-gray-800 mb-3">
-                        <i class="fas fa-dollar-sign text-green-600"></i> Financial Information
-                    </h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        @if($trip->trip_rate)
-                        <div>
-                            <p class="text-sm text-gray-600">Client Rate</p>
-                            <p class="font-bold text-lg text-green-700">?{{ number_format($trip->trip_rate, 2) }}</p>
-                        </div>
-                        @endif
-                        @if($trip->driver_payroll)
-                        <div>
-                            <p class="text-sm text-gray-600">Driver Payroll</p>
-                            <p class="font-bold text-lg text-blue-700">?{{ number_format($trip->driver_payroll, 2) }}</p>
-                        </div>
-                        @endif
+
                         @if($trip->driver_allowance)
                         <div>
                             <p class="text-sm text-gray-600">Driver Allowance</p>
@@ -391,12 +394,23 @@
                     <span class="font-semibold text-gray-800">{{ $trip->driver->name }}</span>
                 </div>
                 <div class="flex justify-between">
+                    <span class="text-gray-600">Co-Drivers:</span>
+                    <span class="font-semibold text-gray-800">
+                        @php $coDrivers = $trip->driver->getAllCoDrivers(); @endphp
+                        @if($coDrivers->count() > 0)
+                            {{ $coDrivers->pluck('name')->join(', ') }}
+                        @else
+                            <span class="text-gray-400 italic">None</span>
+                        @endif
+                    </span>
+                </div>
+                <div class="flex justify-between">
                     <span class="text-gray-600">Vehicle:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->vehicle->plate_number }}</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Client:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->client->name }}</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}</span>
                 </div>
             </div>
         </div>
@@ -437,16 +451,27 @@
                     <span class="font-semibold text-gray-800">{{ $trip->driver->name }}</span>
                 </div>
                 <div class="flex justify-between">
+                    <span class="text-gray-600">Co-Drivers:</span>
+                    <span class="font-semibold text-gray-800">
+                        @php $coDrivers = $trip->driver->getAllCoDrivers(); @endphp
+                        @if($coDrivers->count() > 0)
+                            {{ $coDrivers->pluck('name')->join(', ') }}
+                        @else
+                            <span class="text-gray-400 italic">None</span>
+                        @endif
+                    </span>
+                </div>
+                <div class="flex justify-between">
                     <span class="text-gray-600">Vehicle:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->vehicle->plate_number }}</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Client:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->client->name }}</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">ATW Reference:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->atw_reference }}</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest?->atw_reference ?? 'N/A' }}</span>
                 </div>
             </div>
         </div>
@@ -516,12 +541,23 @@
                     <span class="font-semibold text-gray-800">{{ $trip->driver->name }}</span>
                 </div>
                 <div class="flex justify-between">
+                    <span class="text-gray-600">Co-Drivers:</span>
+                    <span class="font-semibold text-gray-800">
+                        @php $coDrivers = $trip->driver->getAllCoDrivers(); @endphp
+                        @if($coDrivers->count() > 0)
+                            {{ $coDrivers->pluck('name')->join(', ') }}
+                        @else
+                            <span class="text-gray-400 italic">None</span>
+                        @endif
+                    </span>
+                </div>
+                <div class="flex justify-between">
                     <span class="text-gray-600">Vehicle:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->vehicle->plate_number }}</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}</span>
                 </div>
                 <div class="flex justify-between">
                     <span class="text-gray-600">Client:</span>
-                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest->client->name }}</span>
+                    <span class="font-semibold text-gray-800">{{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}</span>
                 </div>
             </div>
         </div>
@@ -678,7 +714,5 @@
 </script>
 
 @endsection
-
-
 
 

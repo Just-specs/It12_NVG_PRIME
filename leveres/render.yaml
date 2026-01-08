@@ -1,0 +1,49 @@
+﻿# Render.com Deployment Configuration (Using Railway MySQL Database)
+services:
+  - type: web
+    name: it12-dispatch-system
+    runtime: php
+    plan: free
+    buildCommand: ./render-build.sh
+    startCommand: php artisan serve --host=0.0.0.0 --port=$PORT
+    envVars:
+      - key: APP_NAME
+        value: IT12 Dispatch System
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_KEY
+        generateValue: true
+      - key: APP_URL
+        sync: false
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_DATABASE
+        value: railway
+      - key: DB_USERNAME
+        value: root
+      - key: DB_PASSWORD
+        sync: false
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: database
+      - key: SESSION_LIFETIME
+        value: 120
+      - key: SESSION_SECURE_COOKIE
+        value: true
+      - key: SESSION_SAME_SITE
+        value: lax
+      - key: SESSION_HTTP_ONLY
+        value: true
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: SANCTUM_STATEFUL_DOMAINS
+        sync: false
+
+# Note: No database service needed - using Railway MySQL

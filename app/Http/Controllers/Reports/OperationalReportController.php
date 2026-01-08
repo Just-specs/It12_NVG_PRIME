@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 
-class FinancialReportController extends Controller
+class OperationalReportController extends Controller
 {
     public function index(Request $request)
     {

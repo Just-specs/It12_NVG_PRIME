@@ -31,17 +31,13 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex space-x-2">
-                        <a href="{{ route('vehicles.edit', $vehicle) }}" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 text-xs font-medium">
-                            Edit
+                        <a href="{{ route('vehicles.edit', $vehicle) }}" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" title="Edit Vehicle">
+                            <i class="fas fa-edit"></i>
                         </a>
-                        @if(auth()->user()->role === 'admin')
-                        <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="inline delete-form">
-                            @csrf
-                            @method('DELETE')
-                            <button type="button" class="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium delete-btn">
-                                Delete
-                            </button>
-                        </form>
+                        @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
+                        <a href="{{ route('vehicles.requestDelete', $vehicle) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Request Delete">
+                            <i class="fas fa-trash"></i>
+                        </a>
                         @endif
                     </div>
                 </td>

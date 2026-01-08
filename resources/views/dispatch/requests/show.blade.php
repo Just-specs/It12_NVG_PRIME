@@ -22,7 +22,7 @@
                     </div>
                     <span class="px-4 py-2 rounded-full text-sm font-semibold
                         {{ $deliveryRequest->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                        {{ $deliveryRequest->status === 'verified' ? 'bg-green-100 text-green-800' : '' }}
+                        {{ $deliveryRequest->status === 'verified' ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg font-bold' : '' }}
                         {{ $deliveryRequest->status === 'assigned' ? 'bg-blue-100 text-blue-800' : '' }}
                         {{ $deliveryRequest->status === 'completed' ? 'bg-gray-100 text-gray-800' : '' }}">
                         {{ ucfirst($deliveryRequest->status) }}
@@ -59,11 +59,7 @@
                             <div class="w-32 text-sm text-gray-600">ATW Reference:</div>
                             <div class="flex-1 font-semibold">
                                 {{ $deliveryRequest->atw_reference }}
-                                @if($deliveryRequest->atw_verified)
-                                <span class="ml-2 text-green-600 text-sm"><i class="fas fa-check-circle"></i> Verified</span>
-                                @else
-                                <span class="ml-2 text-yellow-600 text-sm"><i class="fas fa-exclamation-circle"></i> Pending Verification</span>
-                                @endif
+
                             </div>
                         </div>
                         <div class="flex items-start">
@@ -187,7 +183,7 @@
 
                 @if($deliveryRequest->status === 'pending' && !$deliveryRequest->atw_verified)
                     @if(auth()->user()->canVerifyRequests())
-                    {{-- Only Admin can verify --}}
+                    {{-- Only Admin and Head Dispatch can verify --}}
                     <form method="POST" action="{{ $deliveryRequest->id ? route('requests.verify', ['request' => $deliveryRequest->id]) : '#' }}" class="mb-3" id="verify-atw-form">
                         @csrf
                         <button type="button" id="open-verify-modal" class="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
@@ -341,6 +337,46 @@
                                 placeholder="Enter ATW reference">
                         </div>
 
+                        <!-- EIR Number -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                EIR Number
+                            </label>
+                            <input type="text" name="eir_number" value="{{ old('eir_number', $deliveryRequest->eir_number) }}"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="Equipment Interchange Receipt">
+                        </div>
+
+                        <!-- Booking Number -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Booking Number
+                            </label>
+                            <input type="text" name="booking_number" value="{{ old('booking_number', $deliveryRequest->booking_number) }}"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="Shipping booking reference">
+                        </div>
+
+                        <!-- Container Number -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Container Number
+                            </label>
+                            <input type="text" name="container_number" value="{{ old('container_number', $deliveryRequest->container_number) }}"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="e.g., WHSU 816908-2">
+                        </div>
+
+                        <!-- Seal Number -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Seal Number
+                            </label>
+                            <input type="text" name="seal_number" value="{{ old('seal_number', $deliveryRequest->seal_number) }}"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="Security seal number">
+                        </div>
+
                         <!-- Pickup Location -->
                         <div>
                             <label class="block text-sm font-semibold text-gray-700 mb-2">
@@ -382,6 +418,38 @@
                                 <option value="refrigerated" @selected(old('container_type', $deliveryRequest->container_type) == 'refrigerated')>Refrigerated</option>
                                 <option value="open_top" @selected(old('container_type', $deliveryRequest->container_type) == 'open_top')>Open Top</option>
                             </select>
+                        </div>
+
+                        <!-- Shipping Line -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Shipping Line
+                            </label>
+                            <select name="shipping_line" class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all">
+                                <option value="">-- Select Shipping Line --</option>
+                                <option value="WANHAI" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'WANHAI')>WANHAI</option>
+                                <option value="CMA" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'CMA')>CMA</option>
+                                <option value="COSCO" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'COSCO')>COSCO</option>
+                                <option value="EVERGREEN" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'EVERGREEN')>EVERGREEN</option>
+                                <option value="MCC" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'MCC')>MCC</option>
+                                <option value="ONE" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'ONE')>ONE</option>
+                                <option value="OOCL" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'OOCL')>OOCL</option>
+                                <option value="SITC" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'SITC')>SITC</option>
+                                <option value="MAERSK" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'MAERSK')>MAERSK</option>
+                                <option value="MSC" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'MSC')>MSC</option>
+                                <option value="YANGMING" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'YANGMING')>YANGMING</option>
+                                <option value="Other" @selected(old('shipping_line', $deliveryRequest->shipping_line) == 'Other')>Other</option>
+                            </select>
+                        </div>
+
+                        <!-- Shipper Name -->
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Shipper Name
+                            </label>
+                            <input type="text" name="shipper_name" value="{{ old('shipper_name', $deliveryRequest->shipper_name) }}"
+                                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-amber-500 focus:border-transparent transition-all"
+                                placeholder="Enter shipper name">
                         </div>
 
                         <!-- Preferred Schedule -->

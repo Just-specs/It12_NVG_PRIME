@@ -24,8 +24,7 @@
                         <h1 class="text-3xl font-bold mb-2">{{ $driver->name }}</h1>
                         <p class="text-blue-100 mb-1">
                             <i class="fas fa-id-card mr-2"></i>License: {{ $driver->license_number }}
-                        </p>
-                        <p class="text-blue-100">
+                        </p>                        <p class="text-blue-100">
                             <i class="fas fa-phone mr-2"></i>{{ $driver->mobile }}
                         </p>
                     </div>
@@ -91,14 +90,14 @@
                         @foreach($driver->trips as $trip)
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 font-semibold text-blue-600">#{{ $trip->id }}</td>
-                            <td class="px-4 py-3">{{ $trip->deliveryRequest->atw_reference }}</td>
-                            <td class="px-4 py-3">{{ $trip->deliveryRequest->client->name }}</td>
-                            <td class="px-4 py-3">{{ $trip->vehicle->plate_number }}</td>
+                            <td class="px-4 py-3">{{ $trip->deliveryRequest?->atw_reference ?? 'N/A' }}</td>
+                            <td class="px-4 py-3">{{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}</td>
+                            <td class="px-4 py-3">{{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}</td>
                             <td class="px-4 py-3">{{ $trip->scheduled_time->format('M d, Y h:i A') }}</td>
                             <td class="px-4 py-3">
                                 <span class="px-2 py-1 rounded-full text-xs font-semibold
                                     {{ $trip->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
-                                    {{ $trip->status === 'in-transit' ? 'bg-blue-100 text-blue-800' : '' }}
+                                    {{ $trip->status === 'in-transit' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-lg font-bold' : '' }}
                                     {{ $trip->status === 'scheduled' ? 'bg-gray-100 text-gray-800' : '' }}
                                     {{ $trip->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
                                     {{ ucfirst($trip->status) }}
@@ -141,14 +140,13 @@
                 <i class="fas fa-edit mr-2"></i>Edit Driver
             </a>
             
-            <form method="POST" action="{{ route('drivers.destroy', $driver) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this driver?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg transition">
-                    <i class="fas fa-trash mr-2"></i>Delete
-                </button>
-            </form>
+            <a href="{{ route('drivers.requestDelete', $driver) }}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+                <i class="fas fa-trash mr-2"></i>
+                Request Delete
+            </a>
         </div>
     </div>
 </div>
 @endsection
+
+

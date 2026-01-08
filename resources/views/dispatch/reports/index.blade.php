@@ -70,6 +70,24 @@
                         View Monthly Report
                     </a>
                 </div>
+
+                <!-- Accident Reports -->
+                <div class="p-4 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-red-100 p-2 rounded-lg">
+                            <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Accident Reports</h4>
+                            <p class="text-xs text-gray-600">View and manage accident reports</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('reports.accidents.index') }}" class="block w-full text-center bg-red-600 text-white px-3 py-2 rounded hover:bg-red-700 transition text-sm">
+                        View Accident Reports
+                    </a>
+                </div>
             </div>
         </div>
     </div>

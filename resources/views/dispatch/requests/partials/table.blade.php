@@ -10,7 +10,7 @@
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Delivery Location</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Schedule</th>
                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Status</th>
-                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Actions</th>
+                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase border-l-2 border-[#1E40AF]">Actions</th>
             </tr>
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
@@ -21,18 +21,14 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">{{ $request->atw_reference }}</div>
-                    @if($request->atw_verified)
-                    <span class="text-xs text-green-600"><i class="fas fa-check-circle"></i> Verified</span>
-                    @else
-                    <span class="text-xs text-yellow-600"><i class="fas fa-exclamation-circle"></i> Pending</span>
-                    @endif
+
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     <div>{{ $request->container_size }} {{ $request->container_type }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     @if($request->shipping_line)
-                    <div class="text-blue-600"><i class="fas fa-ship"></i> {{ $request->shipping_line }}</div>
+                    <div class="text-black"><i class="fas fa-ship"></i> {{ $request->shipping_line }}</div>
                     @else
                     <span class="text-gray-400">-</span>
                     @endif
@@ -51,33 +47,29 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-3 py-1 rounded-full text-xs font-semibold
                         {{ $request->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-                        {{ $request->status === 'verified' ? 'bg-blue-100 text-blue-800' : '' }}
+                        {{ $request->status === 'verified' ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-lg font-bold' : '' }}
                         {{ $request->status === 'assigned' ? 'bg-purple-100 text-purple-800' : '' }}
                         {{ $request->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}
                         {{ $request->status === 'cancelled' ? 'bg-red-100 text-red-800' : '' }}">
                         {{ ucfirst($request->status) }}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
-                    <div class="flex space-x-2">
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex justify-center items-center space-x-2">
                         @if($request->status === 'verified' && !$request->trip)
                         <button onclick="event.stopPropagation(); openAssignDriverModal({{ $request->id }}, '{{ $request->client->name }}', '{{ $request->atw_reference }}')" class="w-8 h-8 flex items-center justify-center bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors" title="Assign Driver">
                             <i class="fas fa-user-plus"></i>
                         </button>
                         @endif
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
-                        <a href="{{ route('requests.edit', $request) }}" class="w-8 h-8 flex items-center justify-center bg-[#1E40AF] text-white rounded-full hover:bg-[#1A36A0] transition-colors" title="Edit Request">
+                        <a href="{{ route('requests.edit', $request) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" title="Edit Request">
                             <i class="fas fa-edit"></i>
                         </a>
                         @endif
-                        @if(auth()->user()->role === 'admin')
-                        <form method="POST" action="{{ route('requests.destroy', $request) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this request?');">
-                            @csrf
-                            @method('DELETE')
-                            <button type="submit" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Delete Request">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </form>
+                        @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
+                        <a href="{{ route('requests.requestDelete', $request) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Request Delete">
+                            <i class="fas fa-trash"></i>
+                        </a>
                         @endif
                     </div>
                 </td>
@@ -85,7 +77,8 @@
             @empty
             <tr>
                 <td colspan="9" class="px-6 py-8 text-center text-gray-500">
-                    No delivery requests found
+                    <i class="fas fa-inbox text-4xl mb-2 text-gray-300"></i>
+                    <p>No delivery requests found</p>
                 </td>
             </tr>
             @endforelse
@@ -100,21 +93,25 @@
     </span>
     <div class="flex gap-3">
         @if($requests->onFirstPage())
-        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">Previous</span>
+        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
+            <i class="fas fa-chevron-left mr-1"></i> Previous
+        </span>
         @else
         <a href="{{ $requests->previousPageUrl() }}" data-pagination="requests"
-            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
-            Previous
+            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+            <i class="fas fa-chevron-left mr-1"></i> Previous
         </a>
         @endif
 
         @if($requests->hasMorePages())
         <a href="{{ $requests->nextPageUrl() }}" data-pagination="requests"
-            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300">
-            Next
+            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+            Next <i class="fas fa-chevron-right ml-1"></i>
         </a>
         @else
-        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">Next</span>
+        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
+            Next <i class="fas fa-chevron-right ml-1"></i>
+        </span>
         @endif
     </div>
 </div>
@@ -122,9 +119,6 @@
 
 <script>
 function viewRequest(requestId) {
-    window.location.href = `/requests/${requestId}`;
+    window.location.href = /requests/+requestId;
 }
 </script>
-
-
-

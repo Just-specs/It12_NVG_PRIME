@@ -1,0 +1,1053 @@
+﻿================================================================================
+NVG PRIME MOVERS DISPATCH MANAGEMENT SYSTEM
+COMPLETE SOURCE CODE SUMMARY
+================================================================================
+
+PROJECT OVERVIEW
+----------------
+Application Type: Web-based Dispatch Management System
+Framework: Laravel 11.x
+Database: MySQL
+Purpose: Manage delivery requests, trips, drivers, vehicles, and clients
+
+STATISTICS
+----------
+- Models: 10
+- Controllers: 18
+- Migrations: 34+
+- User Roles: 4 (Admin, Head Dispatch, Dispatcher, Driver)
+
+
+================================================================================
+1. DATABASE SCHEMA & CORE TABLES
+================================================================================
+
+1.1 USERS TABLE
+---------------
+id, name, email, password, role (admin/head_dispatch/dispatcher/driver)
+phone, address, status (active/inactive), created_at, updated_at
+
+Relationships:
+- hasMany: DeliveryRequests, Trips, AuditLogs, DeletionRequests
+
+
+1.2 DELIVERY REQUESTS TABLE
+----------------------------
+id, request_number, client_id, pickup_location, delivery_location
+cargo_description, cargo_weight, cargo_volume, requested_date, requested_time
+priority (normal/urgent/critical), status (pending/verified/assigned/in-transit/delayed/completed/cancelled/archived)
+eir_number, eir_datetime, eir_file_path
+special_instructions, is_delayed, delay_detected_at, delay_reason
+created_by, verified_by, assigned_by, completed_by
+created_at, updated_at, archived_at
+
+Relationships:
+- belongsTo: Client, User (creator), User (verifier)
+- hasOne: Trip
+- hasMany: DeletionRequests
+
+
+1.3 TRIPS TABLE
+---------------
+id, delivery_request_id, driver_id, co_driver_id, vehicle_id
+waybill_number, scheduled_time, actual_start_time, actual_end_time
+departure_location, destination_location
+status (scheduled/in-transit/delayed/completed/cancelled/archived)
+distance_km, fuel_consumption, toll_fees, other_expenses
+notes, is_delayed, delay_detected_at, delay_reason, delay_reason_by, delay_minutes
+created_at, updated_at
+
+Relationships:
+- belongsTo: DeliveryRequest, Driver (User), CoDriver (User), Vehicle
+- hasMany: TripUpdates
+
+
+1.4 DRIVERS TABLE
+-----------------
+id, user_id, license_number, license_expiry, license_type
+date_hired, employment_status (active/on-leave/suspended/terminated)
+emergency_contact_name, emergency_contact_phone
+created_at, updated_at
+
+Relationships:
+- belongsTo: User
+- hasMany: Trips
+
+
+1.5 VEHICLES TABLE
+------------------
+id, plate_number, vehicle_type, brand, model, year
+capacity_tons, status (available/in-use/maintenance/out-of-service)
+last_maintenance_date, next_maintenance_date, registration_expiry
+insurance_expiry, notes
+created_at, updated_at
+
+Relationships:
+- hasMany: Trips
+
+
+1.6 CLIENTS TABLE
+-----------------
+id, company_name, contact_person, email, phone, address
+client_type (corporate/individual), payment_terms
+status (active/inactive), notes
+created_at, updated_at
+
+Relationships:
+- hasMany: DeliveryRequests, ClientNotifications
+
+
+1.7 DELETION REQUESTS TABLE
+----------------------------
+id, model_type (DeliveryRequest/Driver/Vehicle/Client)
+model_id, reason, status (pending/approved/rejected)
+requested_by, reviewed_by, reviewed_at
+created_at, updated_at
+
+Relationships:
+- belongsTo: User (requester), User (reviewer)
+- morphTo: deletable (polymorphic)
+
+
+1.8 AUDIT LOGS TABLE
+--------------------
+id, user_id, action, model_type, model_id
+old_values (JSON), new_values (JSON), ip_address, user_agent
+created_at
+
+Relationships:
+- belongsTo: User
+
+
+1.9 TRIP UPDATES TABLE
+----------------------
+id, trip_id, update_type (location/status/incident)
+latitude, longitude, location_name, status, message
+created_by, created_at
+
+Relationships:
+- belongsTo: Trip, User
+
+
+1.10 CLIENT NOTIFICATIONS TABLE
+-------------------------------
+id, client_id, delivery_request_id, notification_type
+message, sent_at, read_at, created_at
+
+Relationships:
+- belongsTo: Client, DeliveryRequest
+
+
+================================================================================
+2. MODELS & KEY METHODS
+================================================================================
+
+2.1 USER MODEL (app/Models/User.php)
+-------------------------------------
+protected $fillable = ['name', 'email', 'password', 'role', 'phone', 'address', 'status'];
+
+Relationships:
+- hasOne('driver')
+- hasMany('deliveryRequests')
+- hasMany('trips')
+- hasMany('auditLogs')
+
+Methods:
+- isAdmin(): bool
+- isHeadDispatch(): bool
+- isDispatcher(): bool
+- isDriver(): bool
+
+
+2.2 DELIVERY REQUEST MODEL (app/Models/DeliveryRequest.php)
+------------------------------------------------------------
+protected $fillable = ['request_number', 'client_id', 'pickup_location', 
+    'delivery_location', 'cargo_description', 'cargo_weight', 'cargo_volume',
+    'requested_date', 'requested_time', 'priority', 'status', 'eir_number',
+    'eir_datetime', 'eir_file_path', 'special_instructions', 'is_delayed',
+    'delay_detected_at', 'delay_reason', 'delay_reason_by'];
+
+Relationships:
+- belongsTo('client')
+- belongsTo('creator', User::class)
+- hasOne('trip')
+- hasMany('deletionRequests')
+
+Methods:
+- generateRequestNumber(): string
+- isOverdue(): bool
+- canBeDeleted(): bool
+- isDelayed(): bool
+- markAsDelayed($reason, $userId): void
+
+
+2.3 TRIP MODEL (app/Models/Trip.php)
+-------------------------------------
+protected $fillable = ['delivery_request_id', 'driver_id', 'co_driver_id',
+    'vehicle_id', 'waybill_number', 'scheduled_time', 'actual_start_time',
+    'actual_end_time', 'status', 'distance_km', 'fuel_consumption',
+    'toll_fees', 'other_expenses', 'is_delayed', 'delay_detected_at',
+    'delay_reason', 'delay_reason_by', 'delay_minutes'];
+
+Relationships:
+- belongsTo('deliveryRequest')
+- belongsTo('driver', User::class)
+- belongsTo('coDriver', User::class)
+- belongsTo('vehicle')
+- hasMany('tripUpdates')
+
+Methods:
+- generateWaybillNumber(): string
+- isOverdue(): bool
+- calculateTotalExpenses(): float
+- isDelayed(): bool
+- calculateDelayMinutes(): int
+- markAsDelayed($reason, $userId): void
+
+
+2.4 DRIVER MODEL (app/Models/Driver.php)
+-----------------------------------------
+protected $fillable = ['user_id', 'license_number', 'license_expiry',
+    'license_type', 'date_hired', 'employment_status',
+    'emergency_contact_name', 'emergency_contact_phone'];
+
+Relationships:
+- belongsTo('user')
+- hasMany('trips')
+
+Methods:
+- isActive(): bool
+- isLicenseExpiringSoon(): bool
+- getTripsCount(): int
+
+
+2.5 VEHICLE MODEL (app/Models/Vehicle.php)
+-------------------------------------------
+protected $fillable = ['plate_number', 'vehicle_type', 'brand', 'model',
+    'year', 'capacity_tons', 'status', 'last_maintenance_date',
+    'next_maintenance_date', 'registration_expiry', 'insurance_expiry'];
+
+Relationships:
+- hasMany('trips')
+
+Methods:
+- isAvailable(): bool
+- needsMaintenance(): bool
+- isRegistrationExpiringSoon(): bool
+- isInsuranceExpiringSoon(): bool
+
+
+2.6 CLIENT MODEL (app/Models/Client.php)
+-----------------------------------------
+protected $fillable = ['company_name', 'contact_person', 'email', 'phone',
+    'address', 'client_type', 'payment_terms', 'status', 'notes'];
+
+Relationships:
+- hasMany('deliveryRequests')
+- hasMany('notifications')
+
+Methods:
+- isActive(): bool
+- getTotalRequests(): int
+
+
+2.7 DELETION REQUEST MODEL (app/Models/DeletionRequest.php)
+------------------------------------------------------------
+protected $fillable = ['model_type', 'model_id', 'reason', 'status',
+    'requested_by', 'reviewed_by', 'reviewed_at'];
+
+Relationships:
+- belongsTo('requester', User::class)
+- belongsTo('reviewer', User::class)
+- morphTo('deletable')
+
+Methods:
+- approve($reviewerId): void
+- reject($reviewerId): void
+- isPending(): bool
+
+
+
+
+================================================================================
+3. CONTROLLERS & KEY METHODS
+================================================================================
+
+3.1 DELIVERY REQUEST CONTROLLER (DeliveryRequestController.php)
+----------------------------------------------------------------
+index() - List all delivery requests with filters
+create() - Show create form
+store() - Create new delivery request
+  - Generates unique request_number
+  - Validates input
+  - Creates audit log
+  
+show($id) - Display delivery request details
+edit($id) - Show edit form
+update($id) - Update delivery request
+  - Logs changes in audit_logs
+  
+destroy($id) - Soft delete (archived status)
+verify($id) - Mark request as verified (head_dispatch/admin only)
+assign($id) - Assign driver/vehicle and create trip
+requestDelete($id) - Show deletion request form
+submitDeleteRequest($id) - Submit deletion request for approval
+  - Validates reason (min 10 chars)
+  - Creates DeletionRequest record
+  - Available to admin & head_dispatch
+
+
+3.2 TRIP CONTROLLER (TripController.php)
+-----------------------------------------
+index() - List all trips with filters
+show($id) - Display trip details with updates
+create() - Show create trip form
+store() - Create new trip
+  - Generates waybill_number
+  - Links to delivery_request
+  - Updates delivery_request status to 'assigned'
+  
+update($id) - Update trip details
+updateStatus($id) - Update trip status (in-transit/completed/cancelled)
+  - Updates delivery_request status accordingly
+  - Records completion time
+  
+addUpdate($id) - Add location/status update to trip
+showDelayReasonForm($trip) - Show form to provide delay reason
+submitDelayReason($trip) - Submit delay reason
+  - Validates reason (min 10 chars)
+  - Updates trip and delivery_request
+  - Only dispatcher/head_dispatch/admin
+
+
+3.3 DRIVER CONTROLLER (DriverController.php)
+---------------------------------------------
+index() - List all drivers
+create() - Show create driver form
+store() - Create new driver
+  - Creates User record with role='driver'
+  - Creates Driver profile record
+  - Validates license information
+  
+show($id) - Display driver details and trip history
+edit($id) - Show edit form
+update($id) - Update driver information
+requestDelete($id) - Show deletion request form
+submitDeleteRequest($id) - Submit deletion request
+
+
+3.4 VEHICLE CONTROLLER (VehicleController.php)
+-----------------------------------------------
+index() - List all vehicles
+create() - Show create vehicle form
+store() - Create new vehicle
+  - Validates plate_number uniqueness
+  - Sets status to 'available'
+  
+show($id) - Display vehicle details and trip history
+edit($id) - Show edit form
+update($id) - Update vehicle information
+  - Can update status (available/in-use/maintenance/out-of-service)
+  
+requestDelete($id) - Show deletion request form
+submitDeleteRequest($id) - Submit deletion request
+
+
+3.5 CLIENT CONTROLLER (ClientController.php)
+---------------------------------------------
+index() - List all clients
+create() - Show create client form
+store() - Create new client
+  - Validates email uniqueness
+  - Sets status to 'active'
+  
+show($id) - Display client details and request history
+edit($id) - Show edit form
+update($id) - Update client information
+requestDelete($id) - Show deletion request form
+submitDeleteRequest($id) - Submit deletion request
+
+
+3.6 DELETION REQUEST CONTROLLER (DeletionRequestController.php)
+----------------------------------------------------------------
+index() - List all deletion requests (admin only)
+  - Filters: pending/approved/rejected
+  
+show($id) - Display deletion request details
+approve($id) - Approve deletion request (admin only)
+  - Soft deletes the resource
+  - Updates status to 'approved'
+  - Records reviewer and timestamp
+  
+reject($id) - Reject deletion request (admin only)
+  - Updates status to 'rejected'
+  - Records reviewer and timestamp
+
+
+3.7 DASHBOARD CONTROLLER (DashboardController.php)
+---------------------------------------------------
+index() - Display role-based dashboard
+  - Admin: System overview, statistics, recent activities
+  - Head Dispatch: Pending requests, active trips, driver status
+  - Dispatcher: Assigned tasks, trip updates
+  - Driver: Assigned trips, route information
+  
+getStats() - AJAX endpoint for dashboard statistics
+  - Total requests (today/week/month)
+  - Active trips count
+  - Available vehicles/drivers
+  - Pending deletion requests
+  - Delayed trips
+
+
+3.8 AUDIT LOG CONTROLLER (AuditLogController.php)
+--------------------------------------------------
+index() - List all audit logs with filters
+  - Filter by: user, action, date range, model type
+  
+show($id) - Display detailed audit log
+  - Shows old_values vs new_values comparison
+
+
+3.9 NOTIFICATION CONTROLLER (NotificationController.php)
+---------------------------------------------------------
+index() - List user notifications
+markAsRead($id) - Mark notification as read
+markAllAsRead() - Mark all notifications as read
+getUnreadCount() - AJAX: Get unread notifications count
+
+
+3.10 REPORT CONTROLLER (ReportController.php)
+----------------------------------------------
+index() - Show report generation interface
+deliveryReport() - Generate delivery requests report
+  - Filters: date range, status, client, priority
+  - Export: PDF/Excel
+  
+tripReport() - Generate trips report
+  - Filters: date range, driver, vehicle, status
+  - Includes: distances, expenses, delays
+  
+driverPerformance() - Generate driver performance report
+  - Trips completed, on-time percentage, delays
+  
+financialReport() - Generate financial report
+  - Total expenses by trip
+  - Fuel, tolls, other costs
+
+
+
+
+================================================================================
+4. ROUTES & MIDDLEWARE
+================================================================================
+
+4.1 AUTHENTICATION ROUTES
+--------------------------
+GET  /login               - Show login form
+POST /login               - Process login
+POST /logout              - Logout user
+GET  /forgot-password     - Show forgot password form
+POST /forgot-password     - Send password reset email
+GET  /reset-password      - Show reset password form
+POST /reset-password      - Process password reset
+
+
+4.2 DASHBOARD ROUTES
+---------------------
+GET  /dashboard           - Role-based dashboard (auth required)
+GET  /dashboard/stats     - AJAX: Get dashboard statistics
+
+
+4.3 DELIVERY REQUEST ROUTES (Middleware: auth, CheckRole)
+----------------------------------------------------------
+Prefix: /requests
+
+# All authenticated users
+GET  /                    - List delivery requests
+GET  /{id}                - Show delivery request details
+
+# Admin, Head Dispatch, Dispatcher
+POST /                    - Create delivery request
+PUT  /{id}                - Update delivery request
+
+# Head Dispatch, Admin
+POST /{id}/verify         - Verify delivery request
+POST /{id}/assign         - Assign driver/vehicle (creates trip)
+
+# Admin, Head Dispatch (Deletion Request Workflow)
+GET  /{id}/request-delete          - Show deletion request form
+POST /{id}/submit-delete-request   - Submit deletion request
+
+
+4.4 TRIP ROUTES (Middleware: auth)
+-----------------------------------
+Prefix: /trips
+
+GET  /                    - List trips
+GET  /{id}                - Show trip details
+POST /                    - Create trip (admin/head_dispatch)
+PUT  /{id}                - Update trip
+POST /{id}/status         - Update trip status
+POST /{id}/update         - Add location/status update
+
+# Delay Reason (Dispatcher, Head Dispatch, Admin)
+GET  /{id}/delay-reason   - Show delay reason form
+POST /{id}/delay-reason   - Submit delay reason
+
+
+4.5 DRIVER ROUTES (Middleware: auth, CheckRole:admin,head_dispatch)
+--------------------------------------------------------------------
+Prefix: /drivers
+
+GET  /                    - List drivers
+POST /                    - Create driver
+GET  /{id}                - Show driver details
+PUT  /{id}                - Update driver
+
+# Deletion Request (Admin, Head Dispatch)
+GET  /{id}/request-delete          - Show deletion request form
+POST /{id}/submit-delete-request   - Submit deletion request
+
+
+4.6 VEHICLE ROUTES (Middleware: auth, CheckRole:admin,head_dispatch)
+---------------------------------------------------------------------
+Prefix: /vehicles
+
+GET  /                    - List vehicles
+POST /                    - Create vehicle
+GET  /{id}                - Show vehicle details
+PUT  /{id}                - Update vehicle
+
+# Deletion Request (Admin, Head Dispatch)
+GET  /{id}/request-delete          - Show deletion request form
+POST /{id}/submit-delete-request   - Submit deletion request
+
+
+4.7 CLIENT ROUTES (Middleware: auth, CheckRole:admin,head_dispatch,dispatcher)
+-------------------------------------------------------------------------------
+Prefix: /clients
+
+GET  /                    - List clients
+POST /                    - Create client
+GET  /{id}                - Show client details
+PUT  /{id}                - Update client
+
+# Deletion Request (Admin, Head Dispatch)
+GET  /{id}/request-delete          - Show deletion request form
+POST /{id}/submit-delete-request   - Submit deletion request
+
+
+4.8 DELETION REQUEST ROUTES (Middleware: auth, CheckRole:admin)
+----------------------------------------------------------------
+Prefix: /deletion-requests
+
+GET  /                    - List deletion requests (admin only)
+GET  /{id}                - Show deletion request details
+POST /{id}/approve        - Approve deletion request
+POST /{id}/reject         - Reject deletion request
+
+
+4.9 AUDIT LOG ROUTES (Middleware: auth, CheckRole:admin)
+---------------------------------------------------------
+Prefix: /audit-logs
+
+GET  /                    - List audit logs (admin only)
+GET  /{id}                - Show audit log details
+
+
+4.10 NOTIFICATION ROUTES (Middleware: auth)
+--------------------------------------------
+Prefix: /notifications
+
+GET  /                    - List user notifications
+POST /{id}/read           - Mark notification as read
+POST /mark-all-read       - Mark all notifications as read
+GET  /unread-count        - AJAX: Get unread count
+
+
+4.11 REPORT ROUTES (Middleware: auth, CheckRole:admin,head_dispatch)
+---------------------------------------------------------------------
+Prefix: /reports
+
+GET  /                    - Show report generation page
+POST /delivery            - Generate delivery requests report (PDF/Excel)
+POST /trip                - Generate trips report
+POST /driver-performance  - Generate driver performance report
+POST /financial           - Generate financial report
+
+
+4.12 MIDDLEWARE DEFINITIONS
+----------------------------
+# CheckRole Middleware (app/Http/Middleware/CheckRole.php)
+- Verifies user has required role(s)
+- Usage: CheckRole::class . ':admin,head_dispatch'
+- Aborts with 403 if unauthorized
+
+# Authenticate Middleware
+- Ensures user is logged in
+- Redirects to /login if not authenticated
+
+# AuditLog Middleware
+- Automatically logs all create/update/delete actions
+- Records old_values and new_values as JSON
+- Captures IP address and user agent
+
+
+================================================================================
+5. KEY FEATURES & WORKFLOWS
+================================================================================
+
+5.1 DELIVERY REQUEST WORKFLOW
+------------------------------
+1. Dispatcher creates delivery request
+   - Enters client, pickup/delivery locations, cargo details
+   - System generates unique request_number
+   - Status: 'pending'
+
+2. Head Dispatch or Admin verifies request
+   - Reviews request details
+   - Clicks "Verify"
+   - Status: 'verified'
+
+3. Head Dispatch or Admin assigns trip
+   - Selects driver, co-driver (optional), vehicle
+   - Enters scheduled time, waybill details
+   - System creates Trip record
+   - Status: 'assigned'
+
+4. Driver starts trip
+   - Updates status to 'in-transit'
+   - Can add location updates during trip
+
+5. Driver completes trip
+   - Updates status to 'completed'
+   - Enters distance, fuel consumption, expenses
+   - Delivery request status: 'completed'
+
+
+5.2 DELETION REQUEST WORKFLOW
+------------------------------
+1. Admin or Head Dispatch requests deletion
+   - Navigates to resource (request/driver/vehicle/client)
+   - Clicks "Request Delete" button
+   - Provides deletion reason (min 10 characters)
+   - System creates DeletionRequest record
+   - Status: 'pending'
+
+2. Admin reviews deletion request
+   - Views deletion request list
+   - Reviews reason and resource details
+   - Approves or Rejects
+
+3. If Approved:
+   - Resource status changed to 'archived'
+   - Resource hidden from active lists
+   - DeletionRequest status: 'approved'
+
+4. If Rejected:
+   - Resource remains active
+   - DeletionRequest status: 'rejected'
+
+
+5.3 DELAY TRACKING WORKFLOW (AUTOMATIC)
+----------------------------------------
+1. Laravel Scheduler runs DetectDelayedTrips job every 5 minutes
+
+2. Job finds trips:
+   - Status: 'scheduled'
+   - scheduled_time is 30+ minutes ago
+   - is_delayed: false
+
+3. For each delayed trip:
+   - Updates trip status to 'delayed'
+   - Sets is_delayed = true, delay_detected_at = now()
+   - Calculates delay_minutes
+   - Updates linked delivery_request as delayed
+   - Sends notifications to Admin and Head Dispatch
+
+4. Dispatcher provides delay reason:
+   - Opens /trips/{id}/delay-reason
+   - Enters reason (min 10 characters)
+   - System logs reason with user_id and timestamp
+
+5. Trip continues normally after reason provided
+
+
+5.4 AUDIT LOGGING (AUTOMATIC)
+------------------------------
+All create/update/delete actions automatically logged:
+- User who performed action
+- Action type (created/updated/deleted)
+- Model type and ID
+- Old values (JSON) vs New values (JSON)
+- IP address and user agent
+- Timestamp
+
+Admin can view complete audit trail in /audit-logs
+
+
+5.5 ROLE-BASED ACCESS CONTROL
+------------------------------
+Admin:
+- Full system access
+- User management
+- Approve/reject deletion requests
+- View audit logs
+- Generate all reports
+
+Head Dispatch:
+- Create/verify delivery requests
+- Assign trips
+- Manage drivers/vehicles/clients
+- Submit deletion requests
+- View reports
+
+Dispatcher:
+- Create delivery requests
+- View trips
+- Manage clients
+- Provide delay reasons
+
+Driver:
+- View assigned trips
+- Update trip status
+- Add location updates
+- View delivery details
+
+
+
+
+================================================================================
+6. KEY CODE SNIPPETS
+================================================================================
+
+6.1 AUTHENTICATION (app/Http/Controllers/AuthController.php)
+-------------------------------------------------------------
+public function login(Request $request)
+{
+    $credentials = $request->validate([
+        'email' => 'required|email',
+        'password' => 'required'
+    ]);
+
+    if (Auth::attempt($credentials)) {
+        $request->session()->regenerate();
+        return redirect()->intended('dashboard');
+    }
+
+    return back()->withErrors(['email' => 'Invalid credentials']);
+}
+
+
+6.2 ROLE-BASED MIDDLEWARE (app/Http/Middleware/CheckRole.php)
+--------------------------------------------------------------
+public function handle($request, Closure $next, ...$roles)
+{
+    if (!auth()->check()) {
+        return redirect('login');
+    }
+
+    if (!in_array(auth()->user()->role, $roles)) {
+        abort(403, 'Unauthorized access');
+    }
+
+    return $next($request);
+}
+
+
+6.3 AUTOMATIC REQUEST NUMBER GENERATION (DeliveryRequest Model)
+----------------------------------------------------------------
+protected static function boot()
+{
+    parent::boot();
+    
+    static::creating(function ($request) {
+        if (!$request->request_number) {
+            $request->request_number = self::generateRequestNumber();
+        }
+    });
+}
+
+public static function generateRequestNumber(): string
+{
+    $prefix = 'REQ';
+    $date = date('Ymd');
+    $lastRequest = self::whereDate('created_at', today())
+        ->orderBy('id', 'desc')
+        ->first();
+    
+    $sequence = $lastRequest ? 
+        (int)substr($lastRequest->request_number, -4) + 1 : 1;
+    
+    return sprintf('%s-%s-%04d', $prefix, $date, $sequence);
+    // Example: REQ-20260107-0001
+}
+
+
+6.4 AUDIT LOGGING (app/Http/Middleware/AuditLog.php)
+-----------------------------------------------------
+public function handle($request, Closure $next)
+{
+    $response = $next($request);
+    
+    if (auth()->check() && $request->isMethod('post|put|delete')) {
+        $this->logAction($request);
+    }
+    
+    return $response;
+}
+
+protected function logAction($request)
+{
+    AuditLog::create([
+        'user_id' => auth()->id(),
+        'action' => $this->getAction($request),
+        'model_type' => $this->getModelType($request),
+        'model_id' => $this->getModelId($request),
+        'old_values' => json_encode($this->getOldValues($request)),
+        'new_values' => json_encode($request->all()),
+        'ip_address' => $request->ip(),
+        'user_agent' => $request->userAgent(),
+    ]);
+}
+
+
+6.5 TRIP ASSIGNMENT (DeliveryRequestController)
+------------------------------------------------
+public function assign(Request $request, $id)
+{
+    $deliveryRequest = DeliveryRequest::findOrFail($id);
+    
+    $validated = $request->validate([
+        'driver_id' => 'required|exists:users,id',
+        'co_driver_id' => 'nullable|exists:users,id',
+        'vehicle_id' => 'required|exists:vehicles,id',
+        'scheduled_time' => 'required|date',
+        'waybill_number' => 'required|unique:trips',
+    ]);
+    
+    // Create trip
+    $trip = Trip::create([
+        'delivery_request_id' => $deliveryRequest->id,
+        'driver_id' => $validated['driver_id'],
+        'co_driver_id' => $validated['co_driver_id'],
+        'vehicle_id' => $validated['vehicle_id'],
+        'scheduled_time' => $validated['scheduled_time'],
+        'waybill_number' => $validated['waybill_number'],
+        'status' => 'scheduled',
+    ]);
+    
+    // Update delivery request status
+    $deliveryRequest->update([
+        'status' => 'assigned',
+        'assigned_by' => auth()->id(),
+    ]);
+    
+    // Update vehicle status
+    Vehicle::find($validated['vehicle_id'])->update([
+        'status' => 'in-use'
+    ]);
+    
+    return redirect()->route('requests.show', $deliveryRequest)
+        ->with('success', 'Trip assigned successfully');
+}
+
+
+6.6 DELETION REQUEST APPROVAL (DeletionRequestController)
+----------------------------------------------------------
+public function approve($id)
+{
+    $deletionRequest = DeletionRequest::findOrFail($id);
+    
+    // Get the model to be deleted
+    $model = $deletionRequest->deletable;
+    
+    // Archive the model (soft delete)
+    $model->update(['status' => 'archived', 'archived_at' => now()]);
+    
+    // Update deletion request
+    $deletionRequest->update([
+        'status' => 'approved',
+        'reviewed_by' => auth()->id(),
+        'reviewed_at' => now(),
+    ]);
+    
+    return redirect()->route('deletion-requests.index')
+        ->with('success', 'Deletion request approved');
+}
+
+
+6.7 DELAY DETECTION JOB (app/Jobs/DetectDelayedTrips.php)
+----------------------------------------------------------
+public function handle(): void
+{
+    $delayedTrips = Trip::where('status', 'scheduled')
+        ->whereNotNull('scheduled_time')
+        ->where('scheduled_time', '<=', Carbon::now()->subMinutes(30))
+        ->where('is_delayed', false)
+        ->get();
+
+    foreach ($delayedTrips as $trip) {
+        // Mark trip as delayed
+        $trip->update([
+            'is_delayed' => true,
+            'status' => 'delayed',
+            'delay_detected_at' => now(),
+            'delay_minutes' => $trip->calculateDelayMinutes(),
+        ]);
+
+        // Mark delivery request as delayed
+        if ($trip->deliveryRequest) {
+            $trip->deliveryRequest->update([
+                'is_delayed' => true,
+                'status' => 'delayed',
+                'delay_detected_at' => now(),
+            ]);
+        }
+
+        // Send notifications
+        $this->notifyStakeholders($trip);
+    }
+}
+
+
+6.8 DASHBOARD STATISTICS (DashboardController)
+-----------------------------------------------
+public function getStats()
+{
+    $stats = [
+        'total_requests_today' => DeliveryRequest::whereDate('created_at', today())->count(),
+        'total_requests_week' => DeliveryRequest::whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])->count(),
+        'total_requests_month' => DeliveryRequest::whereMonth('created_at', now()->month)->count(),
+        
+        'active_trips' => Trip::whereIn('status', ['scheduled', 'in-transit', 'delayed'])->count(),
+        'completed_trips_today' => Trip::where('status', 'completed')->whereDate('updated_at', today())->count(),
+        
+        'available_vehicles' => Vehicle::where('status', 'available')->count(),
+        'in_use_vehicles' => Vehicle::where('status', 'in-use')->count(),
+        
+        'active_drivers' => Driver::where('employment_status', 'active')->count(),
+        
+        'pending_deletion_requests' => DeletionRequest::where('status', 'pending')->count(),
+        'delayed_trips' => Trip::where('is_delayed', true)->whereIn('status', ['delayed', 'in-transit'])->count(),
+        
+        'pending_requests' => DeliveryRequest::where('status', 'pending')->count(),
+        'verified_requests' => DeliveryRequest::where('status', 'verified')->count(),
+    ];
+    
+    return response()->json($stats);
+}
+
+
+================================================================================
+7. SCHEDULER CONFIGURATION
+================================================================================
+
+File: routes/console.php
+-------------------------
+use Illuminate\Support\Facades\Schedule;
+
+// Delay detection - runs every 5 minutes
+Schedule::job(new \App\Jobs\DetectDelayedTrips)->everyFiveMinutes();
+
+// Auto-archive old completed requests - runs daily at midnight
+Schedule::call(function () {
+    DeliveryRequest::where('status', 'completed')
+        ->where('updated_at', '<', now()->subDays(7))
+        ->update(['status' => 'archived', 'archived_at' => now()]);
+})->daily();
+
+// Check expiring licenses and send alerts - runs daily
+Schedule::call(function () {
+    $drivers = Driver::whereDate('license_expiry', '<=', now()->addDays(30))->get();
+    foreach ($drivers as $driver) {
+        // Send notification to admin
+    }
+})->daily();
+
+
+================================================================================
+8. ENVIRONMENT CONFIGURATION
+================================================================================
+
+Required .env Variables:
+------------------------
+APP_NAME="NVG Prime Movers Dispatch System"
+APP_ENV=production
+APP_KEY=base64:...
+APP_DEBUG=false
+APP_URL=https://yourdomain.com
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=dispatch_system
+DB_USERNAME=root
+DB_PASSWORD=
+
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+
+
+================================================================================
+9. INSTALLATION & DEPLOYMENT
+================================================================================
+
+Initial Setup:
+--------------
+1. Clone repository
+2. composer install
+3. npm install && npm run build
+4. cp .env.example .env
+5. php artisan key:generate
+6. Configure database in .env
+7. php artisan migrate
+8. php artisan db:seed (optional)
+
+Running the Application:
+------------------------
+Development:
+  php artisan serve
+  php artisan schedule:work (in separate terminal)
+
+Production:
+  Configure web server (Apache/Nginx)
+  Add cron job: * * * * * php artisan schedule:run
+  php artisan optimize
+  php artisan config:cache
+  php artisan route:cache
+
+
+================================================================================
+10. TECHNOLOGY STACK
+================================================================================
+
+Backend:
+- PHP 8.2+
+- Laravel 11.x
+- MySQL 8.0+
+
+Frontend:
+- Blade Templates
+- Tailwind CSS
+- Alpine.js
+- Font Awesome Icons
+
+Libraries:
+- Laravel Sanctum (API authentication)
+- Carbon (Date/Time handling)
+- Intervention Image (Image processing)
+- Laravel Excel (Report exports)
+- DomPDF (PDF generation)
+
+
+================================================================================
+DOCUMENT END
+================================================================================
+Generated: January 7, 2026
+System Version: 1.0
+

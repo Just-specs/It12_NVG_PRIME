@@ -8,6 +8,8 @@ use App\Models\Driver;
 use App\Models\Vehicle;
 use App\Models\Client;
 use App\Models\ClientNotification;
+use App\Models\User;
+use App\Models\AuditLog;
 use App\Services\DispatchService;
 use Illuminate\Http\Request;
 
@@ -24,7 +26,7 @@ class TripController extends Controller
     public function index(Request $request)
     {
         // Add 'archived' status for admin users only
-        $allowedStatuses = ['scheduled', 'in-transit', 'completed', 'cancelled'];
+        $allowedStatuses = ['scheduled', 'in-transit', 'delayed', 'completed', 'cancelled'];
         if (auth()->user()->role === 'admin') {
             $allowedStatuses[] = 'archived';
         }
@@ -738,6 +740,62 @@ class TripController extends Controller
     public function exportPdf()
     {
         return redirect()->back()->with('info', 'PDF export feature requires DomPDF package.');
+    }
+
+
+    /**
+     * Show form to provide delay reason
+     */
+    public function showDelayReasonForm(Trip $trip)
+    {
+        // Check if user is dispatcher or head_dispatch
+        if (!in_array(auth()->user()->role, ['dispatcher', 'head_dispatch', 'admin'])) {
+            abort(403, 'Only dispatchers can provide delay reasons.');
+        }
+
+        return view('dispatch.trips.delay-reason', compact('trip'));
+    }
+
+    /**
+     * Submit delay reason
+     */
+    public function submitDelayReason(Request $request, Trip $trip)
+    {
+        // Check if user is dispatcher or head_dispatch
+        if (!in_array(auth()->user()->role, ['dispatcher', 'head_dispatch', 'admin'])) {
+            abort(403, 'Only dispatchers can provide delay reasons.');
+        }
+
+        $request->validate([
+            'delay_reason' => 'required|string|min:10|max:1000',
+        ]);
+
+        $trip->update([
+            'delay_reason' => $request->delay_reason,
+            'delay_reason_by' => auth()->id(),
+        ]);
+
+        // Log to audit
+        AuditLog::create([
+            'user_id' => auth()->id(),
+            'user_name' => auth()->user()->name,
+            'action' => 'delay_reason_provided',
+            'model_type' => 'Trip',
+            'model_id' => $trip->id,
+            'description' => "Delay reason provided for Trip #{$trip->id} by " . auth()->user()->name,
+            'new_values' => [
+                'delay_reason' => $request->delay_reason,
+                'delay_reason_by' => auth()->user()->name,
+            ],
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
+
+        // Notify admin and head_dispatcher about the delay reason
+        $this->notifyDelayToAdmins($trip);
+
+        return redirect()->route('trips.show', $trip)
+            ->with('success', 'Delay reason submitted successfully.');
     }
 }
 

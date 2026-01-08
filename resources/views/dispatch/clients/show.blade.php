@@ -66,12 +66,22 @@
 
                 <!-- Actions -->
                 <div class="mt-6 space-y-2 border-t pt-4">
-                    <a href="{{ route('clients.edit', $client) }}" class="block w-full px-4 py-2 bg-[#2563EB] text-white rounded hover:bg-blue-700 text-center">
+                    @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch' || auth()->user()->role === 'dispatcher')
+                    <a href="{{ route('clients.edit', $client) }}" class="flex items-center justify-center gap-2 w-full px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors">
                         <i class="fas fa-edit"></i> Edit Client
                     </a>
-                    <a href="{{ route('clients.requests', $client) }}" class="block w-full px-4 py-2 border border-gray-300 rounded text-gray-700 hover:bg-gray-50 text-center">
+                    @endif
+                    
+                    <a href="{{ route('clients.requests', $client) }}" class="flex items-center justify-center gap-2 w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors">
                         <i class="fas fa-clipboard-list"></i> View All Requests
                     </a>
+                    
+                    @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
+        <a href="{{ route('clients.requestDelete', $client) }}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+            <i class="fas fa-trash mr-2"></i>
+            Request Delete
+        </a>
+                    @endif
                 </div>
             </div>
         </div>
@@ -103,6 +113,12 @@
 
 @push('scripts')
 <script>
+    function confirmDelete() {
+        if (confirm('Are you sure you want to delete this client? This action cannot be undone.')) {
+            document.getElementById('delete-client-form').submit();
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.querySelector('#client-recent-requests-container');
         if (!container) {
@@ -139,7 +155,7 @@
         };
 
         container.addEventListener('click', (event) => {
-            const paginationLink = event.target.closest('a[data-pagination="client-recent-requests"]');
+            const paginationLink = event.target.closest('a[data-pagination=\"client-recent-requests\"]');
             if (!paginationLink) {
                 return;
             }

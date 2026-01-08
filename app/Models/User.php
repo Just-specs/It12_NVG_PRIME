@@ -50,10 +50,10 @@ class User extends Authenticatable
         return $this->role === $role;
     }
 
-    // Check if user can verify requests (only admin - who is the head of dispatch)
+    // Check if user can verify requests (admin and head_dispatch)
     public function canVerifyRequests()
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'head_dispatch']);
     }
 
     // Check if user can assign trips (admin and dispatcher)

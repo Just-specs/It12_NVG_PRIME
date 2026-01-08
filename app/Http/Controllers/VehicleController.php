@@ -183,15 +183,78 @@ class VehicleController extends Controller
         if ($vehicle->trips()->whereIn('status', ['scheduled', 'in-transit'])->exists()) {
             return redirect()
                 ->back()
-                ->with('error', 'Cannot delete vehicle with active trips. Complete or cancel active trips first.');
+                ->with('error', 'Cannot delete vehicle with active trips. Complete trips first.');
         }
 
-        // Soft delete the vehicle (audit log is automatic via Auditable trait)
-        $vehicle->delete();
+        // If user is admin, delete directly
+        if (auth()->user()->isAdmin()) {
+            $vehicle->delete();
+            return redirect()
+                ->route('vehicles.index')
+                ->with('success', 'Vehicle deleted successfully.');
+        }
+
+        // If user is head_dispatch, create deletion request
+        if (auth()->user()->role === 'head_dispatch') {
+            return redirect()->route('vehicles.requestDelete', $vehicle);
+        }
+
+        abort(403, 'You do not have permission to delete vehicles.');
+    }
+
+    /**
+     * Show deletion request form for head_dispatch
+     */
+    public function requestDelete(Vehicle $vehicle)
+    {
+        if (!in_array(auth()->user()->role, ['admin', 'head_dispatch'])) {
+            abort(403, 'Only Admin and Head Dispatch can request deletions.');
+        }
+
+        if ($vehicle->trips()->whereIn('status', ['scheduled', 'in-transit'])->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Cannot request deletion for vehicle with active trips.');
+        }
+
+        return view('dispatch.vehicles.request-delete', compact('vehicle'));
+    }
+
+    /**
+     * Submit deletion request for admin approval
+     */
+    public function submitDeleteRequest(Request $request, Vehicle $vehicle)
+    {
+        if (!in_array(auth()->user()->role, ['admin', 'head_dispatch'])) {
+            abort(403, 'Only Admin and Head Dispatch can request deletions.');
+        }
+
+        $validated = $request->validate([
+            'reason' => 'required|string|min:10|max:500',
+        ]);
+
+        $existingRequest = \App\Models\DeletionRequest::where('resource_type', 'vehicle')
+            ->where('resource_id', $vehicle->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRequest) {
+            return redirect()
+                ->route('vehicles.index')
+                ->with('error', 'A deletion request for this vehicle is already pending approval.');
+        }
+
+        \App\Models\DeletionRequest::create([
+            'requested_by' => auth()->id(),
+            'resource_type' => 'vehicle',
+            'resource_id' => $vehicle->id,
+            'reason' => $validated['reason'],
+            'status' => 'pending',
+        ]);
 
         return redirect()
             ->route('vehicles.index')
-            ->with('success', 'Vehicle deleted successfully.');
+            ->with('success', 'Deletion request submitted to admin for approval.');
     }
 
     public function updateStatus(Request $request, Vehicle $vehicle)

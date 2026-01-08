@@ -16,6 +16,7 @@
         'all' => 'All Trips',
         'scheduled' => 'Scheduled',
         'in-transit' => 'In Transit',
+        'delayed' => 'Delayed',
         'completed' => 'Completed',
         'cancelled' => 'Cancelled',
     ];
@@ -84,7 +85,7 @@
         <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
                 <h2 class="text-2xl font-semibold text-gray-800">Trip Details</h2>
-                <p id="modal-trip-number" class="text-sm text-gray-500">Trip #â€”</p>
+                <p id="modal-trip-number" class="text-sm text-gray-500">Trip #Ã¢â‚¬â€</p>
             </div>
             <button type="button" class="text-gray-500 hover:text-gray-700" id="modal-close">
                 <i class="fas fa-times text-xl"></i>
@@ -115,11 +116,11 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <p class="text-sm text-gray-500">Client</p>
-                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">â€”</p>
+                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">Ã¢â‚¬â€</p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">ATW Reference</p>
-                                <p id="modal-atw" class="text-base font-mono font-semibold text-purple-600">â€”</p>
+                                <p id="modal-atw" class="text-base font-mono font-semibold text-purple-600">Ã¢â‚¬â€</p>
                             </div>
                         </div>
                     </div>
@@ -131,13 +132,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="p-3 bg-blue-50 rounded-lg">
                                 <p class="text-xs text-gray-500 mb-1">Driver</p>
-                                <p id="modal-driver-name" class="font-semibold text-gray-800">â€”</p>
-                                <p id="modal-driver-mobile" class="text-xs text-gray-600 mt-1">â€”</p>
+                                <p id="modal-driver-name" class="font-semibold text-gray-800">Ã¢â‚¬â€</p>
+                                <p id="modal-driver-mobile" class="text-xs text-gray-600 mt-1">Ã¢â‚¬â€</p>
                             </div>
                             <div class="p-3 bg-purple-50 rounded-lg">
                                 <p class="text-xs text-gray-500 mb-1">Vehicle</p>
-                                <p id="modal-vehicle-plate" class="font-semibold text-gray-800">â€”</p>
-                                <p id="modal-vehicle-type" class="text-xs text-gray-600 mt-1">â€”</p>
+                                <p id="modal-vehicle-plate" class="font-semibold text-gray-800">Ã¢â‚¬â€</p>
+                                <p id="modal-vehicle-type" class="text-xs text-gray-600 mt-1">Ã¢â‚¬â€</p>
                             </div>
                         </div>
                     </div>
@@ -149,29 +150,29 @@
                         <div class="space-y-3 text-sm text-gray-700">
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Container:</span>
-                                <span id="modal-container" class="font-semibold">â€”</span>
+                                <span id="modal-container" class="font-semibold">Ã¢â‚¬â€</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Pickup:</span>
                                 <span class="font-semibold text-gray-800">
                                     <i class="fas fa-map-marker-alt text-green-500 mr-1"></i>
-                                    <span id="modal-pickup">â€”</span>
+                                    <span id="modal-pickup">Ã¢â‚¬â€</span>
                                 </span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Delivery:</span>
                                 <span class="font-semibold text-gray-800">
                                     <i class="fas fa-flag-checkered text-red-500 mr-1"></i>
-                                    <span id="modal-delivery">â€”</span>
+                                    <span id="modal-delivery">Ã¢â‚¬â€</span>
                                 </span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Scheduled Time:</span>
-                                <span id="modal-scheduled" class="font-semibold">â€”</span>
+                                <span id="modal-scheduled" class="font-semibold">Ã¢â‚¬â€</span>
                             </div>
                             <div class="flex flex-wrap gap-2" id="modal-route-row" hidden>
                                 <span class="w-40 text-gray-500">Route Instructions:</span>
-                                <span id="modal-route" class="font-semibold text-gray-800">â€”</span>
+                                <span id="modal-route" class="font-semibold text-gray-800">Ã¢â‚¬â€</span>
                             </div>
                         </div>
                     </div>
@@ -187,7 +188,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Trip Created</p>
-                                    <p id="modal-created-time" class="text-xs text-gray-500">â€”</p>
+                                    <p id="modal-created-time" class="text-xs text-gray-500">Ã¢â‚¬â€</p>
                                 </div>
                             </div>
                             <div id="modal-start-timeline" class="flex items-start space-x-3 hidden">
@@ -196,7 +197,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Trip Started</p>
-                                    <p id="modal-start-time" class="text-xs text-gray-500">â€”</p>
+                                    <p id="modal-start-time" class="text-xs text-gray-500">Ã¢â‚¬â€</p>
                                 </div>
                             </div>
                             <div id="modal-complete-timeline" class="flex items-start space-x-3 hidden">
@@ -205,7 +206,7 @@
                                 </div>
                                 <div>
                                     <p class="text-sm font-semibold text-gray-800">Trip Completed</p>
-                                    <p id="modal-complete-time" class="text-xs text-gray-500">â€”</p>
+                                    <p id="modal-complete-time" class="text-xs text-gray-500">Ã¢â‚¬â€</p>
                                 </div>
                             </div>
                         </div>
@@ -424,7 +425,7 @@
 
         const statusClasses = {
             scheduled: ['bg-gray-100', 'text-gray-800'],
-            'in-transit': ['bg-blue-100', 'text-blue-800'],
+            'in-transit': ['bg-gradient-to-r', 'from-blue-500', 'to-indigo-600', 'text-white', 'shadow-lg', 'font-bold', ''],
             completed: ['bg-green-100', 'text-green-800'],
             cancelled: ['bg-red-100', 'text-red-800']
         };

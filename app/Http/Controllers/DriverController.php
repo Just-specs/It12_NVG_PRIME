@@ -13,7 +13,7 @@ class DriverController extends Controller
         $allowedStatuses = ['available', 'on-trip', 'off-duty'];
         $activeStatus = $request->query('status', 'all');
 
-        $driversQuery = Driver::withCount('trips');
+        $driversQuery = Driver::query()->withCount('trips');
 
         // Search functionality
         $search = $request->query('search');
@@ -75,7 +75,11 @@ class DriverController extends Controller
 
     public function create()
     {
-        return view('dispatch.drivers.create');
+        $availableDrivers = Driver::where('status', '!=', 'off-duty')
+            ->orderBy('name')
+            ->get(['id', 'name', 'status']);
+        
+        return view('dispatch.drivers.create', compact('availableDrivers'));
     }
 
     public function store(Request $request)
@@ -84,9 +88,29 @@ class DriverController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
             'license_number' => 'required|string|max:50|unique:drivers,license_number',
+            
             'status' => 'sometimes|in:available,on-trip,off-duty',
             'confirm_duplicate' => 'nullable|boolean',
         ]);
+
+        // Normalize name (remove accents, convert to uppercase)
+        $normalizedName = strtoupper($this->normalizeString($validated['name']));
+        
+        // Check for duplicate driver name (normalized)
+        $existingDriver = Driver::whereRaw('UPPER(REPLACE(REPLACE(name, "Ñ", "N"), "ñ", "n")) = ?', [$normalizedName])->first();
+        
+        if ($existingDriver && !$request->input('confirm_duplicate')) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'requires_confirmation' => true,
+                    'similar_drivers' => [['id' => $existingDriver->id, 'name' => $existingDriver->name, 'license_number' => $existingDriver->license_number]],
+                    'message' => 'A driver with this name already exists. Do you want to proceed anyway?'
+                ], 200);
+            }
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'A driver named "' . $existingDriver->name . '" already exists.');
+        }
 
         // Check for similar names or license numbers unless user confirmed
         if (!$request->input('confirm_duplicate')) {
@@ -120,6 +144,15 @@ class DriverController extends Controller
             ->route('drivers.show', $driver)
             ->with('success', 'Driver added successfully.');
     }
+    
+    /**
+     * Normalize string by removing accents and special characters
+     */
+    private function normalizeString($string)
+    {
+        $string = str_replace(['Ñ', 'ñ'], 'N', $string);
+        return preg_replace('/[^A-Za-z0-9\s\-]/', '', $string);
+    }
 
     public function show(Driver $driver)
     {
@@ -143,7 +176,12 @@ class DriverController extends Controller
     
     public function edit(Driver $driver)
     {
-        return view('dispatch.drivers.edit', compact('driver'));
+        $availableDrivers = Driver::where('status', '!=', 'off-duty')
+            ->where('id', '!=', $driver->id)
+            ->orderBy('name')
+            ->get(['id', 'name', 'status']);
+        
+        return view('dispatch.drivers.edit', compact('driver', 'availableDrivers'));
     }
 
     public function update(Request $request, Driver $driver)
@@ -152,8 +190,11 @@ class DriverController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
             'license_number' => 'required|string|max:50',
+            
             'confirm_duplicate' => 'nullable|boolean',
         ]);
+        
+
 
         // Check for similar names or license numbers unless user confirmed (excluding current driver)
         if (!$request->input('confirm_duplicate')) {
@@ -192,12 +233,80 @@ class DriverController extends Controller
                 ->with('error', 'Cannot delete driver with active trips. Complete or cancel active trips first.');
         }
 
-        // Soft delete the driver (audit log is automatic via Auditable trait)
-        $driver->delete();
+        // If user is admin, delete directly
+        if (auth()->user()->isAdmin()) {
+            $driver->delete();
+            return redirect()
+                ->route('drivers.index')
+                ->with('success', 'Driver deleted successfully.');
+        }
+
+        // If user is head_dispatch, create deletion request
+        if (auth()->user()->role === 'head_dispatch') {
+            return redirect()->route('drivers.requestDelete', $driver);
+        }
+
+        // Otherwise, unauthorized
+        abort(403, 'You do not have permission to delete drivers.');
+    }
+
+    /**
+     * Show deletion request form for head_dispatch
+     */
+    public function requestDelete(Driver $driver)
+    {
+        // Only head_dispatch can request deletion
+        if (!in_array(auth()->user()->role, ['admin', 'head_dispatch'])) {
+            abort(403, 'Only Admin and Head Dispatch can request deletions.');
+        }
+
+        // Check if driver has active trips
+        if ($driver->trips()->whereIn('status', ['scheduled', 'in-transit'])->exists()) {
+            return redirect()
+                ->back()
+                ->with('error', 'Cannot request deletion for driver with active trips.');
+        }
+
+        return view('dispatch.drivers.request-delete', compact('driver'));
+    }
+
+    /**
+     * Submit deletion request for admin approval
+     */
+    public function submitDeleteRequest(Request $request, Driver $driver)
+    {
+        // Only head_dispatch can submit deletion requests
+        if (!in_array(auth()->user()->role, ['admin', 'head_dispatch'])) {
+            abort(403, 'Only Admin and Head Dispatch can request deletions.');
+        }
+
+        $validated = $request->validate([
+            'reason' => 'required|string|min:10|max:500',
+        ]);
+
+        // Check for existing pending request
+        $existingRequest = \App\Models\DeletionRequest::where('resource_type', 'driver')
+            ->where('resource_id', $driver->id)
+            ->where('status', 'pending')
+            ->first();
+
+        if ($existingRequest) {
+            return redirect()
+                ->route('drivers.index')
+                ->with('error', 'A deletion request for this driver is already pending approval.');
+        }
+
+        \App\Models\DeletionRequest::create([
+            'requested_by' => auth()->id(),
+            'resource_type' => 'driver',
+            'resource_id' => $driver->id,
+            'reason' => $validated['reason'],
+            'status' => 'pending',
+        ]);
 
         return redirect()
             ->route('drivers.index')
-            ->with('success', 'Driver deleted successfully.');
+            ->with('success', 'Deletion request submitted to admin for approval.');
     }
 
     public function setAvailable(Driver $driver)
@@ -322,6 +431,66 @@ class DriverController extends Controller
             ->route('drivers.deleted')
             ->with('success', 'Driver permanently deleted.');
     }
+
+    /**
+     * Show co-driver management page
+     */
+    public function manageCoDrivers(Driver $driver)
+    {
+        $driver->load(['coDrivers', 'driversHavingAsCoDriver']);
+        $availableDrivers = Driver::where('id', '!=', $driver->id)
+            ->where('status', 'available')
+            ->get();
+        
+        return view('dispatch.drivers.co-drivers', compact('driver', 'availableDrivers'));
+    }
+    
+    /**
+     * Add a co-driver
+     */
+    public function addCoDriver(Request $request, Driver $driver)
+    {
+        $validated = $request->validate([
+            'co_driver_id' => 'required|exists:drivers,id',
+        ]);
+        
+        $coDriverId = $validated['co_driver_id'];
+        
+        // Cannot be co-driver with themselves
+        if ($coDriverId == $driver->id) {
+            return redirect()
+                ->back()
+                ->with('error', 'A driver cannot be a co-driver with themselves.');
+        }
+        
+        // Check if already co-drivers
+        if ($driver->hasCoDriver($coDriverId)) {
+            return redirect()
+                ->back()
+                ->with('error', 'This driver is already a co-driver.');
+        }
+        
+        // Add co-driver relationship
+        $driver->coDrivers()->attach($coDriverId);
+        
+        $coDriver = Driver::find($coDriverId);
+        
+        return redirect()
+            ->back()
+            ->with('success', $coDriver->name . ' has been added as a co-driver.');
+    }
+    
+    /**
+     * Remove a co-driver
+     */
+    public function removeCoDriver(Driver $driver, Driver $coDriver)
+    {
+        // Remove the relationship from both directions
+        $driver->coDrivers()->detach($coDriver->id);
+        $driver->driversHavingAsCoDriver()->detach($coDriver->id);
+        
+        return redirect()
+            ->back()
+            ->with('success', $coDriver->name . ' has been removed as a co-driver.');
+    }
 }
-
-

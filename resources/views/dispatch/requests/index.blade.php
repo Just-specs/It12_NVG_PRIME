@@ -86,7 +86,7 @@
         <div class="flex justify-between items-center px-6 py-4 border-b border-gray-200 bg-gray-50">
             <div>
                 <h2 class="text-2xl font-semibold text-gray-800">Request Details</h2>
-                <p id="modal-created" class="text-sm text-gray-500">Created â€”</p>
+                <p id="modal-created" class="text-sm text-gray-500">Created ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</p>
             </div>
             <button type="button" class="text-gray-500 hover:text-gray-700" id="modal-close">
                 <i class="fas fa-times text-xl"></i>
@@ -109,13 +109,13 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <p class="text-sm text-gray-500">Client Name</p>
-                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">â€”</p>
+                                <p id="modal-client-name" class="text-base font-semibold text-gray-800">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</p>
                             </div>
                             <div>
                                 <p class="text-sm text-gray-500">Contact Method</p>
                                 <p class="text-base font-semibold text-gray-800">
                                     <i id="modal-contact-icon" class="fas fa-envelope mr-2"></i>
-                                    <span id="modal-contact-method">â€”</span>
+                                    <span id="modal-contact-method">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
                                 </p>
                             </div>
                         </div>
@@ -128,34 +128,34 @@
                         <div class="space-y-3 text-sm text-gray-700">
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">ATW Reference:</span>
-                                <span id="modal-atw" class="font-semibold">â€”</span>
-                                <span id="modal-atw-status" class="text-xs font-semibold px-2 py-1 rounded-full">â€”</span>
+                                <span id="modal-atw" class="font-semibold">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
+                                <span id="modal-atw-status" class="text-xs font-semibold px-2 py-1 rounded-full">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Container:</span>
-                                <span id="modal-container" class="font-semibold">â€”</span>
+                                <span id="modal-container" class="font-semibold">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Pickup:</span>
                                 <span class="font-semibold text-gray-800">
                                     <i class="fas fa-map-marker-alt text-green-500 mr-1"></i>
-                                    <span id="modal-pickup">â€”</span>
+                                    <span id="modal-pickup">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
                                 </span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Delivery:</span>
                                 <span class="font-semibold text-gray-800">
                                     <i class="fas fa-flag-checkered text-red-500 mr-1"></i>
-                                    <span id="modal-delivery">â€”</span>
+                                    <span id="modal-delivery">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
                                 </span>
                             </div>
                             <div class="flex flex-wrap gap-2">
                                 <span class="w-40 text-gray-500">Schedule:</span>
-                                <span id="modal-schedule" class="font-semibold">â€”</span>
+                                <span id="modal-schedule" class="font-semibold">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
                             </div>
                             <div class="flex flex-wrap gap-2" id="modal-notes-row" hidden>
                                 <span class="w-40 text-gray-500">Notes:</span>
-                                <span id="modal-notes" class="font-semibold text-gray-800">â€”</span>
+                                <span id="modal-notes" class="font-semibold text-gray-800">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span>
                             </div>
                         </div>
                     </div>
@@ -170,7 +170,7 @@
                             </div>
                             <div>
                                 <p class="text-sm font-semibold text-gray-800">Request Created</p>
-                                <p id="modal-timeline" class="text-xs text-gray-500">â€”</p>
+                                <p id="modal-timeline" class="text-xs text-gray-500">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</p>
                             </div>
                         </div>
                     </div>
@@ -178,8 +178,8 @@
                         <h4 class="text-sm font-semibold text-gray-700 mb-3">Actions</h4>
                         <div class="space-y-3">
                             <div>
-                                <p class="text-xs text-gray-500">Viewing request #<span id="modal-request-id">â€”</span></p>
-                                <p class="text-xs text-gray-500">ATW Status: <span id="modal-atw-status-text" class="font-semibold">â€”</span></p>
+                                <p class="text-xs text-gray-500">Viewing request #<span id="modal-request-id">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span></p>
+                                <p class="text-xs text-gray-500">ATW Status: <span id="modal-atw-status-text" class="font-semibold">ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â</span></p>
                             </div>
                             <button id="modal-verify-atw"
                                 type="button"
@@ -368,7 +368,7 @@
 
         const statusClasses = {
             pending: ['bg-yellow-100', 'text-yellow-800'],
-            verified: ['bg-green-100', 'text-green-800'],
+            verified: ['bg-gradient-to-r', 'from-emerald-400', 'to-teal-500', 'text-white', 'shadow-md', 'font-bold'],
             assigned: ['bg-blue-100', 'text-blue-800'],
             completed: ['bg-gray-100', 'text-gray-800']
         };
@@ -450,16 +450,7 @@
             statusElement.textContent = status.replace('_', ' ');
         };
 
-        const updateAtwStatusBadge = (badgeElement, isVerified) => {
-            badgeElement.className = 'text-xs font-semibold px-2 py-1 rounded-full';
-            if (isVerified) {
-                badgeElement.classList.add('bg-green-100', 'text-green-700');
-                badgeElement.innerHTML = '<i class="fas fa-check-circle mr-1"></i> Verified';
-            } else {
-                badgeElement.classList.add('bg-yellow-100', 'text-yellow-700');
-                badgeElement.innerHTML = '<i class="fas fa-exclamation-circle mr-1"></i> Pending Verification';
-            }
-        };
+
 
         const handleViewClick = (event) => {
             const button = event.currentTarget;
@@ -470,9 +461,7 @@
             modalContactMethod.textContent = button.dataset.contactMethodLabel;
             modalContactIcon.className = `fas ${contactIcons[contactMethod] || 'fa-envelope'} mr-2`;
             modalAtw.textContent = button.dataset.atwReference;
-            const isVerified = button.dataset.atwVerified === '1';
-            updateAtwStatusBadge(modalAtwStatus, isVerified);
-            modalAtwStatusText.textContent = isVerified ? 'Verified' : 'Pending Verification';
+            
             modalContainer.textContent = `${button.dataset.containerSize} - ${button.dataset.containerType}`;
             modalPickup.textContent = button.dataset.pickup;
             modalDelivery.textContent = button.dataset.delivery;

@@ -107,7 +107,7 @@
                             <p><strong>Trip Status:</strong>
                                 <span class="px-2 py-1 text-xs rounded-full
                                             {{ $notification->trip->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                                               ($notification->trip->status === 'in-transit' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800') }}">
+                                               ($notification->trip->status === 'in-transit' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md font-bold' : 'bg-gray-100 text-gray-800') }}">
                                     {{ ucfirst($notification->trip->status) }}
                                 </span>
                             </p>

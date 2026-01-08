@@ -18,13 +18,27 @@
                     <i class="far fa-clock text-gray-400"></i> {{ $trip->scheduled_time->format('h:i A') }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{ $trip->driver->name }}</div>
+                    <div class="text-sm font-medium text-gray-900">
+                        @if($trip->driver)
+                            {{ $trip->driver->name }}
+                        @else
+                            <span class="text-red-500">Driver Deleted</span>
+                        @endif
+                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {{ $trip->vehicle->plate_number }}
+                    @if($trip->vehicle)
+                        {{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}
+                    @else
+                        <span class="text-red-500">Vehicle Deleted</span>
+                    @endif
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                    {{ $trip->deliveryRequest->client->name }}
+                    @if($trip->deliveryRequest && $trip->deliveryRequest->client)
+                        {{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}
+                    @else
+                        <span class="text-red-500">Client Deleted</span>
+                    @endif
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">
                     <div class="max-w-xs">
@@ -38,7 +52,7 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-3 py-1 rounded-full text-xs font-semibold
                         {{ $trip->status === 'scheduled' ? 'bg-gray-100 text-gray-800' : '' }}
-                        {{ $trip->status === 'in-transit' ? 'bg-blue-100 text-blue-800' : '' }}
+                        {{ $trip->status === 'in-transit' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md font-bold' : '' }}
                         {{ $trip->status === 'completed' ? 'bg-green-100 text-green-800' : '' }}">
                         {{ ucfirst($trip->status) }}
                     </span>

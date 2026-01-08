@@ -1,0 +1,7 @@
+tunnel: my-localhost
+credentials-file: C:\Users\justin\.cloudflared\TUNNEL-ID.json
+
+ingress:
+  - hostname: dev.nvgprimemovers.dpdns.org
+    service: http://localhost:8000
+  - service: http_status:404

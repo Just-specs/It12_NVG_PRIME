@@ -142,7 +142,7 @@
                         </td>
                         <td class="px-6 py-4">
                             <div class="text-sm font-medium text-gray-900">
-                                {{ $trip->deliveryRequest->client->name }}
+                                {{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}
                             </div>
                             @if($trip->deliveryRequest->client->company)
                             <div class="text-xs text-gray-500">
@@ -153,7 +153,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <a href="{{ route('trips.show', $trip) }}"
                                 class="text-sm text-blue-600 hover:text-blue-800 font-medium">
-                                {{ $trip->deliveryRequest->atw_reference }}
+                                {{ $trip->deliveryRequest?->atw_reference ?? 'N/A' }}
                             </a>
                         </td>
                         <td class="px-6 py-4">
@@ -176,12 +176,12 @@
                             {{ $trip->driver->name }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $trip->vehicle->plate_number }}
+                            {{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="px-3 py-1 text-xs font-semibold rounded-full
                                         {{ $trip->status === 'completed' ? 'bg-green-100 text-green-800' : 
-                                           ($trip->status === 'in-transit' ? 'bg-blue-100 text-blue-800' : 
+                                           ($trip->status === 'in-transit' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md font-bold' : 
                                            ($trip->status === 'cancelled' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800')) }}">
                                 {{ ucfirst($trip->status) }}
                             </span>

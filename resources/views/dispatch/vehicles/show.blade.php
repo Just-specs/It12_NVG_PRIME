@@ -130,11 +130,11 @@
                         @foreach($vehicle->trips as $trip)
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3 font-semibold text-blue-600">#{{ $trip->id }}</td>
-                            <td class="px-4 py-3">{{ $trip->deliveryRequest->atw_reference }}</td>
-                            <td class="px-4 py-3">{{ $trip->deliveryRequest->client->name }}</td>
+                            <td class="px-4 py-3">{{ $trip->deliveryRequest?->atw_reference ?? 'N/A' }}</td>
+                            <td class="px-4 py-3">{{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}</td>
                             <td class="px-4 py-3">{{ $trip->driver->name }}</td>
                             <td class="px-4 py-3 text-xs">
-                                {{ Str::limit($trip->deliveryRequest->pickup_location, 15) }} → 
+                                {{ Str::limit($trip->deliveryRequest->pickup_location, 15) }} â†’ 
                                 {{ Str::limit($trip->deliveryRequest->delivery_location, 15) }}
                             </td>
                             <td class="px-4 py-3">{{ $trip->scheduled_time->format('M d, Y') }}</td>
@@ -182,13 +182,10 @@
                 <i class="fas fa-edit mr-2"></i>Edit Vehicle
             </a>
             
-            <form method="POST" action="{{ route('vehicles.destroy', $vehicle) }}" class="inline" onsubmit="return confirm('Are you sure you want to delete this vehicle?');">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg transition">
-                    <i class="fas fa-trash mr-2"></i>Delete
-                </button>
-            </form>
+            <a href="{{ route('vehicles.requestDelete', $vehicle) }}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+                <i class="fas fa-trash mr-2"></i>
+                Request Delete
+            </a>
         </div>
     </div>
 </div>

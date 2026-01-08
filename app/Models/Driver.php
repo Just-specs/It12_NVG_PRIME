@@ -9,7 +9,7 @@ use App\Traits\Auditable;
 class Driver extends Model
 {
     use SoftDeletes, Auditable;
-    protected $fillable = ['name', 'mobile', 'license_number', 'status', 'deleted_by'];
+    protected $fillable = ['name', 'mobile', 'license_number',  'status', 'deleted_by'];
 
     public function trips()
     {
@@ -56,7 +56,30 @@ class Driver extends Model
         
         return $query->get(['id', 'name', 'mobile', 'license_number', 'status'])->toArray();
     }
+    // Co-driver relationships (many-to-many)
+    public function coDrivers()
+    {
+        return $this->belongsToMany(Driver::class, 'co_drivers', 'driver_id', 'co_driver_id')
+            ->withTimestamps();
+    }
+    
+    // Inverse relationship - drivers who have this driver as co-driver
+    public function driversHavingAsCoDriver()
+    {
+        return $this->belongsToMany(Driver::class, 'co_drivers', 'co_driver_id', 'driver_id')
+            ->withTimestamps();
+    }
+    
+    // Get all co-driver relationships (both directions)
+    public function getAllCoDrivers()
+    {
+        return $this->coDrivers->merge($this->driversHavingAsCoDriver)->unique('id');
+    }
+    
+    // Check if this driver has a specific co-driver
+    public function hasCoDriver($driverId)
+    {
+        return $this->coDrivers->contains('id', $driverId) || 
+               $this->driversHavingAsCoDriver->contains('id', $driverId);
+    }
 }
-
-
-

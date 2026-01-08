@@ -10,3 +10,6 @@ Artisan::command('inspire', function () {
 
 // Schedule automatic archiving of overdue requests and trips
 Schedule::command('archive:overdue')->daily();
+
+// Check for delayed trips every 5 minutes
+Schedule::job(new \App\Jobs\DetectDelayedTrips)->everyFiveMinutes();

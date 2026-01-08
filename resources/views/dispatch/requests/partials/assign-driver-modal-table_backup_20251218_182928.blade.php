@@ -1,4 +1,4 @@
-﻿<!-- Assign Driver Modal (Reusable) -->
+<!-- Assign Driver Modal (Reusable) -->
 <div id="assign-driver-modal-table" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
     <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8">
         <!-- Modal Header -->

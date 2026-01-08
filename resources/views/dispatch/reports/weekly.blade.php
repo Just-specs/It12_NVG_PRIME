@@ -116,18 +116,18 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-4 py-3">
                                 <a href="{{ route('trips.show', $trip) }}" class="text-blue-600 hover:underline">
-                                    {{ $trip->deliveryRequest->atw_reference }}
+                                    {{ $trip->deliveryRequest?->atw_reference ?? 'N/A' }}
                                 </a>
                             </td>
-                            <td class="px-4 py-3">{{ $trip->deliveryRequest->client->name }}</td>
+                            <td class="px-4 py-3">{{ $trip->deliveryRequest?->client?->name ?? 'N/A' }}</td>
                             <td class="px-4 py-3">{{ $trip->driver->name }}</td>
-                            <td class="px-4 py-3">{{ $trip->vehicle->plate_number }}</td>
+                            <td class="px-4 py-3">{{ $trip->vehicle ? $trip->vehicle->plate_number : 'N/A' }}</td>
                             <td class="px-4 py-3">{{ $trip->scheduled_time->format('h:i A') }}</td>
                             <td class="px-4 py-3">
                                 @php
                                 $statusColors = [
                                 'scheduled' => 'bg-blue-100 text-blue-800',
-                                'in-transit' => 'bg-yellow-100 text-yellow-800',
+                                'in-transit' => 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md font-bold',
                                 'completed' => 'bg-green-100 text-green-800',
                                 'cancelled' => 'bg-red-100 text-red-800',
                                 ];

@@ -7,7 +7,7 @@
         </div>
         <span class="px-3 py-1 rounded-full text-xs font-semibold
             {{ $request->status === 'pending' ? 'bg-yellow-100 text-yellow-800' : '' }}
-            {{ $request->status === 'verified' ? 'bg-green-100 text-green-800' : '' }}
+            {{ $request->status === 'verified' ? 'bg-gradient-to-r from-emerald-400 to-teal-500 text-white shadow-md font-bold' : '' }}
             {{ $request->status === 'assigned' ? 'bg-blue-100 text-blue-800' : '' }}
             {{ $request->status === 'completed' ? 'bg-gray-100 text-gray-800' : '' }}">
             {{ ucfirst($request->status) }}
