@@ -175,14 +175,10 @@
                         </button>
                     </div>
 
-                    <!-- Removed Register Link - Only Admins Can Create Accounts -->
-                    <!-- <p class="text-center text-sm text-blue-700 italic">
+                    
+                    <p class="text-center text-sm text-blue-700 italic">
                         Contact your administrator for account access
-                    </p> -->
-                    <a href="{{ Route::has('register') ? route('register') : '#' }}"
-                        class="block text-center text-sm text-blue-700 italic transition hover:text-blue-900 hover:underline">
-                        Sign in here if you have an account
-                    </a>
+                    </p>
                 </form>
             </div>
         </div>
