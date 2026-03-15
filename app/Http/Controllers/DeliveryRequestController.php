@@ -423,7 +423,7 @@ class DeliveryRequestController extends Controller
         $deliveryRequest->update($validated);
 
         return redirect()
-            ->route('requests.show', $request)
+            ->route('requests.index')
             ->with('success', 'Request updated successfully.');
     }
 

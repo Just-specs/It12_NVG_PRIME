@@ -62,9 +62,33 @@
                         </button>
                         @endif
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
-                        <a href="{{ route('requests.edit', $request) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" title="Edit Request">
+                        <button
+                            type="button"
+                            onclick="event.stopPropagation(); openEditRequestModal(this);"
+                            class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors edit-request-btn"
+                            title="Edit Request"
+                            data-request-id="{{ $request->id }}"
+                            data-update-url="{{ route('requests.update', $request) }}"
+                            data-client-id="{{ $request->client_id }}"
+                            data-contact-method="{{ $request->contact_method }}"
+                            data-atw-reference="{{ $request->atw_reference }}"
+                            data-eir-number="{{ $request->eir_number ?? '' }}"
+                            data-booking-number="{{ $request->booking_number ?? '' }}"
+                            data-container-number="{{ $request->container_number ?? '' }}"
+                            data-seal-number="{{ $request->seal_number ?? '' }}"
+                            data-pickup-location="{{ $request->pickup_location }}"
+                            data-delivery-location="{{ $request->delivery_location }}"
+                            data-container-size="{{ $request->container_size }}"
+                            data-container-type="{{ $request->container_type }}"
+                            data-shipping-line="{{ $request->shipping_line ?? '' }}"
+                            data-shipper-name="{{ $request->shipper_name ?? '' }}"
+                            data-container-status="{{ $request->container_status ?? 'loaded' }}"
+                            data-eir-time="{{ $request->eir_time ?? '' }}"
+                            data-preferred-schedule="{{ $request->preferred_schedule->format('Y-m-d\TH:i') }}"
+                            data-notes="{{ $request->notes ?? '' }}"
+                        >
                             <i class="fas fa-edit"></i>
-                        </a>
+                        </button>
                         @endif
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
                         <a href="{{ route('requests.requestDelete', $request) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Request Delete">

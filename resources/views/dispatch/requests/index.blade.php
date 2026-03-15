@@ -923,6 +923,299 @@
 
 @endpush
 
+<!-- Edit Request Modal -->
+<div id="edit-request-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-edit text-blue-600"></i> Edit Delivery Request
+            </h2>
+            <button type="button" id="close-edit-modal" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form id="modal-edit-request-form" method="POST" action="">
+                @csrf
+                @method('PUT')
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Client -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Client <span class="text-red-500">*</span>
+                        </label>
+                        <select id="edit-client-id" name="client_id" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select Client</option>
+                            @foreach(\App\Models\Client::orderBy('name')->get() as $client)
+                            <option value="{{ $client->id }}">{{ $client->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Contact Method -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Contact Method <span class="text-red-500">*</span>
+                        </label>
+                        <select id="edit-contact-method" name="contact_method" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="mobile">Mobile Call</option>
+                            <option value="group_chat">Group Chat</option>
+                            <option value="email">Email</option>
+                        </select>
+                    </div>
+
+                    <!-- ATW Reference -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            ATW Reference <span class="text-red-500">*</span>
+                        </label>
+                        <input id="edit-atw-reference" type="text" name="atw_reference" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter ATW reference number">
+                    </div>
+
+                    <!-- Pickup Location -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Pickup Location <span class="text-red-500">*</span>
+                        </label>
+                        <input id="edit-pickup-location" type="text" name="pickup_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter pickup location">
+                    </div>
+
+                    <!-- Delivery Location -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Delivery Location <span class="text-red-500">*</span>
+                        </label>
+                        <input id="edit-delivery-location" type="text" name="delivery_location" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter delivery location">
+                    </div>
+
+                    <!-- Container Size -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Container Size <span class="text-red-500">*</span>
+                        </label>
+                        <select id="edit-container-size" name="container_size" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="20ft">20ft</option>
+                            <option value="40ft">40ft</option>
+                            <option value="40ft HC">40ft HC</option>
+                        </select>
+                    </div>
+
+                    <!-- Container Type -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Container Type <span class="text-red-500">*</span>
+                        </label>
+                        <select id="edit-container-type" name="container_type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="standard">Standard</option>
+                            <option value="refrigerated">Refrigerated</option>
+                            <option value="open_top">Open Top</option>
+                            <option value="flat_rack">Flat Rack</option>
+                        </select>
+                    </div>
+
+                    <!-- Shipping Line -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Shipping Line</label>
+                        <select id="edit-shipping-line" name="shipping_line" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">-- Select Shipping Line --</option>
+                            <option value="WANHAI">WANHAI</option>
+                            <option value="CMA">CMA</option>
+                            <option value="COSCO">COSCO</option>
+                            <option value="EVERGREEN">EVERGREEN</option>
+                            <option value="MCC">MCC</option>
+                            <option value="ONE">ONE</option>
+                            <option value="OOCL">OOCL</option>
+                            <option value="SITC">SITC</option>
+                            <option value="MAERSK">MAERSK</option>
+                            <option value="MSC">MSC</option>
+                            <option value="YANGMING">YANGMING</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+
+                    <!-- Shipper Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Shipper Name</label>
+                        <input id="edit-shipper-name" type="text" name="shipper_name" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Shipper company name">
+                    </div>
+
+                    <!-- Container Status -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Container Status</label>
+                        <select id="edit-container-status" name="container_status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="loaded">Loaded</option>
+                            <option value="empty">Empty</option>
+                            <option value="return">Return</option>
+                        </select>
+                    </div>
+
+                    <!-- Booking Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Booking Number</label>
+                        <input id="edit-booking-number" type="text" name="booking_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Shipping booking reference">
+                    </div>
+
+                    <!-- Container Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Container Number</label>
+                        <input id="edit-container-number" type="text" name="container_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="e.g., WHSU 816908-2">
+                    </div>
+
+                    <!-- EIR Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">EIR Number</label>
+                        <input id="edit-eir-number" type="text" name="eir_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Equipment Interchange Receipt number">
+                    </div>
+
+                    <!-- EIR Time -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">EIR Time</label>
+                        <input id="edit-eir-time" type="time" name="eir_time" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Seal Number -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Seal Number</label>
+                        <input id="edit-seal-number" type="text" name="seal_number" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Security seal number">
+                    </div>
+
+                    <!-- Preferred Schedule -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Preferred Schedule <span class="text-red-500">*</span>
+                        </label>
+                        <input id="edit-preferred-schedule" type="datetime-local" name="preferred_schedule" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <!-- Notes -->
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Additional Notes</label>
+                        <textarea id="edit-notes" name="notes" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Any special instructions or notes"></textarea>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+                    <button type="button" id="cancel-edit-request" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                        Cancel
+                    </button>
+                    <button type="button" id="open-edit-confirm-modal" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                        <i class="fas fa-save mr-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Confirm Modal -->
+<div id="edit-confirm-modal" class="fixed inset-0 z-[60] hidden" role="dialog" aria-modal="true">
+    <div class="flex min-h-full items-center justify-center bg-black/50 px-4">
+        <div class="w-full max-w-sm rounded-2xl bg-white p-8 space-y-6 shadow-2xl">
+            <div class="space-y-2 text-center">
+                <h3 class="text-2xl font-semibold text-[#1E40AF]">Save Changes</h3>
+                <p class="text-sm text-gray-600">Are you sure you want to update this request?</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <button id="edit-confirm-no" type="button"
+                    class="px-6 py-3 rounded-full text-base font-semibold text-white bg-red-500 hover:bg-red-600 focus:outline-none transition">
+                    Cancel
+                </button>
+                <button id="edit-confirm-yes" type="button"
+                    class="px-6 py-3 rounded-full text-base font-semibold text-white bg-[#1E40AF] hover:bg-[#1A36A0] focus:outline-none transition">
+                    Confirm
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openEditRequestModal(button) {
+        const d = button.dataset;
+        const modal     = document.getElementById('edit-request-modal');
+        const form      = document.getElementById('modal-edit-request-form');
+
+        // Set form action for PUT
+        form.setAttribute('action', d.updateUrl);
+
+        // Populate fields
+        document.getElementById('edit-client-id').value           = d.clientId;
+        document.getElementById('edit-contact-method').value      = d.contactMethod;
+        document.getElementById('edit-atw-reference').value       = d.atwReference;
+        document.getElementById('edit-pickup-location').value     = d.pickupLocation;
+        document.getElementById('edit-delivery-location').value   = d.deliveryLocation;
+        document.getElementById('edit-container-size').value      = d.containerSize;
+        document.getElementById('edit-container-type').value      = d.containerType;
+        document.getElementById('edit-shipping-line').value       = d.shippingLine;
+        document.getElementById('edit-shipper-name').value        = d.shipperName;
+        document.getElementById('edit-container-status').value    = d.containerStatus;
+        document.getElementById('edit-booking-number').value      = d.bookingNumber;
+        document.getElementById('edit-container-number').value    = d.containerNumber;
+        document.getElementById('edit-eir-number').value          = d.eirNumber;
+        document.getElementById('edit-eir-time').value            = d.eirTime;
+        document.getElementById('edit-seal-number').value         = d.sealNumber;
+        document.getElementById('edit-preferred-schedule').value  = d.preferredSchedule;
+        document.getElementById('edit-notes').value               = d.notes;
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        document.body.style.overflow = 'hidden';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const modal          = document.getElementById('edit-request-modal');
+        const closeBtn       = document.getElementById('close-edit-modal');
+        const cancelBtn      = document.getElementById('cancel-edit-request');
+        const form           = document.getElementById('modal-edit-request-form');
+        const openConfirmBtn = document.getElementById('open-edit-confirm-modal');
+        const confirmModal   = document.getElementById('edit-confirm-modal');
+        const confirmYes     = document.getElementById('edit-confirm-yes');
+        const confirmNo      = document.getElementById('edit-confirm-no');
+
+        const hideModal = () => {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = '';
+        };
+
+        const hideConfirm = () => {
+            confirmModal.classList.add('hidden');
+            confirmModal.classList.remove('flex');
+        };
+
+        closeBtn?.addEventListener('click', hideModal);
+        cancelBtn?.addEventListener('click', hideModal);
+
+        modal.addEventListener('click', (e) => { if (e.target === modal) hideModal(); });
+
+        openConfirmBtn?.addEventListener('click', () => {
+            if (!form.checkValidity()) { form.reportValidity(); return; }
+            confirmModal.classList.remove('hidden');
+            confirmModal.classList.add('flex');
+            confirmYes?.focus({ preventScroll: true });
+        });
+
+        confirmNo?.addEventListener('click', hideConfirm);
+        confirmModal?.addEventListener('click', (e) => { if (e.target === confirmModal) hideConfirm(); });
+
+        confirmYes?.addEventListener('click', () => {
+            hideConfirm();
+            form.submit();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key !== 'Escape') return;
+            if (confirmModal && !confirmModal.classList.contains('hidden')) { hideConfirm(); return; }
+            if (modal && !modal.classList.contains('hidden')) { hideModal(); }
+        });
+    });
+</script>
+
 @include('dispatch.requests.partials.assign-driver-modal-table')
 
 @endsection
