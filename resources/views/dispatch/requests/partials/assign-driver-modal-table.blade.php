@@ -1,5 +1,5 @@
 <!-- Assign Driver Modal (Reusable) -->
-<div id="assign-driver-modal-table" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
+<div id="assign-driver-modal-table" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="overflow-y: auto; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);">
     <div class="bg-white rounded-2xl shadow-2xl max-w-5xl w-full my-8">
         <!-- Modal Header -->
         <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">

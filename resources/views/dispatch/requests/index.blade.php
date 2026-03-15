@@ -705,7 +705,7 @@
     });
 </script>
 <!-- Create Request Modal -->
-<div id="create-request-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
+<div id="create-request-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="overflow-y: auto; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);">
     <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8">
         <!-- Modal Header -->
         <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
@@ -924,7 +924,7 @@
 @endpush
 
 <!-- Edit Request Modal -->
-<div id="edit-request-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" style="overflow-y: auto;">
+<div id="edit-request-modal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="overflow-y: auto; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px);">
     <div class="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8">
         <!-- Modal Header -->
         <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
@@ -1113,23 +1113,21 @@
 </div>
 
 <!-- Edit Confirm Modal -->
-<div id="edit-confirm-modal" class="fixed inset-0 z-[60] hidden" role="dialog" aria-modal="true">
-    <div class="flex min-h-full items-center justify-center bg-black/50 px-4">
-        <div class="w-full max-w-sm rounded-2xl bg-white p-8 space-y-6 shadow-2xl">
-            <div class="space-y-2 text-center">
-                <h3 class="text-2xl font-semibold text-[#1E40AF]">Save Changes</h3>
-                <p class="text-sm text-gray-600">Are you sure you want to update this request?</p>
-            </div>
-            <div class="grid grid-cols-2 gap-4">
-                <button id="edit-confirm-no" type="button"
-                    class="px-6 py-3 rounded-full text-base font-semibold text-white bg-red-500 hover:bg-red-600 focus:outline-none transition">
-                    Cancel
-                </button>
-                <button id="edit-confirm-yes" type="button"
-                    class="px-6 py-3 rounded-full text-base font-semibold text-white bg-[#1E40AF] hover:bg-[#1A36A0] focus:outline-none transition">
-                    Confirm
-                </button>
-            </div>
+<div id="edit-confirm-modal" class="fixed inset-0 z-[60] hidden items-center justify-center bg-black/50 backdrop-blur-sm px-4" role="dialog" aria-modal="true">
+    <div class="w-full max-w-sm rounded-2xl bg-white p-8 space-y-6 shadow-2xl">
+        <div class="space-y-2 text-center">
+            <h3 class="text-2xl font-semibold text-[#1E40AF]">Save Changes</h3>
+            <p class="text-sm text-gray-600">Are you sure you want to update this request?</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+            <button id="edit-confirm-no" type="button"
+                class="px-6 py-3 rounded-full text-base font-semibold text-white bg-red-500 hover:bg-red-600 focus:outline-none transition">
+                Cancel
+            </button>
+            <button id="edit-confirm-yes" type="button"
+                class="px-6 py-3 rounded-full text-base font-semibold text-white bg-[#1E40AF] hover:bg-[#1A36A0] focus:outline-none transition">
+                Confirm
+            </button>
         </div>
     </div>
 </div>

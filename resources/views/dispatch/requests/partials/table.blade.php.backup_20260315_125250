@@ -57,7 +57,7 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <div class="flex justify-center items-center space-x-2">
                         @if($request->status === 'verified' && !$request->trip)
-                        <button onclick="event.stopPropagation(); openAssignModalForRequest({{ $request->id }});" class="w-8 h-8 flex items-center justify-center bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors" title="Assign Driver">
+                        <button onclick="event.stopPropagation(); openAssignDriverModal({{ $request->id }}, '{{ $request->client->name }}', '{{ $request->atw_reference }}')" class="w-8 h-8 flex items-center justify-center bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors" title="Assign Driver">
                             <i class="fas fa-user-plus"></i>
                         </button>
                         @endif
