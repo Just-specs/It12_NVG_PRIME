@@ -126,9 +126,12 @@
                 <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex space-x-2">
                         @if($trip->status === 'scheduled' || $trip->status === 'in-transit')
-                        <a href="{{ route('trips.show', $trip) }}" class="w-8 h-8 flex items-center justify-center bg-[#1E40AF] text-white rounded-full hover:bg-[#1A36A0] transition-colors" title="Edit Trip">
+                        <button type="button"
+                            onclick="event.stopPropagation(); this.closest('tr').click();"
+                            class="w-8 h-8 flex items-center justify-center bg-[#1E40AF] text-white rounded-full hover:bg-[#1A36A0] transition-colors"
+                            title="Open Trip Details">
                             <i class="fas fa-edit"></i>
-                        </a>
+                        </button>
                         @endif
                         
                         @if($trip->status === 'delayed')
