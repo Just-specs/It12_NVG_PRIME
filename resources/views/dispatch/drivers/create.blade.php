@@ -199,7 +199,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 if (data.errors) {
                     let errorMsg = 'Validation errors:\n';
                     for (const [field, messages] of Object.entries(data.errors)) {
-                        errorMsg += `\n${field}: ${messages.join(', ')};
+                        errorMsg += `\n${field}: ${messages.join(', ')}`;
                     }
                     alert(errorMsg);
                 } else {

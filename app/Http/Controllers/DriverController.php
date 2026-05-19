@@ -14,7 +14,9 @@ class DriverController extends Controller
         $allowedStatuses = ['available', 'on-trip', 'off-duty'];
         $activeStatus = $request->query('status', 'all');
 
-        $driversQuery = Driver::query()->withCount('trips');
+        $driversQuery = Driver::query()
+            ->with(['coDrivers', 'driversHavingAsCoDriver'])
+            ->withCount('trips');
 
         // Search functionality
         $search = $request->query('search');

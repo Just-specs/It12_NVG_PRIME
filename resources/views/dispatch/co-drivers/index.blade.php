@@ -70,9 +70,13 @@
                 <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="flex items-center">
-                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                <i class="fas fa-user text-blue-600"></i>
-                            </div>
+                            @if($driver->photo_url)
+                                <img src="{{ $driver->photo_url }}" alt="{{ $driver->name }} photo" class="h-10 w-10 rounded-full object-cover border">
+                            @else
+                                <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-user text-blue-600"></i>
+                                </div>
+                            @endif
                             <div class="ml-3">
                                 <p class="text-sm font-medium text-gray-900">{{ $driver->name }}</p>
                                 <p class="text-xs text-gray-500">{{ ucfirst($driver->status) }}</p>
@@ -93,8 +97,13 @@
                         @if($allCoDrivers->count() > 0)
                             <div class="flex flex-wrap gap-1">
                                 @foreach($allCoDrivers as $coDriver)
-                                    <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
-                                        <i class="fas fa-user-friends mr-1"></i>{{ $coDriver->name }}
+                                    <span class="inline-flex items-center gap-1.5 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md">
+                                        @if($coDriver->photo_url)
+                                            <img src="{{ $coDriver->photo_url }}" alt="{{ $coDriver->name }} photo" class="h-5 w-5 rounded-full object-cover">
+                                        @else
+                                            <i class="fas fa-user-friends"></i>
+                                        @endif
+                                        {{ $coDriver->name }}
                                     </span>
                                 @endforeach
                             </div>
@@ -169,29 +178,51 @@
             @csrf
             
             <div class="mb-4">
-                <label for="driver_id" class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                     Main Driver <span class="text-red-500">*</span>
                 </label>
-                <select name="driver_id" id="driver_id" required
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">-- Select Main Driver --</option>
+                <div id="driver-options" class="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-2">
                     @foreach($availableDrivers as $d)
-                        <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->license_number }})</option>
+                        <label class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-2 transition hover:border-blue-400 hover:bg-blue-50">
+                            <input type="radio" name="driver_id" value="{{ $d->id }}" required class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                            @if($d->photo_url)
+                                <img src="{{ $d->photo_url }}" alt="{{ $d->name }} photo" class="h-10 w-10 rounded-full object-cover border">
+                            @else
+                                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-blue-600"></i>
+                                </div>
+                            @endif
+                            <span>
+                                <span class="block text-sm font-semibold text-gray-800">{{ $d->name }}</span>
+                                <span class="block text-xs text-gray-500">{{ $d->license_number }}</span>
+                            </span>
+                        </label>
                     @endforeach
-                </select>
+                </div>
             </div>
             
             <div class="mb-4">
-                <label for="co_driver_id" class="block text-sm font-medium text-gray-700 mb-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                     Co-Driver <span class="text-red-500">*</span>
                 </label>
-                <select name="co_driver_id" id="co_driver_id" required
-                        class="w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">-- Select Co-Driver --</option>
+                <div id="co-driver-options" class="max-h-48 space-y-2 overflow-y-auto rounded-lg border border-gray-200 p-2">
                     @foreach($availableDrivers as $d)
-                        <option value="{{ $d->id }}">{{ $d->name }} ({{ $d->license_number }})</option>
+                        <label data-driver-id="{{ $d->id }}" class="flex cursor-pointer items-center gap-3 rounded-lg border border-gray-200 p-2 transition hover:border-blue-400 hover:bg-blue-50">
+                            <input type="radio" name="co_driver_id" value="{{ $d->id }}" required class="h-4 w-4 text-blue-600 focus:ring-blue-500">
+                            @if($d->photo_url)
+                                <img src="{{ $d->photo_url }}" alt="{{ $d->name }} photo" class="h-10 w-10 rounded-full object-cover border">
+                            @else
+                                <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-blue-600"></i>
+                                </div>
+                            @endif
+                            <span>
+                                <span class="block text-sm font-semibold text-gray-800">{{ $d->name }}</span>
+                                <span class="block text-xs text-gray-500">{{ $d->license_number }}</span>
+                            </span>
+                        </label>
                     @endforeach
-                </select>
+                </div>
             </div>
             
             <div class="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4">
@@ -218,14 +249,23 @@
 <script>
 function openAssignModal() {
     document.getElementById('assign-modal').classList.remove('hidden');
-    document.getElementById('driver_id').value = '';
-    document.getElementById('co_driver_id').value = '';
+    document.querySelectorAll('input[name="driver_id"], input[name="co_driver_id"]').forEach(input => {
+        input.checked = false;
+    });
+    updateCoDriverOptions('');
 }
 
 function openAssignModalForDriver(driverId, driverName) {
     document.getElementById('assign-modal').classList.remove('hidden');
-    document.getElementById('driver_id').value = driverId;
-    document.getElementById('co_driver_id').value = '';
+    document.querySelectorAll('input[name="co_driver_id"]').forEach(input => {
+        input.checked = false;
+    });
+
+    const driverInput = document.querySelector(`input[name="driver_id"][value="${driverId}"]`);
+    if (driverInput) {
+        driverInput.checked = true;
+    }
+    updateCoDriverOptions(String(driverId));
 }
 
 function closeAssignModal() {
@@ -246,24 +286,21 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Filter out selected driver from co-driver dropdown
-document.getElementById('driver_id').addEventListener('change', function() {
-    const selectedDriverId = this.value;
-    const coDriverSelect = document.getElementById('co_driver_id');
-    const options = coDriverSelect.querySelectorAll('option');
-    
-    options.forEach(option => {
-        if (option.value === selectedDriverId) {
-            option.style.display = 'none';
-        } else {
-            option.style.display = 'block';
+function updateCoDriverOptions(selectedDriverId) {
+    document.querySelectorAll('#co-driver-options [data-driver-id]').forEach(option => {
+        const isSameDriver = option.dataset.driverId === selectedDriverId;
+        option.classList.toggle('hidden', isSameDriver);
+        if (isSameDriver) {
+            const input = option.querySelector('input[name="co_driver_id"]');
+            if (input) input.checked = false;
         }
     });
-    
-    // Reset co-driver selection if it matches main driver
-    if (coDriverSelect.value === selectedDriverId) {
-        coDriverSelect.value = '';
-    }
+}
+
+document.querySelectorAll('input[name="driver_id"]').forEach(input => {
+    input.addEventListener('change', function() {
+        updateCoDriverOptions(this.value);
+    });
 });
 </script>
 @endsection

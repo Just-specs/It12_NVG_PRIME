@@ -39,7 +39,16 @@
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">
                         @if($trip->driver)
-                            {{ $trip->driver->name }}
+                            <div class="flex items-center gap-2">
+                                @if($trip->driver->photo_url)
+                                    <img src="{{ $trip->driver->photo_url }}" alt="{{ $trip->driver->name }} photo" class="h-9 w-9 rounded-full object-cover border">
+                                @else
+                                    <div class="h-9 w-9 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-user text-blue-600 text-xs"></i>
+                                    </div>
+                                @endif
+                                <span>{{ $trip->driver->name }}</span>
+                            </div>
                         @else
                             <span class="text-red-500">Driver Deleted</span>
                         @endif

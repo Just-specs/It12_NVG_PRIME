@@ -334,7 +334,15 @@ Route::get('/api/available-drivers', function () {
     $drivers = \App\Models\Driver::where('status', 'available')
         ->withCount('trips')
         ->orderBy('name')
-        ->get(['id', 'name', 'mobile', 'license_number']);
+        ->get(['id', 'name', 'mobile', 'license_number', 'photo_path'])
+        ->map(fn ($driver) => [
+            'id' => $driver->id,
+            'name' => $driver->name,
+            'mobile' => $driver->mobile,
+            'license_number' => $driver->license_number,
+            'photo_url' => $driver->photo_url,
+            'trips_count' => $driver->trips_count,
+        ]);
     
     return response()->json($drivers);
 });

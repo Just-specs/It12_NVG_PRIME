@@ -90,8 +90,9 @@
 
         <!-- Modal Body -->
         <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-            <form id="modal-create-driver-form" method="POST" action="{{ route('drivers.store') }}">
+            <form id="modal-create-driver-form" method="POST" action="{{ route('drivers.store') }}" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="confirm_duplicate" value="0">
 
                 <div class="space-y-4">
                     <!-- Name -->
@@ -116,6 +117,15 @@
                             License Number <span class="text-red-500">*</span>
                         </label>
                         <input type="text" name="license_number" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter license number">
+                    </div>
+
+                    <!-- Driver Photo -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Driver / Co-Driver Photo
+                        </label>
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Optional. JPG, PNG, or WEBP up to 4 MB.</p>
                     </div>
 
                     <!-- Status -->
@@ -437,9 +447,9 @@
                         if (data.success) {
                             // Driver created successfully
                             window.location.reload();
-                        } else if (data.confirm_required) {
+                        } else if (data.requires_confirmation) {
                             if (confirm(data.message + '\n\nDo you want to create this driver anyway?')) {
-                                formData.append('confirm_duplicate', '1');
+                                formData.set('confirm_duplicate', '1');
                                 fetch(createDriverForm.action, {
                                     method: 'POST',
                                     body: formData,

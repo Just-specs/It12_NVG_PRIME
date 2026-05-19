@@ -382,6 +382,13 @@ function renderDriversTable(drivers) {
             ${drivers.map(driver => `
                 <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 transition-all group">
                     <input type="radio" name="driver_id" value="${driver.id}" required class="mr-3 w-4 h-4 text-blue-600">
+                    ${driver.photo_url ? `
+                        <img src="${driver.photo_url}" alt="${driver.name} photo" class="mr-3 h-12 w-12 rounded-full object-cover border">
+                    ` : `
+                        <div class="mr-3 h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                    `}
                     <div class="flex-1">
                         <div class="flex items-center justify-between">
                             <p class="font-semibold text-gray-800 group-hover:text-blue-600">${driver.name}</p>

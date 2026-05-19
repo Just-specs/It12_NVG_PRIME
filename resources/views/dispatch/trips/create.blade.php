@@ -103,6 +103,13 @@
                                     value="{{ $driver->id }}"
                                     required
                                     class="mr-4 w-5 h-5 text-blue-600">
+                                @if($driver->photo_url)
+                                    <img src="{{ $driver->photo_url }}" alt="{{ $driver->name }} photo" class="mr-4 h-14 w-14 rounded-full object-cover border">
+                                @else
+                                    <div class="mr-4 h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-user text-blue-600"></i>
+                                    </div>
+                                @endif
                                 <div class="flex-1">
                                     <div class="flex items-center justify-between">
                                         <p class="font-semibold text-gray-800 group-hover:text-blue-600">
@@ -551,7 +558,6 @@
     });
 </script>
 @endsection
-
 
 
 

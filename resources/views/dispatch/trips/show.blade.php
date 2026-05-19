@@ -57,7 +57,16 @@
                             <p class="text-sm text-gray-600 mb-2">
                                 <i class="fas fa-user text-blue-500"></i> Driver
                             </p>
-                            <p class="font-semibold">{{ $trip->driver->name }}</p>
+                            <div class="mb-2 flex items-center gap-3">
+                                @if($trip->driver->photo_url)
+                                    <img src="{{ $trip->driver->photo_url }}" alt="{{ $trip->driver->name }} photo" class="h-14 w-14 rounded-full object-cover border">
+                                @else
+                                    <div class="h-14 w-14 rounded-full bg-blue-100 flex items-center justify-center">
+                                        <i class="fas fa-user text-blue-600"></i>
+                                    </div>
+                                @endif
+                                <p class="font-semibold">{{ $trip->driver->name }}</p>
+                            </div>
                             <p class="text-xs text-gray-500 mt-1">
                                 <i class="fas fa-phone"></i> {{ $trip->driver->mobile }}
                             </p>
@@ -76,7 +85,10 @@
                                 </p>
                                 <div class="flex flex-wrap gap-1">
                                     @foreach($allCoDrivers as $coDriver)
-                                        <span class="text-xs bg-blue-200 text-blue-900 px-2 py-1 rounded-full">
+                                        <span class="inline-flex items-center gap-1 text-xs bg-blue-200 text-blue-900 px-2 py-1 rounded-full">
+                                            @if($coDriver->photo_url)
+                                                <img src="{{ $coDriver->photo_url }}" alt="{{ $coDriver->name }} photo" class="h-5 w-5 rounded-full object-cover">
+                                            @endif
                                             {{ $coDriver->name }}
                                         </span>
                                     @endforeach
