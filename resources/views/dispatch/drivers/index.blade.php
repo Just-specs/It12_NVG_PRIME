@@ -223,6 +223,69 @@
     </div>
 </div>
 
+<!-- Edit Driver Modal -->
+<div id="edit-driver-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm items-center justify-center p-4" style="overflow-y: auto;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-edit text-blue-600"></i> Edit Driver
+            </h2>
+            <button type="button" id="close-edit-driver-modal" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form id="modal-edit-driver-form" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="confirm_duplicate" value="0">
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Driver Name <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="name" id="edit-driver-name" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Mobile Number <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="mobile" id="edit-driver-mobile" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            License Number <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="license_number" id="edit-driver-license" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Driver / Co-Driver Photo
+                        </label>
+                        <img id="edit-driver-photo-preview" src="" alt="Current driver photo" class="hidden mb-3 h-28 w-28 rounded-lg object-cover border">
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Optional. Uploading a new photo replaces the current one.</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+                    <button type="button" id="cancel-edit-driver" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                        <i class="fas fa-save mr-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -241,6 +304,14 @@
         const modalViewFull = document.getElementById('modal-view-full');
         const modalStatusForm = document.getElementById('modal-status-form');
         const modalStatusBtn = document.getElementById('modal-status-btn');
+        const editDriverModal = document.getElementById('edit-driver-modal');
+        const editDriverForm = document.getElementById('modal-edit-driver-form');
+        const closeEditDriverBtn = document.getElementById('close-edit-driver-modal');
+        const cancelEditDriverBtn = document.getElementById('cancel-edit-driver');
+        const editDriverName = document.getElementById('edit-driver-name');
+        const editDriverMobile = document.getElementById('edit-driver-mobile');
+        const editDriverLicense = document.getElementById('edit-driver-license');
+        const editDriverPhotoPreview = document.getElementById('edit-driver-photo-preview');
 
         const TAB_ACTIVE_CLASSES = ['bg-[#1E40AF]', 'text-white', 'border-[#1E40AF]', 'shadow-lg'];
         const TAB_INACTIVE_CLASSES = ['bg-white', 'text-[#1E40AF]', 'border-[#1E40AF]/40', 'hover:border-[#1E40AF]', 'hover:shadow-md'];
@@ -305,6 +376,13 @@
             root.querySelectorAll('.view-driver-btn').forEach(button => {
                 button.addEventListener('click', handleViewClick);
             });
+
+            root.querySelectorAll('.open-edit-driver-modal').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showEditDriverModal(event.currentTarget);
+                });
+            });
         };
 
         const toggleModal = (show) => {
@@ -357,6 +435,85 @@
             toggleModal(true);
         };
 
+        const showEditDriverModal = (button) => {
+            if (!editDriverModal || !editDriverForm) return;
+
+            editDriverForm.reset();
+            editDriverForm.setAttribute('action', button.dataset.updateUrl);
+            editDriverForm.querySelector('input[name="confirm_duplicate"]').value = '0';
+            editDriverName.value = button.dataset.driverName || '';
+            editDriverMobile.value = button.dataset.mobile || '';
+            editDriverLicense.value = button.dataset.licenseNumber || '';
+
+            if (button.dataset.photoUrl) {
+                editDriverPhotoPreview.src = button.dataset.photoUrl;
+                editDriverPhotoPreview.classList.remove('hidden');
+            } else {
+                editDriverPhotoPreview.src = '';
+                editDriverPhotoPreview.classList.add('hidden');
+            }
+
+            editDriverModal.classList.remove('hidden');
+            editDriverModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            editDriverName.focus({ preventScroll: true });
+        };
+
+        const hideEditDriverModal = () => {
+            if (!editDriverModal) return;
+            editDriverModal.classList.add('hidden');
+            editDriverModal.classList.remove('flex');
+            document.body.style.overflow = '';
+            if (editDriverForm) editDriverForm.reset();
+        };
+
+        const submitEditDriverForm = async (confirmed = false) => {
+            const submitBtn = editDriverForm.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            const formData = new FormData(editDriverForm);
+
+            if (confirmed) {
+                formData.set('confirm_duplicate', '1');
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Saving...';
+
+            try {
+                const response = await fetch(editDriverForm.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                    return;
+                }
+
+                if (data.requires_confirmation && !confirmed) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    if (confirm(`${data.message}\n\nDo you want to save this driver anyway?`)) {
+                        await submitEditDriverForm(true);
+                    }
+                    return;
+                }
+
+                alert(data.message || 'Failed to update driver.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error updating driver. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
+        };
+
         if (driversContainer) {
             driversContainer.addEventListener('click', (event) => {
                 const paginationLink = event.target.closest('a[data-pagination="drivers"]');
@@ -393,6 +550,21 @@
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && !modal.classList.contains('hidden')) {
                 toggleModal(false);
+            }
+        });
+
+        closeEditDriverBtn?.addEventListener('click', hideEditDriverModal);
+        cancelEditDriverBtn?.addEventListener('click', hideEditDriverModal);
+        editDriverModal?.addEventListener('click', (event) => {
+            if (event.target === editDriverModal) hideEditDriverModal();
+        });
+        editDriverForm?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            submitEditDriverForm(false);
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && editDriverModal && !editDriverModal.classList.contains('hidden')) {
+                hideEditDriverModal();
             }
         });
             

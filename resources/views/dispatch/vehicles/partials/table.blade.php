@@ -11,7 +11,18 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($vehicles as $vehicle)
-            <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='{{ route('vehicles.show', $vehicle) }}'">
+            <tr class="view-vehicle-btn hover:bg-gray-50 cursor-pointer"
+                data-vehicle-id="{{ $vehicle->id }}"
+                data-plate-number="{{ $vehicle->plate_number }}"
+                data-vehicle-type="{{ $vehicle->vehicle_type }}"
+                data-trailer-type="{{ $vehicle->trailer_type }}"
+                data-status="{{ $vehicle->status }}"
+                data-trips-count="{{ $vehicle->trips_count ?? 0 }}"
+                data-created-at="{{ $vehicle->created_at?->format('M d, Y') ?? 'N/A' }}"
+                data-photo-url="{{ $vehicle->photo_url ?? '' }}"
+                data-view-url="{{ route('vehicles.show', $vehicle) }}"
+                data-maintenance-url="{{ route('vehicles.set-maintenance', $vehicle) }}"
+                data-available-url="{{ route('vehicles.set-available', $vehicle) }}">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-3">
                         @if($vehicle->photo_url)
@@ -40,9 +51,17 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex space-x-2">
-                        <a href="{{ route('vehicles.edit', $vehicle) }}" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" title="Edit Vehicle">
+                        <button type="button"
+                            class="open-edit-vehicle-modal w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                            title="Edit Vehicle"
+                            data-update-url="{{ route('vehicles.update', $vehicle) }}"
+                            data-vehicle-id="{{ $vehicle->id }}"
+                            data-plate-number="{{ $vehicle->plate_number }}"
+                            data-vehicle-type="{{ $vehicle->vehicle_type }}"
+                            data-trailer-type="{{ $vehicle->trailer_type }}"
+                            data-photo-url="{{ $vehicle->photo_url ?? '' }}">
                             <i class="fas fa-edit"></i>
-                        </a>
+                        </button>
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
                         <a href="{{ route('vehicles.requestDelete', $vehicle) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Request Delete">
                             <i class="fas fa-trash"></i>

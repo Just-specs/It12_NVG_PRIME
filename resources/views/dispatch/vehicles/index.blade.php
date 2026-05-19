@@ -90,8 +90,9 @@
 
         <!-- Modal Body -->
         <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
-            <form id="modal-create-vehicle-form" method="POST" action="{{ route('vehicles.store') }}">
+            <form id="modal-create-vehicle-form" method="POST" action="{{ route('vehicles.store') }}" enctype="multipart/form-data">
                 @csrf
+                <input type="hidden" name="confirm_duplicate" value="0">
 
                 <div class="space-y-4">
                     <!-- Plate Number -->
@@ -131,6 +132,15 @@
                             <option value="Tanker">Tanker</option>
                             <option value="N/A">N/A</option>
                         </select>
+                    </div>
+
+                    <!-- Vehicle Photo -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Vehicle Photo
+                        </label>
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Optional. JPG, PNG, or WEBP up to 4 MB.</p>
                     </div>
 
                     <!-- Status -->
@@ -175,7 +185,8 @@
         </div>
         <div class="p-6 space-y-6">
             <div class="flex items-center space-x-4">
-                <div class="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center">
+                <img id="modal-vehicle-photo" src="" alt="Vehicle photo" class="hidden h-20 w-28 rounded-lg object-cover border">
+                <div id="modal-vehicle-fallback" class="h-20 w-20 rounded-full bg-blue-100 flex items-center justify-center">
                     <i class="fas fa-truck text-blue-600 text-3xl"></i>
                 </div>
                 <div class="flex-1">
@@ -233,6 +244,92 @@
     </div>
 </div>
 
+<!-- Edit Vehicle Modal -->
+<div id="edit-vehicle-modal" class="fixed inset-0 z-50 hidden bg-black/40 backdrop-blur-sm items-center justify-center p-4" style="overflow-y: auto;">
+    <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-2xl flex justify-between items-center">
+            <h2 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-edit text-blue-600"></i> Edit Vehicle
+            </h2>
+            <button type="button" id="close-edit-vehicle-modal" class="text-gray-400 hover:text-gray-600 transition">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+
+        <div class="p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
+            <form id="modal-edit-vehicle-form" method="POST" enctype="multipart/form-data">
+                @csrf
+                @method('PUT')
+                <input type="hidden" name="confirm_duplicate" value="0">
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Plate Number <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" name="plate_number" id="edit-vehicle-plate" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Vehicle Type <span class="text-red-500">*</span>
+                        </label>
+                        <select name="vehicle_type" id="edit-vehicle-type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select vehicle type</option>
+                            <option value="Prime Mover">Prime Mover</option>
+                            <option value="Truck">Truck</option>
+                            <option value="Trailer Truck">Trailer Truck</option>
+                            <option value="Van">Van</option>
+                            <option value="Pickup">Pickup</option>
+                            <option value="Container Truck">Container Truck</option>
+                            <option value="Flatbed Truck">Flatbed Truck</option>
+                            <option value="Tanker Truck">Tanker Truck</option>
+                            <option value="Box Truck">Box Truck</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Trailer Type <span class="text-red-500">*</span>
+                        </label>
+                        <select name="trailer_type" id="edit-trailer-type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Select trailer type</option>
+                            <option value="Flatbed">Flatbed</option>
+                            <option value="Container">Container</option>
+                            <option value="Lowbed">Lowbed</option>
+                            <option value="Refrigerated">Refrigerated</option>
+                            <option value="Tanker">Tanker</option>
+                            <option value="N/A">N/A</option>
+                            <option value="20ft Container">20ft Container</option>
+                            <option value="40ft Container">40ft Container</option>
+                            <option value="20ft Reefer">20ft Reefer</option>
+                            <option value="40ft Reefer">40ft Reefer</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Vehicle Photo
+                        </label>
+                        <img id="edit-vehicle-photo-preview" src="" alt="Current vehicle photo" class="hidden mb-3 h-28 w-40 rounded-lg object-cover border">
+                        <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <p class="text-xs text-gray-500 mt-1">Optional. Uploading a new photo replaces the current one.</p>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6 pt-6 border-t">
+                    <button type="button" id="cancel-edit-vehicle" class="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-semibold">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold shadow-lg">
+                        <i class="fas fa-save mr-2"></i>Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -251,6 +348,16 @@
         const modalViewFull = document.getElementById('modal-view-full');
         const modalMaintenanceForm = document.getElementById('modal-maintenance-form');
         const modalAvailableForm = document.getElementById('modal-available-form');
+        const modalVehiclePhoto = document.getElementById('modal-vehicle-photo');
+        const modalVehicleFallback = document.getElementById('modal-vehicle-fallback');
+        const editVehicleModal = document.getElementById('edit-vehicle-modal');
+        const editVehicleForm = document.getElementById('modal-edit-vehicle-form');
+        const closeEditVehicleBtn = document.getElementById('close-edit-vehicle-modal');
+        const cancelEditVehicleBtn = document.getElementById('cancel-edit-vehicle');
+        const editVehiclePlate = document.getElementById('edit-vehicle-plate');
+        const editVehicleType = document.getElementById('edit-vehicle-type');
+        const editTrailerType = document.getElementById('edit-trailer-type');
+        const editVehiclePhotoPreview = document.getElementById('edit-vehicle-photo-preview');
 
         const TAB_ACTIVE_CLASSES = ['bg-[#1E40AF]', 'text-white', 'border-[#1E40AF]', 'shadow-lg'];
         const TAB_INACTIVE_CLASSES = ['bg-white', 'text-[#1E40AF]', 'border-[#1E40AF]/40', 'hover:border-[#1E40AF]', 'hover:shadow-md'];
@@ -315,6 +422,13 @@
             root.querySelectorAll('.view-vehicle-btn').forEach(button => {
                 button.addEventListener('click', handleViewClick);
             });
+
+            root.querySelectorAll('.open-edit-vehicle-modal').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    event.stopPropagation();
+                    showEditVehicleModal(event.currentTarget);
+                });
+            });
         };
 
         const toggleModal = (show) => {
@@ -346,6 +460,16 @@
             updateStatusBadge(modalStatus, button.dataset.status);
             modalViewFull.href = button.dataset.viewUrl;
 
+            if (button.dataset.photoUrl) {
+                modalVehiclePhoto.src = button.dataset.photoUrl;
+                modalVehiclePhoto.classList.remove('hidden');
+                modalVehicleFallback.classList.add('hidden');
+            } else {
+                modalVehiclePhoto.src = '';
+                modalVehiclePhoto.classList.add('hidden');
+                modalVehicleFallback.classList.remove('hidden');
+            }
+
             const status = button.dataset.status;
             if (status === 'available') {
                 modalMaintenanceForm.setAttribute('action', button.dataset.maintenanceUrl);
@@ -361,6 +485,85 @@
             }
 
             toggleModal(true);
+        };
+
+        const showEditVehicleModal = (button) => {
+            if (!editVehicleModal || !editVehicleForm) return;
+
+            editVehicleForm.reset();
+            editVehicleForm.setAttribute('action', button.dataset.updateUrl);
+            editVehicleForm.querySelector('input[name="confirm_duplicate"]').value = '0';
+            editVehiclePlate.value = button.dataset.plateNumber || '';
+            editVehicleType.value = button.dataset.vehicleType || '';
+            editTrailerType.value = button.dataset.trailerType || '';
+
+            if (button.dataset.photoUrl) {
+                editVehiclePhotoPreview.src = button.dataset.photoUrl;
+                editVehiclePhotoPreview.classList.remove('hidden');
+            } else {
+                editVehiclePhotoPreview.src = '';
+                editVehiclePhotoPreview.classList.add('hidden');
+            }
+
+            editVehicleModal.classList.remove('hidden');
+            editVehicleModal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+            editVehiclePlate.focus({ preventScroll: true });
+        };
+
+        const hideEditVehicleModal = () => {
+            if (!editVehicleModal) return;
+            editVehicleModal.classList.add('hidden');
+            editVehicleModal.classList.remove('flex');
+            document.body.style.overflow = '';
+            if (editVehicleForm) editVehicleForm.reset();
+        };
+
+        const submitVehicleForm = async (form, loadingText, confirmed = false) => {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            const formData = new FormData(form);
+
+            if (confirmed) {
+                formData.set('confirm_duplicate', '1');
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fas fa-spinner fa-spin mr-2"></i>${loadingText}`;
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    window.location.reload();
+                    return;
+                }
+
+                if (data.requires_confirmation && !confirmed) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    if (confirm(`${data.message}\n\nDo you want to save this vehicle anyway?`)) {
+                        await submitVehicleForm(form, loadingText, true);
+                    }
+                    return;
+                }
+
+                alert(data.message || 'Failed to save vehicle.');
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Error saving vehicle. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalText;
+            }
         };
 
         if (vehiclesContainer) {
@@ -401,6 +604,21 @@
                 toggleModal(false);
             }
         });
+
+        closeEditVehicleBtn?.addEventListener('click', hideEditVehicleModal);
+        cancelEditVehicleBtn?.addEventListener('click', hideEditVehicleModal);
+        editVehicleModal?.addEventListener('click', (event) => {
+            if (event.target === editVehicleModal) hideEditVehicleModal();
+        });
+        editVehicleForm?.addEventListener('submit', (event) => {
+            event.preventDefault();
+            submitVehicleForm(editVehicleForm, 'Saving...');
+        });
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && editVehicleModal && !editVehicleModal.classList.contains('hidden')) {
+                hideEditVehicleModal();
+            }
+        });
         
         // Create Vehicle Modal
         const openCreateVehicleBtn = document.getElementById('open-create-vehicle-modal');
@@ -426,6 +644,11 @@
             openCreateVehicleBtn.addEventListener('click', showCreateModal);
             closeCreateVehicleBtn?.addEventListener('click', hideCreateModal);
             cancelCreateVehicleBtn?.addEventListener('click', hideCreateModal);
+
+            createVehicleForm?.addEventListener('submit', (event) => {
+                event.preventDefault();
+                submitVehicleForm(createVehicleForm, 'Creating...');
+            });
 
             createVehicleModal.addEventListener('click', (e) => {
                 if (e.target === createVehicleModal) hideCreateModal();

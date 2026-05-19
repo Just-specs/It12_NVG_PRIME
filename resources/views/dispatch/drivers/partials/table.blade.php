@@ -55,9 +55,17 @@
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex justify-center space-x-2">
-                        <a href="{{ route('drivers.edit', $driver) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors" title="Edit Driver">
+                        <button type="button"
+                            class="open-edit-driver-modal w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                            title="Edit Driver"
+                            data-update-url="{{ route('drivers.update', $driver) }}"
+                            data-driver-id="{{ $driver->id }}"
+                            data-driver-name="{{ $driver->name }}"
+                            data-mobile="{{ $driver->mobile }}"
+                            data-license-number="{{ $driver->license_number }}"
+                            data-photo-url="{{ $driver->photo_url ?? '' }}">
                             <i class="fas fa-edit"></i>
-                        </a>
+                        </button>
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
                         <a href="{{ route('drivers.requestDelete', $driver) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Request Delete">
                             <i class="fas fa-trash"></i>
