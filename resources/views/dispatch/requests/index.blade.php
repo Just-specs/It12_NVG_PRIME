@@ -450,7 +450,22 @@
             statusElement.textContent = status.replace('_', ' ');
         };
 
+        const updateAtwStatus = (isVerified, label) => {
+            const classes = isVerified
+                ? ['bg-green-100', 'text-green-800']
+                : ['bg-yellow-100', 'text-yellow-800'];
 
+            if (modalAtwStatus) {
+                modalAtwStatus.className = 'text-xs font-semibold px-2 py-1 rounded-full';
+                modalAtwStatus.classList.add(...classes);
+                modalAtwStatus.textContent = label;
+            }
+
+            if (modalAtwStatusText) {
+                modalAtwStatusText.className = `font-semibold ${isVerified ? 'text-green-700' : 'text-yellow-700'}`;
+                modalAtwStatusText.textContent = label;
+            }
+        };
 
         const handleViewClick = (event) => {
             const button = event.currentTarget;
@@ -461,6 +476,10 @@
             modalContactMethod.textContent = button.dataset.contactMethodLabel;
             modalContactIcon.className = `fas ${contactIcons[contactMethod] || 'fa-envelope'} mr-2`;
             modalAtw.textContent = button.dataset.atwReference;
+            updateAtwStatus(
+                button.dataset.atwVerified === '1',
+                button.dataset.atwStatusLabel || 'Unverified'
+            );
             
             modalContainer.textContent = `${button.dataset.containerSize} - ${button.dataset.containerType}`;
             modalPickup.textContent = button.dataset.pickup;

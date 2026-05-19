@@ -15,9 +15,36 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($requests as $request)
-            <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="viewRequest({{ $request->id }})" data-request-id="{{ $request->id }}">
+            @php
+                $client = $request->client;
+                $contactMethod = $request->contact_method ?? 'email';
+                $contactMethodLabel = ucwords(str_replace('_', ' ', $contactMethod));
+                $atwVerified = (bool) $request->atw_verified;
+                $atwStatusLabel = $atwVerified ? 'Verified' : 'Unverified';
+                $canVerify = auth()->user()->canVerifyRequests()
+                    && $request->status === 'pending'
+                    && !$atwVerified;
+            @endphp
+            <tr class="view-request-btn hover:bg-gray-50 cursor-pointer transition-colors"
+                data-request-id="{{ $request->id }}"
+                data-created="{{ $request->created_at?->format('M d, Y h:i A') ?? 'N/A' }}"
+                data-client-name="{{ $client?->name ?? 'Client Deleted' }}"
+                data-contact-method="{{ $contactMethod }}"
+                data-contact-method-label="{{ $contactMethodLabel }}"
+                data-atw-reference="{{ $request->atw_reference ?? 'N/A' }}"
+                data-atw-verified="{{ $atwVerified ? '1' : '0' }}"
+                data-atw-status-label="{{ $atwStatusLabel }}"
+                data-container-size="{{ $request->container_size ?? 'N/A' }}"
+                data-container-type="{{ $request->container_type ?? 'N/A' }}"
+                data-pickup="{{ $request->pickup_location ?? 'N/A' }}"
+                data-delivery="{{ $request->delivery_location ?? 'N/A' }}"
+                data-schedule-date="{{ $request->preferred_schedule?->format('M d, Y') ?? 'N/A' }}"
+                data-schedule-time="{{ $request->preferred_schedule?->format('h:i A') ?? 'N/A' }}"
+                data-notes="{{ $request->notes ?? '' }}"
+                data-status="{{ $request->status }}"
+                data-verify-url="{{ $canVerify ? route('requests.verify', $request) : '' }}">
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{ $request->client->name }}</div>
+                    <div class="text-sm font-medium text-gray-900">{{ $client?->name ?? 'Client Deleted' }}</div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900">{{ $request->atw_reference }}</div>
@@ -42,7 +69,7 @@
                     {{ Str::limit($request->delivery_location, 30) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {{ $request->preferred_schedule->format('M d, h:i A') }}
+                    {{ $request->preferred_schedule?->format('M d, h:i A') ?? 'N/A' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <span class="px-3 py-1 rounded-full text-xs font-semibold
@@ -54,7 +81,7 @@
                         {{ ucfirst($request->status) }}
                     </span>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <td class="px-6 py-4 whitespace-nowrap text-sm" onclick="event.stopPropagation()">
                     <div class="flex justify-center items-center space-x-2">
                         @if($request->status === 'verified' && !$request->trip)
                         <button onclick="event.stopPropagation(); openAssignModalForRequest({{ $request->id }});" class="w-8 h-8 flex items-center justify-center bg-green-600 text-white rounded-full hover:bg-green-700 transition-colors" title="Assign Driver">
@@ -140,9 +167,3 @@
     </div>
 </div>
 @endif
-
-<script>
-function viewRequest(requestId) {
-    window.location.href = /requests/+requestId;
-}
-</script>
