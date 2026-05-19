@@ -102,8 +102,33 @@
         </div>
 
         @if($trips->hasPages())
-            <div class="px-4 py-4 border-t">
-                {{ $trips->links() }}
+            <div class="px-6 py-4 bg-white border-t border-gray-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <span class="text-sm text-gray-600">
+                    Showing {{ $trips->firstItem() }} to {{ $trips->lastItem() }} of {{ $trips->total() }} receipts
+                </span>
+                <div class="flex gap-3">
+                    @if($trips->onFirstPage())
+                        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
+                            <i class="fas fa-chevron-left mr-1"></i> Previous
+                        </span>
+                    @else
+                        <a href="{{ $trips->previousPageUrl() }}"
+                            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+                            <i class="fas fa-chevron-left mr-1"></i> Previous
+                        </a>
+                    @endif
+
+                    @if($trips->hasMorePages())
+                        <a href="{{ $trips->nextPageUrl() }}"
+                            class="px-4 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300 transition-colors">
+                            Next <i class="fas fa-chevron-right ml-1"></i>
+                        </a>
+                    @else
+                        <span class="px-4 py-2 rounded-md bg-gray-100 text-gray-400 cursor-not-allowed">
+                            Next <i class="fas fa-chevron-right ml-1"></i>
+                        </span>
+                    @endif
+                </div>
             </div>
         @endif
     </div>
