@@ -222,7 +222,7 @@
         <!-- Header -->
         <div class="header">
             <div class="report-id">Report #{{ $accident->id }}</div>
-            <h1>?? Accident Report</h1>
+            <h1>Accident Report</h1>
             <div class="subtitle">NVG Prime Movers Dispatch System</div>
         </div>
 
@@ -254,7 +254,7 @@
 
             <!-- Basic Information -->
             <div class="section">
-                <div class="section-title">?? Basic Information</div>
+                <div class="section-title">Basic Information</div>
                 <div class="info-grid">
                     <div class="info-box">
                         <div class="info-label">Accident Date & Time</div>
@@ -277,7 +277,7 @@
 
             <!-- Trip Information -->
             <div class="section">
-                <div class="section-title">?? Trip Information</div>
+                <div class="section-title">Trip Information</div>
                 <table>
                     <tr>
                         <th>Trip ID</th>
@@ -296,7 +296,7 @@
 
             <!-- Description -->
             <div class="section">
-                <div class="section-title">?? Accident Description</div>
+                <div class="section-title">Accident Description</div>
                 <div class="description-box">
                     <p>{{ $accident->description }}</p>
                 </div>
@@ -305,32 +305,32 @@
             <!-- Additional Details -->
             @if($accident->injuries || $accident->vehicle_damage || $accident->other_party_info || $accident->witness_info)
             <div class="section">
-                <div class="section-title">?? Additional Details</div>
+                <div class="section-title">Additional Details</div>
                 
                 @if($accident->injuries)
                 <div class="detail-box">
-                    <div class="detail-title">?? Injuries</div>
+                    <div class="detail-title">Injuries</div>
                     <p>{{ $accident->injuries }}</p>
                 </div>
                 @endif
 
                 @if($accident->vehicle_damage)
                 <div class="detail-box">
-                    <div class="detail-title">?? Vehicle Damage</div>
+                    <div class="detail-title">Vehicle Damage</div>
                     <p>{{ $accident->vehicle_damage }}</p>
                 </div>
                 @endif
 
                 @if($accident->other_party_info)
                 <div class="detail-box">
-                    <div class="detail-title">?? Other Party Information</div>
+                    <div class="detail-title">Other Party Information</div>
                     <p>{{ $accident->other_party_info }}</p>
                 </div>
                 @endif
 
                 @if($accident->witness_info)
                 <div class="detail-box">
-                    <div class="detail-title">??? Witness Information</div>
+                    <div class="detail-title">Witness Information</div>
                     <p>{{ $accident->witness_info }}</p>
                 </div>
                 @endif
@@ -340,7 +340,7 @@
             <!-- Police Report -->
             @if($accident->police_report_filed || $accident->police_report_number)
             <div class="section">
-                <div class="section-title">?? Police Report</div>
+                <div class="section-title">Police Report</div>
                 <div class="info-grid">
                     <div class="info-box">
                         <div class="info-label">Report Filed</div>
@@ -360,7 +360,7 @@
 
             <!-- Action & Cost -->
             <div class="section">
-                <div class="section-title">?? Action & Costs</div>
+                <div class="section-title">Action & Costs</div>
                 <div class="info-grid">
                     @if($accident->action_taken)
                     <div class="info-box" style="grid-column: span 1;">
@@ -373,7 +373,7 @@
                     <div class="info-box">
                         <div class="info-label">Estimated Damage Cost</div>
                         <div class="info-value" style="font-size: 24px; color: #dc2626;">
-                            ?{{ number_format($accident->estimated_damage_cost, 2) }}
+                            PHP {{ number_format($accident->estimated_damage_cost, 2) }}
                         </div>
                     </div>
                     @endif
@@ -383,7 +383,7 @@
             <!-- Resolution -->
             @if($accident->status === 'resolved' || $accident->status === 'closed')
             <div class="section">
-                <div class="section-title">? Resolution</div>
+                <div class="section-title">Resolution</div>
                 <div class="info-box" style="border-left-color: #059669; background: #d1fae5;">
                     @if($accident->resolved_at)
                     <div class="info-label">Resolved At</div>

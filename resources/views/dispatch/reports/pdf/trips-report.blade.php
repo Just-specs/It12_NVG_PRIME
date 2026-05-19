@@ -471,7 +471,6 @@
 
     <!-- Print Button -->
     <button onclick="window.print()" class="print-button no-print">
-        <span>???</span>
         <span>Print / Save as PDF</span>
     </button>
 
@@ -486,7 +485,7 @@
                     <div class="company-name">NVG Prime Movers</div>
                     <h1 class="report-title">Trip Report</h1>
                     <div class="report-period">
-                        <span class="report-period-icon">??</span>
+                        <span class="report-period-icon">Period:</span>
                         <span>{{ $period }}</span>
                     </div>
                 </div>
@@ -503,27 +502,27 @@
         <div class="stats-section">
             <div class="stats-grid">
                 <div class="stat-card total">
-                    <div class="stat-icon">??</div>
+                    <div class="stat-icon">#</div>
                     <div class="stat-label">Total Trips</div>
                     <div class="stat-value">{{ $stats['total_trips'] }}</div>
                 </div>
                 <div class="stat-card completed">
-                    <div class="stat-icon">?</div>
+                    <div class="stat-icon">OK</div>
                     <div class="stat-label">Completed</div>
                     <div class="stat-value">{{ $stats['completed'] }}</div>
                 </div>
                 <div class="stat-card in-transit">
-                    <div class="stat-icon">??</div>
+                    <div class="stat-icon">ON</div>
                     <div class="stat-label">In Transit</div>
                     <div class="stat-value">{{ $stats['in_transit'] }}</div>
                 </div>
                 <div class="stat-card scheduled">
-                    <div class="stat-icon">??</div>
+                    <div class="stat-icon">SCH</div>
                     <div class="stat-label">Scheduled</div>
                     <div class="stat-value">{{ $stats['scheduled'] }}</div>
                 </div>
                 <div class="stat-card cancelled">
-                    <div class="stat-icon">?</div>
+                    <div class="stat-icon">X</div>
                     <div class="stat-label">Cancelled</div>
                     <div class="stat-value">{{ $stats['cancelled'] }}</div>
                 </div>
@@ -572,7 +571,7 @@
                     <tr>
                         <td colspan="9">
                             <div class="no-data">
-                                <div class="no-data-icon">??</div>
+                                <div class="no-data-icon">No Data</div>
                                 <div class="no-data-text">No trips found for this period</div>
                             </div>
                         </td>
@@ -584,7 +583,7 @@
 
         <!-- Footer -->
         <div class="footer">
-            <div class="footer-timestamp">?? Report generated on {{ $generated_at }}</div>
+            <div class="footer-timestamp">Report generated on {{ $generated_at }}</div>
             <div class="footer-text">NVG Prime Movers Dispatch Management System | Confidential Document</div>
         </div>
     </div>
