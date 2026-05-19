@@ -4,7 +4,6 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 use App\Traits\Auditable;
 use Carbon\Carbon;
 
@@ -22,7 +21,6 @@ class Trip extends Model
         'driver_payroll',
         'driver_allowance',
         'official_receipt_number',
-        'receipt_path',
         'eir_datetime',
         'served_by',
         'scheduled_time',
@@ -159,16 +157,6 @@ class Trip extends Model
     public function notifications()
     {
         return $this->hasMany(ClientNotification::class);
-    }
-
-    public function getReceiptUrlAttribute(): ?string
-    {
-        return $this->receipt_path ? Storage::disk($this->mediaDisk())->url($this->receipt_path) : null;
-    }
-
-    public function mediaDisk(): string
-    {
-        return config('filesystems.default') === 's3' ? 's3' : 'public';
     }
 
     /**

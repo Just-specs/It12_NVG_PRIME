@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Add New Vehicle')
+@section('title', 'Add New Driver')
 
 @section('content')
 <div class="container mx-auto px-4 max-w-2xl">
     <div class="mb-6">
-        <a href="{{ route('vehicles.index') }}" class="inline-flex items-center gap-2 px-4 py-2 font-medium text-white bg-[#2563EB] rounded-full hover:bg-blue-700 transition-colors">
+        <a href="{{ route('drivers.index') }}" class="inline-flex items-center gap-2 px-4 py-2 font-medium text-white bg-[#2563EB] rounded-full hover:bg-blue-700 transition-colors">
             <i class="fas fa-arrow-left"></i>
             Back
         </a>
@@ -13,70 +13,43 @@
 
     <div class="bg-white rounded-lg shadow-md p-6">
         <h1 class="text-2xl font-bold text-gray-800 mb-6">
-            <i class="fas fa-truck text-blue-600"></i> Add New Vehicle
+            <i class="fas fa-user-plus text-blue-600"></i> Add New Driver
         </h1>
 
-        <form id="create-vehicle-form" method="POST" action="{{ route('vehicles.store') }}" enctype="multipart/form-data">
+        <form id="create-driver-form" method="POST" action="{{ route('drivers.store') }}">
             @csrf
             <input type="hidden" name="confirm_duplicate" id="confirm_duplicate" value="0">
 
             <div class="space-y-4">
-                <!-- Plate Number -->
+                <!-- Name -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Plate Number <span class="text-red-500">*</span>
+                        Driver Name <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="plate_number" id="plate_number" required value="{{ old('plate_number') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter plate number (e.g., ABC-1234)">
-                    @error('plate_number')
+                    <input type="text" name="name" id="driver_name" required value="{{ old('name') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter driver name">
+                    @error('name')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Vehicle Type -->
+                <!-- Mobile -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Vehicle Type <span class="text-red-500">*</span>
+                        Mobile Number <span class="text-red-500">*</span>
                     </label>
-                    <select name="vehicle_type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Select vehicle type</option>
-                        <option value="Prime Mover" {{ old('vehicle_type') == 'Prime Mover' ? 'selected' : '' }}>Prime Mover</option>
-                        <option value="Truck" {{ old('vehicle_type') == 'Truck' ? 'selected' : '' }}>Truck</option>
-                        <option value="Trailer Truck" {{ old('vehicle_type') == 'Trailer Truck' ? 'selected' : '' }}>Trailer Truck</option>
-                        <option value="Van" {{ old('vehicle_type') == 'Van' ? 'selected' : '' }}>Van</option>
-                        <option value="Pickup" {{ old('vehicle_type') == 'Pickup' ? 'selected' : '' }}>Pickup</option>
-                    </select>
-                    @error('vehicle_type')
+                    <input type="text" name="mobile" required value="{{ old('mobile') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="+63 XXX XXX XXXX">
+                    @error('mobile')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Trailer Type -->
+                <!-- License Number -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Trailer Type <span class="text-red-500">*</span>
+                        License Number <span class="text-red-500">*</span>
                     </label>
-                    <select name="trailer_type" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="">Select trailer type</option>
-                        <option value="Flatbed" {{ old('trailer_type') == 'Flatbed' ? 'selected' : '' }}>Flatbed</option>
-                        <option value="Container" {{ old('trailer_type') == 'Container' ? 'selected' : '' }}>Container</option>
-                        <option value="Lowbed" {{ old('trailer_type') == 'Lowbed' ? 'selected' : '' }}>Lowbed</option>
-                        <option value="Refrigerated" {{ old('trailer_type') == 'Refrigerated' ? 'selected' : '' }}>Refrigerated</option>
-                        <option value="Tanker" {{ old('trailer_type') == 'Tanker' ? 'selected' : '' }}>Tanker</option>
-                        <option value="N/A" {{ old('trailer_type') == 'N/A' ? 'selected' : '' }}>N/A</option>
-                    </select>
-                    @error('trailer_type')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Vehicle Photo -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Vehicle Photo
-                    </label>
-                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <p class="text-xs text-gray-500 mt-1">Optional. JPG, PNG, or WEBP up to 4 MB.</p>
-                    @error('photo')
+                    <input type="text" name="license_number" id="license_number" required value="{{ old('license_number') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Enter license number">
+                    @error('license_number')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -88,10 +61,22 @@
                     </label>
                     <select name="status" required class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="available" {{ old('status') == 'available' ? 'selected' : '' }}>Available</option>
-                        <option value="in-use" {{ old('status') == 'in-use' ? 'selected' : '' }}>In Use</option>
-                        <option value="maintenance" {{ old('status') == 'maintenance' ? 'selected' : '' }}>Maintenance</option>
+                        <option value="on-trip" {{ old('status') == 'on-trip' ? 'selected' : '' }}>On Trip</option>
+                        <option value="off-duty" {{ old('status') == 'off-duty' ? 'selected' : '' }}>Off Duty</option>
                     </select>
                     @error('status')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                    </label>
+                        @foreach($availableDrivers as $availableDriver)
+                                {{ $availableDriver->name }} ({{ ucfirst($availableDriver->status) }})
+                            </option>
+                        @endforeach
+                    </select>
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
@@ -100,7 +85,7 @@
             <!-- Submit Button -->
             <div class="flex justify-end mt-6">
                 <button type="submit" id="submit-btn" class="px-6 py-2 bg-[#2563EB] text-white rounded-lg transition-colors hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:ring-offset-2">
-                    <i class="fas fa-save"></i> Save Vehicle
+                    <i class="fas fa-save"></i> Save Driver
                 </button>
             </div>
         </form>
@@ -116,11 +101,11 @@
                     <i class="fas fa-exclamation-triangle text-yellow-500 text-3xl"></i>
                 </div>
                 <div class="flex-1">
-                    <h2 class="text-lg font-semibold text-gray-800">Similar Plate Numbers Found</h2>
-                    <p class="mt-2 text-sm text-gray-600">The following vehicles have similar plate numbers. Are you sure you want to add another vehicle?</p>
+                    <h2 class="text-lg font-semibold text-gray-800">Similar Driver Names or License Numbers Found</h2>
+                    <p class="mt-2 text-sm text-gray-600">The following drivers have similar information. Are you sure you want to add another driver?</p>
                     
-                    <div id="similar-vehicles-list" class="mt-4 space-y-2 max-h-48 overflow-y-auto">
-                        <!-- Similar vehicles will be inserted here -->
+                    <div id="similar-drivers-list" class="mt-4 space-y-2 max-h-48 overflow-y-auto">
+                        <!-- Similar drivers will be inserted here -->
                     </div>
 
                     <div class="mt-6 flex justify-end gap-3">
@@ -139,27 +124,30 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const form = document.getElementById('create-vehicle-form');
-    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    const form = document.getElementById('create-driver-form');
     const modal = document.getElementById('duplicate-modal');
     const cancelBtn = document.getElementById('cancel-btn');
     const proceedBtn = document.getElementById('proceed-btn');
     const confirmDuplicateInput = document.getElementById('confirm_duplicate');
-    const similarVehiclesList = document.getElementById('similar-vehicles-list');
+    const similarDriversList = document.getElementById('similar-drivers-list');
     const submitBtn = document.getElementById('submit-btn');
 
-    const showModal = (similarVehicles) => {
-        similarVehiclesList.innerHTML = '';
-        similarVehicles.forEach(vehicle => {
+    // Get CSRF token from meta tag
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+    const showModal = (similarDrivers) => {
+        // Build list of similar drivers
+        similarDriversList.innerHTML = '';
+        similarDrivers.forEach(driver => {
             const div = document.createElement('div');
             div.className = 'p-3 bg-yellow-50 border border-yellow-200 rounded-lg';
             div.innerHTML = `
-                <p class="font-semibold text-gray-800">${vehicle.plate_number}</p>
-                ${vehicle.vehicle_type ? `<p class="text-xs text-gray-600">Type: ${vehicle.vehicle_type}</p>` : ''}
-                ${vehicle.trailer_type ? `<p class="text-xs text-gray-600">Trailer: ${vehicle.trailer_type}</p>` : ''}
-                <p class="text-xs text-gray-500">Status: ${vehicle.status}</p>
+                <p class="font-semibold text-gray-800">${driver.name}</p>
+                ${driver.license_number ? `<p class="text-xs text-gray-600">License: ${driver.license_number}</p>` : ''}
+                ${driver.mobile ? `<p class="text-xs text-gray-600">Mobile: ${driver.mobile}</p>` : ''}
+                <p class="text-xs text-gray-500">Status: ${driver.status}</p>
             `;
-            similarVehiclesList.appendChild(div);
+            similarDriversList.appendChild(div);
         });
 
         modal.classList.remove('hidden');
@@ -175,11 +163,13 @@ document.addEventListener('DOMContentLoaded', function () {
         e.preventDefault();
 
         if (confirmDuplicateInput.value === '1') {
+            // User already confirmed, submit the form normally
             form.removeEventListener('submit', arguments.callee);
             form.submit();
             return;
         }
 
+        // Check for duplicates via AJAX
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
 
@@ -190,7 +180,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json',
-                    'X-CSRF-TOKEN': csrfToken
+                    'X-CSRF-TOKEN': csrfToken  // FIX: Add CSRF token to headers
                 },
                 body: formData
             });
@@ -198,18 +188,29 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await response.json();
 
             if (data.requires_confirmation) {
-                showModal(data.similar_vehicles);
+                // Show duplicate warning modal
+                showModal(data.similar_drivers);
             } else if (data.success) {
+                // No duplicates, redirect to success page
                 window.location.href = data.redirect;
             } else {
-                alert(data.message || 'An error occurred');
+                // Handle validation errors or other errors
+                if (data.errors) {
+                    let errorMsg = 'Validation errors:\n';
+                    for (const [field, messages] of Object.entries(data.errors)) {
+                        errorMsg += `\n${field}: ${messages.join(', ')};
+                    }
+                    alert(errorMsg);
+                } else {
+                    alert(data.message || 'An error occurred');
+                }
             }
         } catch (error) {
             console.error('Error:', error);
-            alert('An error occurred while checking for duplicates');
+            alert('An error occurred while checking for duplicates. Check browser console for details.');
         } finally {
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Vehicle';
+            submitBtn.innerHTML = '<i class="fas fa-save"></i> Save Driver';
         }
     });
 
@@ -236,4 +237,3 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 @endsection
-

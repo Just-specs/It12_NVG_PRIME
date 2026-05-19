@@ -17,13 +17,9 @@
         <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-white">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-6">
-                    @if($driver->photo_url)
-                        <img src="{{ $driver->photo_url }}" alt="{{ $driver->name }} photo" class="w-24 h-24 rounded-full object-cover border-4 border-white shadow">
-                    @else
-                        <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center">
-                            <i class="fas fa-user-tie text-blue-600 text-4xl"></i>
-                        </div>
-                    @endif
+                    <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center">
+                        <i class="fas fa-user-tie text-blue-600 text-4xl"></i>
+                    </div>
                     <div>
                         <h1 class="text-3xl font-bold mb-2">{{ $driver->name }}</h1>
                         <p class="text-blue-100 mb-1">

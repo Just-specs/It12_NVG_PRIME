@@ -4,13 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 use App\Traits\Auditable;
 
 class Driver extends Model
 {
     use SoftDeletes, Auditable;
-    protected $fillable = ['name', 'mobile', 'license_number', 'photo_path', 'status', 'deleted_by'];
+    protected $fillable = ['name', 'mobile', 'license_number',  'status', 'deleted_by'];
 
     public function trips()
     {
@@ -25,16 +24,6 @@ class Driver extends Model
     public function scopeAvailable($query)
     {
         return $query->where('status', 'available');
-    }
-
-    public function getPhotoUrlAttribute(): ?string
-    {
-        return $this->photo_path ? Storage::disk($this->mediaDisk())->url($this->photo_path) : null;
-    }
-
-    public function mediaDisk(): string
-    {
-        return config('filesystems.default') === 's3' ? 's3' : 'public';
     }
 
     /**

@@ -444,7 +444,7 @@
             @endif
 
             <!-- Logout -->
-            <form id="logout-form" method="POST" action="{{ route('logout') }}" class="block">
+            <form id="logout-form" method="POST" action="{{ secure_url('/logout') }}" class="block">
                 @csrf
                 <button id="logout-button" type="button"
                     class="w-full flex items-center px-4 py-3 rounded-lg transition group text-white hover:bg-red-600">

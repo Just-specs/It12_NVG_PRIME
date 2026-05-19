@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Vehicle;
 use App\Models\Trip;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
 class VehicleController extends Controller
 {
@@ -86,7 +85,6 @@ class VehicleController extends Controller
             'plate_number' => 'required|string|unique:vehicles,plate_number',
             'vehicle_type' => 'required|string',
             'trailer_type' => 'required|string',
-            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
             'status' => 'sometimes|in:available,in-use,maintenance',
             'confirm_duplicate' => 'nullable|boolean',
         ]);
@@ -103,12 +101,6 @@ class VehicleController extends Controller
                 ], 200);
             }
         }
-
-        if ($request->hasFile('photo')) {
-            $validated['photo_path'] = $request->file('photo')->store('vehicles', $this->mediaDisk());
-        }
-
-        unset($validated['photo']);
 
         $vehicle = Vehicle::create($validated);
 
@@ -154,7 +146,6 @@ class VehicleController extends Controller
             'plate_number' => 'required|string|unique:vehicles,plate_number,' . $vehicle->id,
             'vehicle_type' => 'required|string',
             'trailer_type' => 'required|string',
-            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
             'confirm_duplicate' => 'nullable|boolean',
         ]);
 
@@ -170,16 +161,6 @@ class VehicleController extends Controller
                 ], 200);
             }
         }
-
-        if ($request->hasFile('photo')) {
-            if ($vehicle->photo_path) {
-                Storage::disk($this->mediaDisk())->delete($vehicle->photo_path);
-            }
-
-            $validated['photo_path'] = $request->file('photo')->store('vehicles', $this->mediaDisk());
-        }
-
-        unset($validated['photo']);
 
         $vehicle->update($validated);
 
@@ -439,10 +420,6 @@ class VehicleController extends Controller
             ->route('vehicles.deleted')
             ->with('success', 'Vehicle permanently deleted.');
     }
-
-    private function mediaDisk(): string
-    {
-        return config('filesystems.default') === 's3' ? 's3' : 'public';
-    }
 }
+
 

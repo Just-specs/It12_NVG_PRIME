@@ -14,7 +14,16 @@
             @forelse($drivers as $driver)
             <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='{{ route('drivers.show', $driver) }}'">
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{ $driver->name }}</div>
+                    <div class="flex items-center gap-3">
+                        @if($driver->photo_url)
+                            <img src="{{ $driver->photo_url }}" alt="{{ $driver->name }} photo" class="h-10 w-10 rounded-full object-cover border">
+                        @else
+                            <div class="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-user text-blue-600"></i>
+                            </div>
+                        @endif
+                        <div class="text-sm font-medium text-gray-900">{{ $driver->name }}</div>
+                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     <i class="fas fa-phone text-blue-500"></i> {{ $driver->mobile }}
@@ -30,8 +39,13 @@
                     @if($allCoDrivers->count() > 0)
                         <div class="flex flex-wrap gap-1">
                             @foreach($allCoDrivers as $coDriver)
-                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                                    <i class="fas fa-user-friends mr-1"></i>{{ $coDriver->name }}
+                                <span class="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                                    @if($coDriver->photo_url)
+                                        <img src="{{ $coDriver->photo_url }}" alt="{{ $coDriver->name }} photo" class="h-4 w-4 rounded-full object-cover">
+                                    @else
+                                        <i class="fas fa-user-friends"></i>
+                                    @endif
+                                    {{ $coDriver->name }}
                                 </span>
                             @endforeach
                         </div>

@@ -200,6 +200,7 @@
                     </div>
                 </div>
 
+
                         @if($trip->driver_allowance)
                         <div>
                             <p class="text-sm text-gray-600">Driver Allowance</p>

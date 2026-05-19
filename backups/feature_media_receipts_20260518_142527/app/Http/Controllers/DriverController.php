@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Driver;
-use Illuminate\Support\Facades\Storage;
 
 
 class DriverController extends Controller
@@ -89,7 +88,6 @@ class DriverController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
             'license_number' => 'required|string|max:50|unique:drivers,license_number',
-            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
             
             'status' => 'sometimes|in:available,on-trip,off-duty',
             'confirm_duplicate' => 'nullable|boolean',
@@ -131,12 +129,6 @@ class DriverController extends Controller
         if (!isset($validated['status'])) {
             $validated['status'] = 'available';
         }
-
-        if ($request->hasFile('photo')) {
-            $validated['photo_path'] = $request->file('photo')->store('drivers', $this->mediaDisk());
-        }
-
-        unset($validated['photo']);
 
         $driver = Driver::create($validated);
 
@@ -198,7 +190,6 @@ class DriverController extends Controller
             'name' => 'required|string|max:255',
             'mobile' => 'required|string|max:20',
             'license_number' => 'required|string|max:50',
-            'photo' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
             
             'confirm_duplicate' => 'nullable|boolean',
         ]);
@@ -217,16 +208,6 @@ class DriverController extends Controller
                 ], 200);
             }
         }
-
-        if ($request->hasFile('photo')) {
-            if ($driver->photo_path) {
-                Storage::disk($this->mediaDisk())->delete($driver->photo_path);
-            }
-
-            $validated['photo_path'] = $request->file('photo')->store('drivers', $this->mediaDisk());
-        }
-
-        unset($validated['photo']);
 
         $driver->update($validated);
 
@@ -511,10 +492,5 @@ class DriverController extends Controller
         return redirect()
             ->back()
             ->with('success', $coDriver->name . ' has been removed as a co-driver.');
-    }
-
-    private function mediaDisk(): string
-    {
-        return config('filesystems.default') === 's3' ? 's3' : 'public';
     }
 }

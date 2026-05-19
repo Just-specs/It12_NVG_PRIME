@@ -22,7 +22,7 @@
         </div>
 
         <!-- Form -->
-        <form id="edit-driver-form" method="POST" action="{{ route('drivers.update', $driver) }}" class="p-6" enctype="multipart/form-data">
+        <form id="edit-driver-form" method="POST" action="{{ route('drivers.update', $driver) }}" class="p-6">
             @csrf
             @method('PUT')
             <input type="hidden" name="confirm_duplicate" id="confirm_duplicate" value="0">
@@ -77,21 +77,6 @@
                 @enderror
             </div>
 
-
-            <!-- Driver Photo -->
-            <div class="mb-6">
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Driver / Co-Driver Photo
-                </label>
-                @if($driver->photo_url)
-                    <img src="{{ $driver->photo_url }}" alt="{{ $driver->name }} photo" class="mb-3 h-28 w-28 rounded-lg object-cover border">
-                @endif
-                <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                <p class="text-xs text-gray-500 mt-1">Optional. Uploading a new photo replaces the current one.</p>
-                @error('photo')
-                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                @enderror
-            </div>
 
             <!-- Buttons -->
             <div class="flex gap-3 pt-4 border-t">

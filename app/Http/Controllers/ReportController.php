@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class ReportController extends Controller
 {
@@ -424,6 +425,70 @@ class ReportController extends Controller
         return view('dispatch.reports.trip-summary', compact('summary', 'recentTrips'));
     }
 
+    public function receipts(Request $request)
+    {
+        $query = Trip::with(['deliveryRequest.client', 'driver', 'vehicle'])
+            ->orderByDesc('scheduled_time')
+            ->orderByDesc('created_at');
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('official_receipt_number', 'like', "%{$search}%")
+                    ->orWhere('waybill_number', 'like', "%{$search}%")
+                    ->orWhereHas('deliveryRequest', function ($requestQuery) use ($search) {
+                        $requestQuery->where('atw_reference', 'like', "%{$search}%")
+                            ->orWhereHas('client', function ($clientQuery) use ($search) {
+                                $clientQuery->where('name', 'like', "%{$search}%");
+                            });
+                    });
+            });
+        }
+
+        $trips = $query->paginate(15)->withQueryString();
+
+        return view('dispatch.reports.receipts', compact('trips'));
+    }
+
+    public function updateReceipt(Request $request, Trip $trip)
+    {
+        $validated = $request->validate([
+            'official_receipt_number' => 'nullable|string|max:255',
+            'receipt' => 'nullable|file|mimes:jpg,jpeg,png,webp,pdf|max:10240',
+        ]);
+
+        if (empty($validated['official_receipt_number']) && !$request->hasFile('receipt')) {
+            return redirect()
+                ->back()
+                ->with('error', 'Enter an OR number or upload a receipt file.');
+        }
+
+        $updates = [
+            'official_receipt_number' => $validated['official_receipt_number'] ?? $trip->official_receipt_number,
+        ];
+
+        if ($request->hasFile('receipt')) {
+            if ($trip->receipt_path) {
+                Storage::disk($this->mediaDisk())->delete($trip->receipt_path);
+            }
+
+            $updates['receipt_path'] = $request->file('receipt')->store('receipts', $this->mediaDisk());
+        }
+
+        $trip->update($updates);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Receipt saved to reports successfully.');
+    }
+
+    public function printReceipt(Trip $trip)
+    {
+        $trip->load(['deliveryRequest.client', 'driver', 'vehicle']);
+
+        return view('dispatch.reports.receipt-print', compact('trip'));
+    }
+
     public function dispatchSheet(Request $request)
     {
         $date = $request->input('date') ? Carbon::parse($request->input('date')) : Carbon::today();
@@ -551,5 +616,10 @@ class ReportController extends Controller
     {
         // Implement Google Sheets export
         return redirect()->back()->with('info', 'Google Sheets export feature coming soon.');
+    }
+
+    private function mediaDisk(): string
+    {
+        return config('filesystems.default') === 's3' ? 's3' : 'public';
     }
 }

@@ -88,6 +88,22 @@
                         View Accident Reports
                     </a>
                 </div>
+
+                <!-- Receipt Reports -->
+                <div class="p-4 hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="bg-yellow-100 p-2 rounded-lg">
+                            <i class="fas fa-receipt text-yellow-700"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h4 class="font-semibold text-gray-800">Receipt Reports</h4>
+                            <p class="text-xs text-gray-600">Upload and print official receipts</p>
+                        </div>
+                    </div>
+                    <a href="{{ route('reports.receipts') }}" class="block w-full text-center bg-yellow-600 text-white px-3 py-2 rounded hover:bg-yellow-700 transition text-sm">
+                        Manage Receipts
+                    </a>
+                </div>
             </div>
         </div>
     </div>

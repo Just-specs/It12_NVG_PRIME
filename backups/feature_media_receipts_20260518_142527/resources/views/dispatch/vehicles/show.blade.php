@@ -17,13 +17,9 @@
         <div class="bg-gradient-to-r from-green-600 to-green-700 px-6 py-8 text-white">
             <div class="flex items-center justify-between">
                 <div class="flex items-center gap-6">
-                    @if($vehicle->photo_url)
-                        <img src="{{ $vehicle->photo_url }}" alt="{{ $vehicle->plate_number }} photo" class="w-28 h-24 rounded-lg object-cover border-4 border-white shadow">
-                    @else
-                        <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center">
-                            <i class="fas fa-truck text-green-600 text-4xl"></i>
-                        </div>
-                    @endif
+                    <div class="w-24 h-24 rounded-full bg-white flex items-center justify-center">
+                        <i class="fas fa-truck text-green-600 text-4xl"></i>
+                    </div>
                     <div>
                         <h1 class="text-3xl font-bold mb-2">{{ $vehicle->plate_number }}</h1>
                         <p class="text-green-100 mb-1">

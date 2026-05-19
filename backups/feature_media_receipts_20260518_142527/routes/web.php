@@ -155,9 +155,6 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('reports')->name('reports.')->group(function () {
         // Main reports page
         Route::get('/', [ReportController::class, 'index'])->name('index');
-        Route::get('/receipts', [ReportController::class, 'receipts'])->name('receipts');
-        Route::post('/receipts/{trip}', [ReportController::class, 'updateReceipt'])->name('receipts.update');
-        Route::get('/receipts/{trip}/print', [ReportController::class, 'printReceipt'])->name('receipts.print');
 
         // Time-based reports
         Route::get('/daily', [ReportController::class, 'dailyReport'])->name('daily');

@@ -16,7 +16,7 @@
             <i class="fas fa-truck text-blue-600"></i> Add New Vehicle
         </h1>
 
-        <form id="create-vehicle-form" method="POST" action="{{ route('vehicles.store') }}" enctype="multipart/form-data">
+        <form id="create-vehicle-form" method="POST" action="{{ route('vehicles.store') }}">
             @csrf
             <input type="hidden" name="confirm_duplicate" id="confirm_duplicate" value="0">
 
@@ -65,18 +65,6 @@
                         <option value="N/A" {{ old('trailer_type') == 'N/A' ? 'selected' : '' }}>N/A</option>
                     </select>
                     @error('trailer_type')
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Vehicle Photo -->
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Vehicle Photo
-                    </label>
-                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    <p class="text-xs text-gray-500 mt-1">Optional. JPG, PNG, or WEBP up to 4 MB.</p>
-                    @error('photo')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>

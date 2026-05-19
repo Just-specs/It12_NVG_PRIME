@@ -16,7 +16,7 @@
             <i class="fas fa-user-plus text-blue-600"></i> Add New Driver
         </h1>
 
-        <form id="create-driver-form" method="POST" action="{{ route('drivers.store') }}">
+        <form id="create-driver-form" method="POST" action="{{ route('drivers.store') }}" enctype="multipart/form-data">
             @csrf
             <input type="hidden" name="confirm_duplicate" id="confirm_duplicate" value="0">
 
@@ -54,6 +54,18 @@
                     @enderror
                 </div>
 
+                <!-- Driver Photo -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Driver / Co-Driver Photo
+                    </label>
+                    <input type="file" name="photo" accept="image/jpeg,image/png,image/webp" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                    <p class="text-xs text-gray-500 mt-1">Optional. JPG, PNG, or WEBP up to 4 MB.</p>
+                    @error('photo')
+                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Status -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -69,17 +81,6 @@
                     @enderror
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                    </label>
-                        @foreach($availableDrivers as $availableDriver)
-                                {{ $availableDriver->name }} ({{ ucfirst($availableDriver->status) }})
-                            </option>
-                        @endforeach
-                    </select>
-                    <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
             </div>
 
             <!-- Submit Button -->

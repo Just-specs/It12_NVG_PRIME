@@ -13,7 +13,16 @@
             @forelse($vehicles as $vehicle)
             <tr class="hover:bg-gray-50 cursor-pointer" onclick="window.location.href='{{ route('vehicles.show', $vehicle) }}'">
                 <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-sm font-medium text-gray-900">{{ $vehicle->plate_number }}</div>
+                    <div class="flex items-center gap-3">
+                        @if($vehicle->photo_url)
+                            <img src="{{ $vehicle->photo_url }}" alt="{{ $vehicle->plate_number }} photo" class="h-10 w-14 rounded object-cover border">
+                        @else
+                            <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-truck text-green-600"></i>
+                            </div>
+                        @endif
+                        <div class="text-sm font-medium text-gray-900">{{ $vehicle->plate_number }}</div>
+                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                     <i class="fas fa-truck text-purple-500"></i> {{ $vehicle->vehicle_type }}
