@@ -16,7 +16,37 @@
         </thead>
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse($trips as $trip)
-            <tr class="hover:bg-gray-50 cursor-pointer transition-colors" onclick="viewTrip({{ $trip->id }})" data-trip-id="{{ $trip->id }}">
+            @php
+                $deliveryRequest = $trip->deliveryRequest;
+                $client = $deliveryRequest?->client;
+                $driver = $trip->driver;
+                $vehicle = $trip->vehicle;
+                $vehicleType = trim(($vehicle?->vehicle_type ?? 'N/A') . ($vehicle?->trailer_type ? ' (' . $vehicle->trailer_type . ')' : ''));
+                $canUpdateTrip = in_array($trip->status, ['scheduled', 'in-transit'], true);
+            @endphp
+            <tr class="view-trip-btn hover:bg-gray-50 cursor-pointer transition-colors"
+                data-trip-id="{{ $trip->id }}"
+                data-client-name="{{ $client?->name ?? 'Client Deleted' }}"
+                data-atw-reference="{{ $deliveryRequest?->atw_reference ?? 'N/A' }}"
+                data-driver-name="{{ $driver?->name ?? 'Driver Deleted' }}"
+                data-driver-mobile="{{ $driver?->mobile ?? 'N/A' }}"
+                data-vehicle-plate="{{ $vehicle?->plate_number ?? 'Vehicle Deleted' }}"
+                data-vehicle-type="{{ $vehicleType }}"
+                data-container-size="{{ $deliveryRequest?->container_size ?? 'N/A' }}"
+                data-container-type="{{ $deliveryRequest?->container_type ?? 'N/A' }}"
+                data-pickup="{{ $deliveryRequest?->pickup_location ?? 'N/A' }}"
+                data-delivery="{{ $deliveryRequest?->delivery_location ?? 'N/A' }}"
+                data-scheduled-date="{{ $trip->scheduled_time?->format('M d, Y') ?? 'N/A' }}"
+                data-scheduled-time="{{ $trip->scheduled_time?->format('h:i A') ?? 'N/A' }}"
+                data-route-instructions="{{ $trip->route_instructions ?? '' }}"
+                data-status="{{ $trip->status }}"
+                data-created-at="{{ $trip->created_at?->format('M d, Y h:i A') ?? 'N/A' }}"
+                data-start-time="{{ $trip->actual_start_time?->format('M d, Y h:i A') ?? '' }}"
+                data-complete-time="{{ $trip->actual_end_time?->format('M d, Y h:i A') ?? '' }}"
+                data-start-url="{{ $trip->status === 'scheduled' ? route('trips.start', $trip) : '' }}"
+                data-complete-url="{{ $trip->status === 'in-transit' ? route('trips.complete', $trip) : '' }}"
+                data-cancel-url="{{ $canUpdateTrip ? route('trips.cancel', $trip) : '' }}"
+                data-view-url="{{ route('trips.show', $trip) }}">
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm font-medium text-gray-900">
                         @if($trip->deliveryRequest && $trip->deliveryRequest->client)
@@ -65,14 +95,14 @@
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">
                     <i class="fas fa-map-marker-alt text-green-500"></i>
-                    {{ Str::limit($trip->deliveryRequest->pickup_location, 30) }}
+                    {{ Str::limit($deliveryRequest?->pickup_location ?? 'N/A', 30) }}
                 </td>
                 <td class="px-6 py-4 text-sm text-gray-600">
                     <i class="fas fa-flag-checkered text-red-500"></i>
-                    {{ Str::limit($trip->deliveryRequest->delivery_location, 30) }}
+                    {{ Str::limit($deliveryRequest?->delivery_location ?? 'N/A', 30) }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {{ $trip->scheduled_time->format('M d, h:i A') }}
+                    {{ $trip->scheduled_time?->format('M d, h:i A') ?? 'N/A' }}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-2">
@@ -219,10 +249,6 @@
 </div>
 
 <script>
-function viewTrip(tripId) {
-    window.location.href = `/trips/${tripId}`;
-}
-
 // Show delay reason modal
 function showDelayReasonModal(tripId, reason, detectedAt, reportedBy, minutes) {
     document.getElementById('delay-trip-id').textContent = tripId;
