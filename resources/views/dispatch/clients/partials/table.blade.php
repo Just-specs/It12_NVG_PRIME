@@ -37,9 +37,23 @@
                         
                         <!-- Delete Icon -->
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
-                        <a href="{{ route('clients.requestDelete', $client) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Request Delete">
+                        <button type="button"
+                            class="open-delete-request-modal w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            title="Request Delete"
+                            onclick="event.preventDefault(); event.stopPropagation(); window.openDeleteRequestModal(this);"
+                            data-delete-action="{{ route('clients.submitDeleteRequest', $client) }}"
+                            data-delete-resource="client"
+                            data-delete-heading="Client to be Deleted:"
+                            data-delete-label-1="Name"
+                            data-delete-value-1="{{ $client->name }}"
+                            data-delete-label-2="Email"
+                            data-delete-value-2="{{ $client->email ?? 'N/A' }}"
+                            data-delete-label-3="Mobile"
+                            data-delete-value-3="{{ $client->mobile ?? 'N/A' }}"
+                            data-delete-label-4="Company"
+                            data-delete-value-4="{{ $client->company ?? 'N/A' }}">
                             <i class="fas fa-trash"></i>
-                        </a>
+                        </button>
                         @endif
                     </div>
                 </td>

@@ -118,9 +118,25 @@
                         </button>
                         @endif
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
-                        <a href="{{ route('requests.requestDelete', $request) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Request Delete">
+                        <button type="button"
+                            class="open-delete-request-modal w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            title="Request Delete"
+                            onclick="event.preventDefault(); event.stopPropagation(); window.openDeleteRequestModal(this);"
+                            data-delete-action="{{ route('requests.submitDeleteRequest', $request) }}"
+                            data-delete-resource="delivery request"
+                            data-delete-heading="Delivery Request to be Deleted:"
+                            data-delete-label-1="ATW Reference"
+                            data-delete-value-1="{{ $request->atw_reference }}"
+                            data-delete-label-2="Client"
+                            data-delete-value-2="{{ $client?->name ?? 'Client Deleted' }}"
+                            data-delete-label-3="Status"
+                            data-delete-value-3="{{ ucfirst($request->status) }}"
+                            data-delete-label-4="Pickup"
+                            data-delete-value-4="{{ $request->pickup_location }}"
+                            data-delete-label-5="Delivery"
+                            data-delete-value-5="{{ $request->delivery_location }}">
                             <i class="fas fa-trash"></i>
-                        </a>
+                        </button>
                         @endif
                     </div>
                 </td>

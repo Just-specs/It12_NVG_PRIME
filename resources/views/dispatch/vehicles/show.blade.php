@@ -186,10 +186,22 @@
                 <i class="fas fa-edit mr-2"></i>Edit Vehicle
             </a>
             
-            <a href="{{ route('vehicles.requestDelete', $vehicle) }}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+            <button type="button"
+                class="open-delete-request-modal inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                data-delete-action="{{ route('vehicles.submitDeleteRequest', $vehicle) }}"
+                data-delete-resource="vehicle"
+                data-delete-heading="Vehicle to be Deleted:"
+                data-delete-label-1="Plate Number"
+                data-delete-value-1="{{ $vehicle->plate_number }}"
+                data-delete-label-2="Type"
+                data-delete-value-2="{{ $vehicle->vehicle_type }}"
+                data-delete-label-3="Trailer Type"
+                data-delete-value-3="{{ $vehicle->trailer_type }}"
+                data-delete-label-4="Status"
+                data-delete-value-4="{{ ucfirst(str_replace('-', ' ', $vehicle->status)) }}">
                 <i class="fas fa-trash mr-2"></i>
                 Request Delete
-            </a>
+            </button>
         </div>
     </div>
 </div>

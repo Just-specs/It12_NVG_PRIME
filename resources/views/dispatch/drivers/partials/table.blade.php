@@ -67,9 +67,23 @@
                             <i class="fas fa-edit"></i>
                         </button>
                         @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
-                        <a href="{{ route('drivers.requestDelete', $driver) }}" onclick="event.stopPropagation();" class="w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors" title="Request Delete">
+                        <button type="button"
+                            class="open-delete-request-modal w-8 h-8 flex items-center justify-center bg-red-600 text-white rounded-full hover:bg-red-700 transition-colors"
+                            title="Request Delete"
+                            onclick="event.preventDefault(); event.stopPropagation(); window.openDeleteRequestModal(this);"
+                            data-delete-action="{{ route('drivers.submitDeleteRequest', $driver) }}"
+                            data-delete-resource="driver"
+                            data-delete-heading="Driver to be Deleted:"
+                            data-delete-label-1="Name"
+                            data-delete-value-1="{{ $driver->name }}"
+                            data-delete-label-2="License"
+                            data-delete-value-2="{{ $driver->license_number }}"
+                            data-delete-label-3="Mobile"
+                            data-delete-value-3="{{ $driver->mobile }}"
+                            data-delete-label-4="Status"
+                            data-delete-value-4="{{ ucfirst(str_replace('-', ' ', $driver->status)) }}">
                             <i class="fas fa-trash"></i>
-                        </a>
+                        </button>
                         @endif
                     </div>
                 </td>

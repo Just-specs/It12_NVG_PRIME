@@ -144,10 +144,22 @@
                 <i class="fas fa-edit mr-2"></i>Edit Driver
             </a>
             
-            <a href="{{ route('drivers.requestDelete', $driver) }}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
+            <button type="button"
+                class="open-delete-request-modal inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                data-delete-action="{{ route('drivers.submitDeleteRequest', $driver) }}"
+                data-delete-resource="driver"
+                data-delete-heading="Driver to be Deleted:"
+                data-delete-label-1="Name"
+                data-delete-value-1="{{ $driver->name }}"
+                data-delete-label-2="License"
+                data-delete-value-2="{{ $driver->license_number }}"
+                data-delete-label-3="Mobile"
+                data-delete-value-3="{{ $driver->mobile }}"
+                data-delete-label-4="Status"
+                data-delete-value-4="{{ ucfirst(str_replace('-', ' ', $driver->status)) }}">
                 <i class="fas fa-trash mr-2"></i>
                 Request Delete
-            </a>
+            </button>
         </div>
     </div>
 </div>

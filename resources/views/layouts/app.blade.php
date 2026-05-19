@@ -546,6 +546,80 @@
         </div>
     </div>
 
+    <!-- Deletion Request Modal -->
+    <div id="delete-request-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 px-4">
+        <div class="w-full max-w-2xl overflow-hidden rounded-2xl bg-white shadow-2xl">
+            <div class="flex items-start justify-between border-b border-gray-200 bg-gray-50 px-6 py-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">
+                        <i class="fas fa-exclamation-triangle text-yellow-600"></i> Request Deletion Approval
+                    </h2>
+                    <p class="mt-1 text-gray-600">Submit a deletion request for admin approval</p>
+                </div>
+                <button type="button" id="close-delete-request-modal" class="text-gray-400 transition hover:text-gray-600">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </div>
+
+            <div class="max-h-[calc(100vh-200px)] overflow-y-auto p-6">
+                <div class="mb-6 rounded border-l-4 border-purple-500 bg-purple-50 p-4">
+                    <h3 id="delete-request-resource-heading" class="mb-2 font-semibold text-purple-900">Item to be Deleted:</h3>
+                    <div id="delete-request-resource-fields" class="space-y-1 text-purple-800">
+                        @for($i = 1; $i <= 5; $i++)
+                        <p class="delete-request-field hidden">
+                            <strong data-delete-label></strong>: <span data-delete-value></span>
+                        </p>
+                        @endfor
+                    </div>
+                </div>
+
+                <div class="mb-6 border-l-4 border-yellow-400 bg-yellow-50 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-exclamation-circle text-xl text-yellow-400"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-yellow-700">
+                                <strong>Important:</strong> This request will be sent to the admin for approval. Please provide a clear reason for the deletion.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <form id="delete-request-form" method="POST">
+                    @csrf
+
+                    <div class="mb-6">
+                        <label for="delete-request-reason" class="mb-2 block text-sm font-medium text-gray-700">
+                            Deletion Reason <span class="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            name="reason"
+                            id="delete-request-reason"
+                            rows="5"
+                            required
+                            minlength="10"
+                            maxlength="500"
+                            class="w-full rounded-lg border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                            placeholder="Explain why this item needs to be deleted (minimum 10 characters)..."></textarea>
+                        <p class="mt-1 text-sm text-gray-500">
+                            <span id="delete-request-char-count">0</span>/500 characters
+                        </p>
+                    </div>
+
+                    <div class="flex justify-end gap-3">
+                        <button type="button" id="cancel-delete-request" class="rounded-lg bg-gray-300 px-4 py-2 text-gray-700 hover:bg-gray-400">
+                            <i class="fas fa-times"></i> Cancel
+                        </button>
+                        <button type="submit" class="rounded-lg bg-red-600 px-4 py-2 text-white hover:bg-red-700">
+                            <i class="fas fa-paper-plane"></i> Submit Request
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Auto-dismiss toast notifications
@@ -606,6 +680,86 @@
                     }
                 });
             }
+
+            // Global deletion request modal
+            const deleteRequestModal = document.getElementById('delete-request-modal');
+            const deleteRequestForm = document.getElementById('delete-request-form');
+            const deleteRequestReason = document.getElementById('delete-request-reason');
+            const deleteRequestCharCount = document.getElementById('delete-request-char-count');
+            const deleteRequestHeading = document.getElementById('delete-request-resource-heading');
+            const closeDeleteRequestButton = document.getElementById('close-delete-request-modal');
+            const cancelDeleteRequestButton = document.getElementById('cancel-delete-request');
+            const deleteRequestFields = Array.from(document.querySelectorAll('#delete-request-resource-fields .delete-request-field'));
+
+            const hideDeleteRequestModal = () => {
+                if (!deleteRequestModal || !deleteRequestForm) return;
+                deleteRequestModal.classList.add('hidden');
+                deleteRequestModal.classList.remove('flex');
+                deleteRequestForm.reset();
+                deleteRequestForm.removeAttribute('action');
+                if (deleteRequestCharCount) deleteRequestCharCount.textContent = '0';
+                document.body.style.overflow = '';
+            };
+
+            const showDeleteRequestModal = (trigger) => {
+                if (!deleteRequestModal || !deleteRequestForm) return;
+
+                const resource = trigger.dataset.deleteResource || 'Item';
+                deleteRequestForm.setAttribute('action', trigger.dataset.deleteAction || '#');
+                deleteRequestHeading.textContent = trigger.dataset.deleteHeading || `${resource} to be Deleted:`;
+                deleteRequestReason.placeholder = `Explain why this ${resource.toLowerCase()} needs to be deleted (minimum 10 characters)...`;
+                deleteRequestCharCount.textContent = '0';
+
+                deleteRequestFields.forEach((field, index) => {
+                    const number = index + 1;
+                    const label = trigger.dataset[`deleteLabel${number}`];
+                    const value = trigger.dataset[`deleteValue${number}`];
+                    const labelNode = field.querySelector('[data-delete-label]');
+                    const valueNode = field.querySelector('[data-delete-value]');
+
+                    if (label && value) {
+                        labelNode.textContent = label;
+                        valueNode.textContent = value;
+                        field.classList.remove('hidden');
+                    } else {
+                        field.classList.add('hidden');
+                        labelNode.textContent = '';
+                        valueNode.textContent = '';
+                    }
+                });
+
+                deleteRequestModal.classList.remove('hidden');
+                deleteRequestModal.classList.add('flex');
+                document.body.style.overflow = 'hidden';
+                deleteRequestReason.focus({ preventScroll: true });
+            };
+
+            window.openDeleteRequestModal = showDeleteRequestModal;
+
+            document.addEventListener('click', (event) => {
+                const trigger = event.target.closest('.open-delete-request-modal');
+                if (!trigger) return;
+
+                event.preventDefault();
+                event.stopPropagation();
+                showDeleteRequestModal(trigger);
+            });
+
+            deleteRequestReason?.addEventListener('input', () => {
+                deleteRequestCharCount.textContent = deleteRequestReason.value.length;
+            });
+
+            closeDeleteRequestButton?.addEventListener('click', hideDeleteRequestModal);
+            cancelDeleteRequestButton?.addEventListener('click', hideDeleteRequestModal);
+            deleteRequestModal?.addEventListener('click', (event) => {
+                if (event.target === deleteRequestModal) hideDeleteRequestModal();
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && deleteRequestModal && !deleteRequestModal.classList.contains('hidden')) {
+                    hideDeleteRequestModal();
+                }
+            });
 
             // Toggle deleted records submenu
             window.toggleDeletedMenu = function() {

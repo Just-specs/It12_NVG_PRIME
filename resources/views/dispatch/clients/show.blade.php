@@ -77,10 +77,22 @@
                     </a>
                     
                     @if(auth()->user()->role === 'admin' || auth()->user()->role === 'head_dispatch')
-        <a href="{{ route('clients.requestDelete', $client) }}" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors">
-            <i class="fas fa-trash mr-2"></i>
-            Request Delete
-        </a>
+                    <button type="button"
+                        class="open-delete-request-modal inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors"
+                        data-delete-action="{{ route('clients.submitDeleteRequest', $client) }}"
+                        data-delete-resource="client"
+                        data-delete-heading="Client to be Deleted:"
+                        data-delete-label-1="Name"
+                        data-delete-value-1="{{ $client->name }}"
+                        data-delete-label-2="Email"
+                        data-delete-value-2="{{ $client->email ?? 'N/A' }}"
+                        data-delete-label-3="Mobile"
+                        data-delete-value-3="{{ $client->mobile ?? 'N/A' }}"
+                        data-delete-label-4="Company"
+                        data-delete-value-4="{{ $client->company ?? 'N/A' }}">
+                        <i class="fas fa-trash mr-2"></i>
+                        Request Delete
+                    </button>
                     @endif
                 </div>
             </div>
