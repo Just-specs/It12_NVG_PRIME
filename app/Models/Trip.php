@@ -163,7 +163,15 @@ class Trip extends Model
 
     public function getReceiptUrlAttribute(): ?string
     {
-        return $this->receipt_path ? Storage::disk($this->mediaDisk())->url($this->receipt_path) : null;
+        if (!$this->receipt_path) {
+            return null;
+        }
+
+        $disk = $this->mediaDisk();
+
+        return $disk === 's3'
+            ? Storage::disk($disk)->temporaryUrl($this->receipt_path, now()->addHours(6))
+            : Storage::disk($disk)->url($this->receipt_path);
     }
 
     public function mediaDisk(): string

@@ -29,7 +29,15 @@ class Driver extends Model
 
     public function getPhotoUrlAttribute(): ?string
     {
-        return $this->photo_path ? Storage::disk($this->mediaDisk())->url($this->photo_path) : null;
+        if (!$this->photo_path) {
+            return null;
+        }
+
+        $disk = $this->mediaDisk();
+
+        return $disk === 's3'
+            ? Storage::disk($disk)->temporaryUrl($this->photo_path, now()->addHours(6))
+            : Storage::disk($disk)->url($this->photo_path);
     }
 
     public function mediaDisk(): string
