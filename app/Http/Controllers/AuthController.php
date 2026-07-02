@@ -3,26 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Mail\LoginOtpMail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Validation\Rule;
 use Laravel\Socialite\Facades\Socialite;
-use Illuminate\Support\Facades\DB;
 use Exception;
 
 class AuthController extends Controller
 {
+    /**
+     * Show the login form.
+     */
     public function showLogin()
     {
         return view('auth.login');
     }
 
+    /**
+     * Handle login request.
+     */
     public function login(Request $request)
     {
+        // Validate the login form
         $credentials = $request->validate([
             'email' => 'required|email',
             'password' => 'required|string|min:8',
@@ -33,54 +35,71 @@ class AuthController extends Controller
             'password.min' => 'Password must be at least 8 characters',
         ]);
 
-        $user = User::where('email', $credentials['email'])->first();
-
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            return back()
-                ->withInput($request->only('email'))
-                ->with('error', 'Invalid email or password');
+        // Attempt to authenticate the user
+        if (Auth::attempt($credentials, $request->has('remember'))) {
+            $request->session()->regenerate();
+            return redirect()->route('dashboard')->with('success', 'Login successful!');
         }
 
-        $this->sendOtp($user, $request->ip());
-
-        return redirect()->route('otp.verify')->with('success', 'A verification code has been sent to your email.');
+        // Return back with error
+        return back()
+            ->withInput($request->only('email'))
+            ->with('error', 'Invalid email or password');
     }
 
+    /**
+     * Redirect to Google OAuth page for LOGIN (existing users only).
+     */
     public function redirectToGoogleLogin()
     {
+        // Store in session that this is a login flow
         session(['google_oauth_flow' => 'login']);
-
+        
         return Socialite::driver('google')
             ->with(['prompt' => 'select_account'])
             ->redirect();
     }
 
+    /**
+     * Redirect to Google OAuth page for REGISTER (new users).
+     */
     public function redirectToGoogleRegister()
     {
+        // Store in session that this is a register flow
         session(['google_oauth_flow' => 'register']);
-
+        
         return Socialite::driver('google')
             ->with(['prompt' => 'select_account'])
             ->redirect();
     }
 
+    /**
+     * Handle Google OAuth callback - works for both LOGIN and REGISTER flows.
+     * Determines the flow based on which route was used (login or register).
+     */
     public function handleGoogleCallback(Request $request)
     {
         try {
+            // Get user info from Google
             $googleUser = Socialite::driver('google')->user();
 
+            // Check if user exists with this Google ID or email
             $user = User::where('google_id', $googleUser->getId())
                 ->orWhere('email', $googleUser->getEmail())
                 ->first();
 
+            // Determine if this is a login or register attempt based on the referrer
             $referrer = $request->session()->get('google_oauth_flow', 'login');
-
+            
+            // LOGIN FLOW - User clicked "Sign in with Google" from login page
             if ($referrer === 'login') {
                 if (!$user) {
+                    // User doesn't exist - redirect to login with toast message
                     return redirect()->route('login')
                         ->with('error', 'This Google account is not registered yet. Please register first.');
                 }
 
+                // Update existing user with Google info if not already set
                 if (!$user->google_id) {
                     $user->update([
                         'google_id' => $googleUser->getId(),
@@ -89,38 +108,43 @@ class AuthController extends Controller
                     ]);
                 }
 
-                $request->session()->forget('google_oauth_flow');
-                $this->sendOtp($user, $request->ip());
+                // Log the user in
+                Auth::login($user, true);
 
-                return redirect()->route('otp.verify')->with('success', 'A verification code has been sent to your email.');
+                // Clear the session flag
+                $request->session()->forget('google_oauth_flow');
+
+                return redirect()->route('dashboard')->with('success', 'Successfully logged in with Google!');
             }
 
+            // REGISTER FLOW - User clicked "Sign up with Google" from register page
             if ($referrer === 'register') {
                 if ($user) {
+                    // User already exists - redirect to login
                     return redirect()->route('login')
                         ->with('error', 'An account with this email already exists. Please login instead.');
                 }
 
-                $request->validate([
-                    'email' => [Rule::disposable()],
-                ]);
-
+                // Create new user with default 'user' role
                 $newUser = User::create([
                     'name' => $googleUser->getName(),
                     'email' => $googleUser->getEmail(),
                     'google_id' => $googleUser->getId(),
                     'avatar' => $googleUser->getAvatar(),
-                    'password' => Hash::make(uniqid()),
-                    'role' => 'user',
-                    'email_verified_at' => now(),
+                    'password' => Hash::make(uniqid()), // Random password for OAuth users
+                    'role' => 'user', // Set default role
+                    'email_verified_at' => now(), // Auto-verify Google users
                 ]);
 
+                // Clear the session flag
                 $request->session()->forget('google_oauth_flow');
-                $this->sendOtp($newUser, $request->ip());
 
-                return redirect()->route('otp.verify')->with('success', 'Account created! A verification code has been sent to your email.');
+                // DO NOT auto-login - redirect to login page
+                return redirect()->route('login')
+                    ->with('success', 'Account created successfully with Google! Please login to continue.');
             }
 
+            // Default fallback - shouldn't reach here
             return redirect()->route('login')->with('error', 'Something went wrong. Please try again.');
 
         } catch (Exception $e) {
@@ -128,119 +152,49 @@ class AuthController extends Controller
         }
     }
 
-    public function showOtpForm(Request $request)
-    {
-        $userId = $request->session()->get('otp_user_id');
-        $email = $request->session()->get('otp_email');
-
-        if (!$userId || !$email) {
-            return redirect()->route('login')->with('error', 'Session expired. Please login again.');
-        }
-
-        $maskedEmail = substr($email, 0, 1) . '***' . substr($email, strpos($email, '@'));
-
-        return view('auth.verify-otp', compact('maskedEmail'));
-    }
-
-    public function verifyOtp(Request $request)
-    {
-        $request->validate([
-            'otp' => 'required|string|size:6',
-        ]);
-
-        $userId = $request->session()->get('otp_user_id');
-
-        if (!$userId) {
-            return redirect()->route('login')->with('error', 'Session expired. Please login again.');
-        }
-
-        $otpRecord = DB::table('login_otps')
-            ->where('user_id', $userId)
-            ->where('otp', $request->otp)
-            ->where('is_used', false)
-            ->where('expires_at', '>', now())
-            ->first();
-
-        if (!$otpRecord) {
-            return back()->with('error', 'Invalid or expired verification code.');
-        }
-
-        DB::table('login_otps')
-            ->where('id', $otpRecord->id)
-            ->update(['is_used' => true]);
-
-        $user = User::findOrFail($userId);
-
-        Auth::login($user, true);
-
-        $request->session()->forget(['otp_user_id', 'otp_email']);
-        $request->session()->regenerate();
-
-        return redirect()->route('dashboard')->with('success', 'Login successful!');
-    }
-
-    public function resendOtp(Request $request)
-    {
-        $userId = $request->session()->get('otp_user_id');
-        $email = $request->session()->get('otp_email');
-
-        if (!$userId || !$email) {
-            return redirect()->route('login')->with('error', 'Session expired. Please login again.');
-        }
-
-        $user = User::find($userId);
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'User not found.');
-        }
-
-        DB::table('login_otps')
-            ->where('user_id', $userId)
-            ->where('is_used', false)
-            ->delete();
-
-        $this->sendOtp($user, $request->ip());
-
-        return back()->with('success', 'A new verification code has been sent to your email.');
-    }
-
+    /**
+     * Show the registration form.
+     */
     public function showRegister()
     {
         return view('auth.register');
     }
 
+    /**
+     * Handle registration request.
+     */
     public function register(Request $request)
     {
+        // Validate the registration form
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => [
-                'required',
-                'email',
-                'unique:users',
-                'max:255',
-                Rule::disposable(),
-            ],
+            'email' => 'required|email|unique:users|max:255',
             'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/'],
         ], [
             'name.required' => 'Name is required',
             'email.required' => 'Email is required',
             'email.email' => 'Please enter a valid email address',
             'email.unique' => 'This email is already registered',
-            'email.disposable' => 'Temporary email addresses are not allowed',
             'password.required' => 'Password is required',
             'password.min' => 'Password must be at least 8 characters',
             'password.confirmed' => 'Passwords do not match',
         ]);
 
+        // Create new user with default 'user' role
         $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role' => 'user',
+            'role' => 'user', // Set default role to 'user'
         ]);
 
+        // DO NOT auto-login the user - redirect to login page instead
         return redirect()->route('login')->with('success', 'Registration successful! Please login with your credentials.');
     }
 
+    /**
+     * Handle logout request.
+     */
     public function logout(Request $request)
     {
         Auth::logout();
@@ -249,23 +203,5 @@ class AuthController extends Controller
 
         return redirect()->route('login')->with('success', 'Logout successful!');
     }
-
-    private function sendOtp(User $user, ?string $ipAddress): void
-    {
-        $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-
-        DB::table('login_otps')->insert([
-            'user_id' => $user->id,
-            'otp' => $otp,
-            'expires_at' => now()->addMinutes(5),
-            'is_used' => false,
-            'ip_address' => $ipAddress,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        session(['otp_user_id' => $user->id, 'otp_email' => $user->email]);
-
-        Mail::to($user->email)->send(new LoginOtpMail($user->name, $otp));
-    }
 }
+
