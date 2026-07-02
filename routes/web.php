@@ -30,6 +30,11 @@ Route::middleware('guest')->group(function () {
     Route::get('auth/google/register', [AuthController::class, 'redirectToGoogleRegister'])->name('google.register');
     Route::get('auth/google/callback', [AuthController::class, 'handleGoogleCallback'])->name('google.callback');
 
+    // OTP Verification Routes
+    Route::get('/login/otp', [AuthController::class, 'showOtpForm'])->name('otp.verify');
+    Route::post('/login/otp', [AuthController::class, 'verifyOtp'])->name('otp.verify.post');
+    Route::post('/login/otp/resend', [AuthController::class, 'resendOtp'])->name('otp.resend');
+
     // ADD THESE PASSWORD RESET ROUTES:
     Route::get('forgot-password', [App\Http\Controllers\Auth\ForgotPasswordController::class, 'showLinkRequestForm'])
         ->name('password.request');
