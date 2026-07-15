@@ -1,28 +1,46 @@
 <?php
 
-// 1. Create ForgotPasswordController
-// app/Http/Controllers/Auth/ForgotPasswordController.php
-
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Rules\RecaptchaRule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 class ForgotPasswordController extends Controller
 {
+    /**
+     * Display the password reset link request form.
+     */
     public function showLinkRequestForm()
     {
         return view('auth.forgot-password');
     }
 
+    /**
+     * Send a reset link to the given user.
+     */
     public function sendResetLinkEmail(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email'],
+            'email' => ['required', 'email', 'exists:users,email'],
+        ], [
+            'email.required' => 'Email is required',
+            'email.email' => 'Please enter a valid email address',
+            'email.exists' => 'We could not find a user with that email address',
         ]);
 
+        // Verify captcha (only when enabled AND a site key is configured).
+        if (config('services.recaptcha.enabled', true) && config('services.recaptcha.site_key')) {
+            $request->validate([
+                'g-recaptcha-response' => ['required', new RecaptchaRule],
+            ], [
+                'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
+            ]);
+        }
+
+        // Send password reset link
         $status = Password::sendResetLink(
             $request->only('email')
         );

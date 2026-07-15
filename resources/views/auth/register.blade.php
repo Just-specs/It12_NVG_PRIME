@@ -2,6 +2,19 @@
 
 @section('body-class', 'bg-[#38B7F7]')
 
+@php
+    $recaptchaEnabled = config('services.recaptcha.enabled', true);
+    $recaptchaSiteKey = config('services.recaptcha.site_key');
+@endphp
+
+@if($recaptchaEnabled && $recaptchaSiteKey)
+    @push('styles')
+        {{-- Load Google reCAPTCHA v2 script. `async defer` keeps page render fast. --}}
+        <script src="{{ config('services.recaptcha.script_src', 'https://www.google.com/recaptcha/api.js') }}"
+                async defer></script>
+    @endpush
+@endif
+
 @push('styles')
 <style>
     /* Override body flex from layout */
@@ -272,6 +285,16 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- Google reCAPTCHA v2 widget --}}
+                    @if($recaptchaEnabled && $recaptchaSiteKey)
+                        <div class="pt-2 flex justify-center">
+                            <div class="g-recaptcha" data-sitekey="{{ $recaptchaSiteKey }}"></div>
+                        </div>
+                        @error('g-recaptcha-response')
+                            <p class="text-center text-xs text-rose-600 font-medium">{{ $message }}</p>
+                        @enderror
+                    @endif
 
                     <!-- Submit Button -->
                     <div class="pt-1">

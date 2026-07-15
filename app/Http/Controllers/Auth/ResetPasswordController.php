@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Rules\RecaptchaRule;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -28,6 +29,15 @@ class ResetPasswordController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
+
+        // Verify captcha (only when enabled AND a site key is configured).
+        if (config('services.recaptcha.enabled', true) && config('services.recaptcha.site_key')) {
+            $request->validate([
+                'g-recaptcha-response' => ['required', new RecaptchaRule],
+            ], [
+                'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
+            ]);
+        }
 
         $status = Password::reset(
             $request->only('email', 'password', 'password_confirmation', 'token'),

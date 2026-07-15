@@ -37,4 +37,20 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'recaptcha' => [
+        // Master switch. Set RECAPTCHA_ENABLED=false to instantly disable captcha
+        // on every form (the widget won't render and RecaptchaRule becomes a no-op).
+        'enabled'    => env('RECAPTCHA_ENABLED', true),
+
+        // Public site key (used by the browser widget).
+        'site_key'   => env('RECAPTCHA_SITE_KEY'),
+
+        // Secret key (server-side verification only — never exposed to the browser).
+        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
+
+        // Override points (rarely needed).
+        'script_src' => env('RECAPTCHA_SCRIPT_SRC', 'https://www.google.com/recaptcha/api.js'),
+        'verify_url' => env('RECAPTCHA_VERIFY_URL', 'https://www.google.com/recaptcha/api/siteverify'),
+    ],
+
 ];
