@@ -17,6 +17,12 @@ class User extends Authenticatable
         'google_id',
         'avatar',
         'role',
+        'two_factor_secret',
+        'two_factor_recovery_codes',
+        'two_factor_confirmed_at',
+        'two_factor_required',
+        'two_factor_skip_until',
+        'two_factor_remember_token',
     ];
 
     protected $hidden = [
@@ -27,6 +33,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'two_factor_recovery_codes' => 'array',
+        'two_factor_confirmed_at' => 'datetime',
+        'two_factor_skip_until' => 'datetime',
     ];
 
     // Role checking methods
@@ -60,5 +69,10 @@ class User extends Authenticatable
     public function canAssignTrips()
     {
         return in_array($this->role, ['admin', 'dispatcher']);
+    }
+
+    public function hasTwoFactorEnabled(): bool
+    {
+        return !empty($this->two_factor_secret) && !empty($this->two_factor_confirmed_at) && (bool) $this->two_factor_required;
     }
 }
