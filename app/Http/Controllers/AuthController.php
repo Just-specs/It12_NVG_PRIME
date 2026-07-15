@@ -31,17 +31,22 @@ class AuthController extends Controller
             'password' => 'required|string|min:8',
         ];
 
-        if (config('services.recaptcha.enabled', true)) {
+        if (config('services.recaptcha.enabled', false)) {
             $validationRules['g-recaptcha-response'] = ['required', new RecaptchaRule];
         }
 
-        $credentials = $request->validate($validationRules, [
+        $validated = $request->validate($validationRules, [
             'email.required' => 'Email is required',
             'email.email' => 'Please enter a valid email address',
             'password.required' => 'Password is required',
             'password.min' => 'Password must be at least 8 characters',
             'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
         ]);
+
+        $credentials = [
+            'email' => $validated['email'],
+            'password' => $validated['password'],
+        ];
 
         $user = User::where('email', $credentials['email'])->first();
 
@@ -226,12 +231,18 @@ class AuthController extends Controller
      */
     public function register(Request $request)
     {
-        // Validate the registration form
-        $validated = $request->validate([
+        $validationRules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users|max:255',
             'password' => ['required', 'string', 'min:8', 'confirmed', 'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]+$/'],
-        ], [
+        ];
+
+        if (config('services.recaptcha.enabled', false)) {
+            $validationRules['g-recaptcha-response'] = ['required', new RecaptchaRule];
+        }
+
+        // Validate the registration form
+        $validated = $request->validate($validationRules, [
             'name.required' => 'Name is required',
             'email.required' => 'Email is required',
             'email.email' => 'Please enter a valid email address',
@@ -239,6 +250,7 @@ class AuthController extends Controller
             'password.required' => 'Password is required',
             'password.min' => 'Password must be at least 8 characters',
             'password.confirmed' => 'Passwords do not match',
+            'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
         ]);
 
         // Create new user with default 'user' role
@@ -265,4 +277,3 @@ class AuthController extends Controller
         return redirect()->route('login')->with('success', 'Logout successful!');
     }
 }
-

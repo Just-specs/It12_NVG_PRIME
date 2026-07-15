@@ -110,6 +110,8 @@
                         @enderror
                     </div>
 
+                    @include('auth.partials.recaptcha')
+
                     <!-- Submit Button -->
                     <div class="pt-2">
                         <button

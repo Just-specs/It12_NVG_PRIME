@@ -2,19 +2,6 @@
 
 @section('body-class', 'bg-[#38B7F7]')
 
-@php
-    $recaptchaEnabled = config('services.recaptcha.enabled', true);
-    $recaptchaSiteKey = config('services.recaptcha.site_key');
-@endphp
-
-@if($recaptchaEnabled && $recaptchaSiteKey)
-    @push('head')
-        {{-- Load Google reCAPTCHA v2 script. `async defer` keeps page render fast. --}}
-        <script src="{{ config('services.recaptcha.script_src', 'https://www.google.com/recaptcha/api.js') }}"
-                async defer></script>
-    @endpush
-@endif
-
 @push('styles')
 <style>
     /* Override body flex from layout */
@@ -161,15 +148,7 @@
                         </div>
                     </div>
 
-                    {{-- Google reCAPTCHA v2 widget --}}
-                    @if($recaptchaEnabled && $recaptchaSiteKey)
-                        <div class="pt-2 flex justify-center">
-                            <div class="g-recaptcha" data-sitekey="{{ $recaptchaSiteKey }}"></div>
-                        </div>
-                        @error('g-recaptcha-response')
-                            <p class="text-center text-sm text-rose-600 font-medium">{{ $message }}</p>
-                        @enderror
-                    @endif
+                    @include('auth.partials.recaptcha')
 
                     <!-- Remember Me & Forgot Password -->
                     <div class="flex items-center justify-between text-sm">
@@ -199,9 +178,19 @@
                     </div>
 
                     
-                    <p class="text-center text-sm text-blue-700 italic">
-                        Contact your administrator for account access
+                    <!-- Register Link -->
+                    <p class="pt-2 text-center text-sm text-blue-800">
+                        Don't have an account?
+                        <a href="{{ route('register') }}" class="font-semibold text-blue-600 transition hover:text-blue-800 hover:underline">
+                            Register here
+                        </a>
                     </p>
+
+                    {{-- Optional: keep admin-contact note for staff who can't self-register
+                    <p class="text-center text-xs text-blue-600 italic">
+                        Or contact your administrator for account access
+                    </p>
+                    --}}
                 </form>
             </div>
         </div>

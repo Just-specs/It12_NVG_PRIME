@@ -273,6 +273,8 @@
                         </div>
                     </div>
 
+                    @include('auth.partials.recaptcha')
+
                     <!-- Submit Button -->
                     <div class="pt-1">
                         <button
@@ -395,5 +397,4 @@ function updateRequirement(id, met) {
 }
 </script>
 @endsection
-
 

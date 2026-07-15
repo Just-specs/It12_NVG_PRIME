@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Log;
  * server-to-server against https://www.google.com/recaptcha/api/siteverify.
  *
  * Configuration is read from config('services.recaptcha'):
- *   - enabled    : bool  (if false, the rule always passes — useful for local dev / tests)
+ *   - enabled    : bool  (if false, the rule always passes for local dev / tests)
  *   - secret_key : string
  *   - verify_url : string (override point for tests)
  *
@@ -29,7 +29,7 @@ class RecaptchaRule implements ValidationRule
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
         // Allow disabling captcha in non-production environments (config-driven).
-        if (! config('services.recaptcha.enabled', true)) {
+        if (! config('services.recaptcha.enabled', false)) {
             return;
         }
 
@@ -37,7 +37,7 @@ class RecaptchaRule implements ValidationRule
         $verifyUrl = config('services.recaptcha.verify_url', 'https://www.google.com/recaptcha/api/siteverify');
 
         if (empty($secret)) {
-            // Fail closed — if the site is misconfigured, do not silently let traffic through.
+            // Fail closed if captcha is enabled but the secret is missing.
             Log::warning('reCAPTCHA secret key is not configured.');
             $fail('CAPTCHA verification is not configured. Please contact the administrator.');
             return;
