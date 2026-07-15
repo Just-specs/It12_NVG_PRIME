@@ -22,6 +22,8 @@ Route::get('/', function () {
 Route::middleware('guest')->group(function () {
     Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
+    Route::get('/two-factor/challenge', [AuthController::class, 'showTwoFactorChallenge'])->name('two-factor.challenge');
+    Route::post('/two-factor/challenge', [AuthController::class, 'verifyTwoFactorChallenge'])->name('two-factor.challenge.post');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
@@ -145,6 +147,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/edit', [ProfileController::class, 'edit'])->name('edit');
         Route::put('/update', [ProfileController::class, 'update'])->name('update');
         Route::put('/password', [ProfileController::class, 'updatePassword'])->name('update-password');
+        Route::post('/two-factor/setup', [ProfileController::class, 'startTwoFactorSetup'])->name('two-factor.setup');
+        Route::post('/two-factor/confirm', [ProfileController::class, 'confirmTwoFactor'])->name('two-factor.confirm');
+        Route::post('/two-factor/disable', [ProfileController::class, 'disableTwoFactor'])->name('two-factor.disable');
     });
 
     //Reports

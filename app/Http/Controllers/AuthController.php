@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Rules\RecaptchaRule;
+use App\Services\TwoFactorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -24,27 +26,86 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        // Validate the login form
-        $credentials = $request->validate([
+        $validationRules = [
             'email' => 'required|email',
             'password' => 'required|string|min:8',
-        ], [
+        ];
+
+        if (config('services.recaptcha.enabled', true)) {
+            $validationRules['g-recaptcha-response'] = ['required', new RecaptchaRule];
+        }
+
+        $credentials = $request->validate($validationRules, [
             'email.required' => 'Email is required',
             'email.email' => 'Please enter a valid email address',
             'password.required' => 'Password is required',
             'password.min' => 'Password must be at least 8 characters',
+            'g-recaptcha-response.required' => 'Please complete the CAPTCHA.',
         ]);
 
-        // Attempt to authenticate the user
-        if (Auth::attempt($credentials, $request->has('remember'))) {
+        $user = User::where('email', $credentials['email'])->first();
+
+        if ($user && Auth::validate($credentials)) {
+            if ($user->hasTwoFactorEnabled()) {
+                $request->session()->put('two_factor_user_id', $user->id);
+                $request->session()->put('two_factor_remember', $request->has('remember'));
+
+                return redirect()->route('two-factor.challenge')->with('info', 'Enter your 6-digit verification code to continue.');
+            }
+
+            Auth::login($user, $request->has('remember'));
             $request->session()->regenerate();
             return redirect()->route('dashboard')->with('success', 'Login successful!');
         }
 
-        // Return back with error
         return back()
             ->withInput($request->only('email'))
             ->with('error', 'Invalid email or password');
+    }
+
+    public function showTwoFactorChallenge(Request $request)
+    {
+        if (!$request->session()->has('two_factor_user_id')) {
+            return redirect()->route('login');
+        }
+
+        return view('auth.two-factor');
+    }
+
+    public function verifyTwoFactorChallenge(Request $request)
+    {
+        $request->validate([
+            'code' => ['required', 'digits:6'],
+        ], [
+            'code.required' => 'The verification code is required',
+            'code.digits' => 'The verification code must be 6 digits',
+        ]);
+
+        $userId = $request->session()->get('two_factor_user_id');
+        $remember = (bool) $request->session()->get('two_factor_remember', false);
+
+        if (!$userId) {
+            return redirect()->route('login')->with('error', 'Your session expired. Please log in again.');
+        }
+
+        $user = User::find($userId);
+        if (!$user || !$user->hasTwoFactorEnabled()) {
+            return redirect()->route('login')->with('error', 'Two-factor authentication is not enabled for this account.');
+        }
+
+        $service = app(TwoFactorService::class);
+        $validCode = $service->verifyCode($user->two_factor_secret, $request->input('code'));
+        $validRecoveryCode = $service->verifyRecoveryCode((array) $user->two_factor_recovery_codes, $request->input('code'));
+
+        if ($validCode || $validRecoveryCode) {
+            Auth::login($user, $remember);
+            $request->session()->forget(['two_factor_user_id', 'two_factor_remember']);
+            $request->session()->regenerate();
+
+            return redirect()->route('dashboard')->with('success', 'Login successful!');
+        }
+
+        return back()->with('error', 'Invalid verification code.');
     }
 
     /**
