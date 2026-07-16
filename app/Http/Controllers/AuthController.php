@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Notifications\LoginVerificationCodeNotification;
 use App\Rules\RecaptchaRule;
-use App\Services\TwoFactorService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -51,16 +51,11 @@ class AuthController extends Controller
         $user = User::where('email', $credentials['email'])->first();
 
         if ($user && Auth::validate($credentials)) {
-            if ($user->hasTwoFactorEnabled()) {
-                $request->session()->put('two_factor_user_id', $user->id);
-                $request->session()->put('two_factor_remember', $request->has('remember'));
+            $this->sendLoginVerificationCode($request, $user, $request->has('remember'));
 
-                return redirect()->route('two-factor.challenge')->with('info', 'Enter your 6-digit verification code to continue.');
-            }
-
-            Auth::login($user, $request->has('remember'));
-            $request->session()->regenerate();
-            return redirect()->route('dashboard')->with('success', 'Login successful!');
+            return redirect()
+                ->route('two-factor.challenge')
+                ->with('info', 'A 6-digit verification code has been sent to your email.');
         }
 
         return back()
@@ -74,7 +69,10 @@ class AuthController extends Controller
             return redirect()->route('login');
         }
 
-        return view('auth.two-factor');
+        return view('auth.two-factor', [
+            'email' => $request->session()->get('two_factor_email'),
+            'expiresAt' => $request->session()->get('two_factor_expires_at'),
+        ]);
     }
 
     public function verifyTwoFactorChallenge(Request $request)
@@ -88,29 +86,84 @@ class AuthController extends Controller
 
         $userId = $request->session()->get('two_factor_user_id');
         $remember = (bool) $request->session()->get('two_factor_remember', false);
+        $codeHash = $request->session()->get('two_factor_code_hash');
+        $expiresAt = $request->session()->get('two_factor_expires_at');
 
-        if (!$userId) {
-            return redirect()->route('login')->with('error', 'Your session expired. Please log in again.');
+        if (!$userId || !$codeHash || !$expiresAt) {
+            $request->session()->forget($this->loginVerificationSessionKeys());
+            return redirect()->route('login')->with('error', 'Your verification session expired. Please log in again.');
+        }
+
+        if (now()->greaterThan($expiresAt)) {
+            $request->session()->forget(['two_factor_code_hash', 'two_factor_expires_at']);
+            return back()->with('error', 'The verification code expired. Please request a new code.');
         }
 
         $user = User::find($userId);
-        if (!$user || !$user->hasTwoFactorEnabled()) {
-            return redirect()->route('login')->with('error', 'Two-factor authentication is not enabled for this account.');
+        if (!$user) {
+            $request->session()->forget($this->loginVerificationSessionKeys());
+            return redirect()->route('login')->with('error', 'Your account could not be found. Please log in again.');
         }
 
-        $service = app(TwoFactorService::class);
-        $validCode = $service->verifyCode($user->two_factor_secret, $request->input('code'));
-        $validRecoveryCode = $service->verifyRecoveryCode((array) $user->two_factor_recovery_codes, $request->input('code'));
-
-        if ($validCode || $validRecoveryCode) {
-            Auth::login($user, $remember);
-            $request->session()->forget(['two_factor_user_id', 'two_factor_remember']);
-            $request->session()->regenerate();
-
-            return redirect()->route('dashboard')->with('success', 'Login successful!');
+        if (!Hash::check($request->input('code'), $codeHash)) {
+            return back()->with('error', 'Invalid verification code.');
         }
 
-        return back()->with('error', 'Invalid verification code.');
+        Auth::login($user, $remember);
+        $request->session()->forget($this->loginVerificationSessionKeys());
+        $request->session()->regenerate();
+
+        return redirect()->route('dashboard')->with('success', 'Login successful!');
+    }
+
+    public function resendTwoFactorChallenge(Request $request)
+    {
+        $userId = $request->session()->get('two_factor_user_id');
+
+        if (!$userId) {
+            return redirect()->route('login')->with('error', 'Your verification session expired. Please log in again.');
+        }
+
+        $user = User::find($userId);
+        if (!$user) {
+            $request->session()->forget($this->loginVerificationSessionKeys());
+            return redirect()->route('login')->with('error', 'Your account could not be found. Please log in again.');
+        }
+
+        $this->sendLoginVerificationCode(
+            $request,
+            $user,
+            (bool) $request->session()->get('two_factor_remember', false)
+        );
+
+        return back()->with('info', 'A new verification code has been sent to your email.');
+    }
+
+    private function sendLoginVerificationCode(Request $request, User $user, bool $remember): void
+    {
+        $code = (string) random_int(100000, 999999);
+        $expiresAt = now()->addMinutes(10);
+
+        $request->session()->put([
+            'two_factor_user_id' => $user->id,
+            'two_factor_email' => $user->email,
+            'two_factor_remember' => $remember,
+            'two_factor_code_hash' => Hash::make($code),
+            'two_factor_expires_at' => $expiresAt,
+        ]);
+
+        $user->notify(new LoginVerificationCodeNotification($code, 10));
+    }
+
+    private function loginVerificationSessionKeys(): array
+    {
+        return [
+            'two_factor_user_id',
+            'two_factor_email',
+            'two_factor_remember',
+            'two_factor_code_hash',
+            'two_factor_expires_at',
+        ];
     }
 
     /**

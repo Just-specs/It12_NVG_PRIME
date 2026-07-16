@@ -24,6 +24,7 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->name('login.post');
     Route::get('/two-factor/challenge', [AuthController::class, 'showTwoFactorChallenge'])->name('two-factor.challenge');
     Route::post('/two-factor/challenge', [AuthController::class, 'verifyTwoFactorChallenge'])->name('two-factor.challenge.post');
+    Route::post('/two-factor/resend', [AuthController::class, 'resendTwoFactorChallenge'])->name('two-factor.challenge.resend');
     Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
     Route::post('/register', [AuthController::class, 'register'])->name('register.post');
 
