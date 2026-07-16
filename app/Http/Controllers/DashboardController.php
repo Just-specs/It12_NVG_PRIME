@@ -156,27 +156,43 @@ class DashboardController extends Controller
 
     public function settings()
     {
+        $this->authorizeAdminOnly();
+
         return view('dispatch.settings.index');
     }
 
     public function updateSettings(Request $request)
     {
+        $this->authorizeAdminOnly();
+
         // Implement settings update logic
         return redirect()->route('utils.settings')->with('success', 'Settings updated successfully.');
     }
 
     public function clearCache()
     {
-
+        $this->authorizeAdminOnly();
 
         return redirect()->route('utils.settings')->with('success', 'Cache cleared successfully.');
     }
 
     public function backupDatabase()
     {
+        $this->authorizeAdminOnly();
+
         // Implement database backup logic
         return redirect()->route('utils.settings')->with('info', 'Database backup feature coming soon.');
     }
 
-    public function exportAllData() {}
+    public function exportAllData()
+    {
+        $this->authorizeAdminOnly();
+    }
+
+    private function authorizeAdminOnly(): void
+    {
+        if (! auth()->check() || ! auth()->user()->isAdmin()) {
+            abort(403, 'Only Admin can access system settings.');
+        }
+    }
 }

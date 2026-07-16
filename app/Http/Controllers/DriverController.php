@@ -411,6 +411,8 @@ class DriverController extends Controller
      */
     public function deleted()
     {
+        $this->authorizeAdminOnly();
+
         $drivers = Driver::onlyTrashed()
             ->with('deletedBy')
             ->orderBy('deleted_at', 'desc')
@@ -424,6 +426,8 @@ class DriverController extends Controller
      */
     public function restore($id)
     {
+        $this->authorizeAdminOnly();
+
         $driver = Driver::onlyTrashed()->findOrFail($id);
         $driver->restore();
         
@@ -437,6 +441,8 @@ class DriverController extends Controller
      */
     public function forceDelete($id)
     {
+        $this->authorizeAdminOnly();
+
         $driver = Driver::onlyTrashed()->findOrFail($id);
         
         // Check if driver has any trips
@@ -513,6 +519,13 @@ class DriverController extends Controller
         return redirect()
             ->back()
             ->with('success', $coDriver->name . ' has been removed as a co-driver.');
+    }
+
+    private function authorizeAdminOnly(): void
+    {
+        if (! auth()->check() || ! auth()->user()->isAdmin()) {
+            abort(403, 'Only Admin can access deleted driver records.');
+        }
     }
 
     private function mediaDisk(): string

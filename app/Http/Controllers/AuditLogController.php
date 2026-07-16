@@ -12,6 +12,8 @@ class AuditLogController extends Controller
      */
     public function index(Request $request)
     {
+        $this->authorizeAdminOnly();
+
         $query = AuditLog::query()->with('user');
 
         // Filter by action
@@ -52,6 +54,8 @@ class AuditLogController extends Controller
      */
     public function show(AuditLog $auditLog)
     {
+        $this->authorizeAdminOnly();
+
         $auditLog->load('user');
         
         return view('admin.audit-logs.show', compact('auditLog'));
@@ -62,6 +66,8 @@ class AuditLogController extends Controller
      */
     public function forModel($modelType, $modelId)
     {
+        $this->authorizeAdminOnly();
+
         $logs = AuditLog::where('model_type', $modelType)
             ->where('model_id', $modelId)
             ->with('user')
@@ -69,5 +75,12 @@ class AuditLogController extends Controller
             ->paginate(7);
 
         return view('admin.audit-logs.index', compact('logs'));
+    }
+
+    private function authorizeAdminOnly(): void
+    {
+        if (! auth()->check() || ! auth()->user()->isAdmin()) {
+            abort(403, 'Only Admin can access audit logs.');
+        }
     }
 }

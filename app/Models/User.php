@@ -44,9 +44,19 @@ class User extends Authenticatable
         return $this->role === 'admin';
     }
 
+    public function isHeadDispatch()
+    {
+        return $this->role === 'head_dispatch';
+    }
+
+    public function isDispatch()
+    {
+        return in_array($this->role, ['dispatch', 'dispatcher']);
+    }
+
     public function isDispatcher()
     {
-        return $this->role === 'dispatcher';
+        return $this->isDispatch();
     }
 
     public function isUser()
@@ -65,10 +75,10 @@ class User extends Authenticatable
         return in_array($this->role, ['admin', 'head_dispatch']);
     }
 
-    // Check if user can assign trips (admin and dispatcher)
+    // Check if user can assign trips (admin and dispatch/dispatcher)
     public function canAssignTrips()
     {
-        return in_array($this->role, ['admin', 'dispatcher']);
+        return in_array($this->role, ['admin', 'dispatch', 'dispatcher']);
     }
 
     public function hasTwoFactorEnabled(): bool

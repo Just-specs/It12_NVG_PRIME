@@ -398,6 +398,8 @@ class VehicleController extends Controller
      */
     public function deleted()
     {
+        $this->authorizeAdminOnly();
+
         $vehicles = Vehicle::onlyTrashed()
             ->with('deletedBy')
             ->orderBy('deleted_at', 'desc')
@@ -411,6 +413,8 @@ class VehicleController extends Controller
      */
     public function restore($id)
     {
+        $this->authorizeAdminOnly();
+
         $vehicle = Vehicle::onlyTrashed()->findOrFail($id);
         $vehicle->restore();
         
@@ -424,6 +428,8 @@ class VehicleController extends Controller
      */
     public function forceDelete($id)
     {
+        $this->authorizeAdminOnly();
+
         $vehicle = Vehicle::onlyTrashed()->findOrFail($id);
         
         // Check if vehicle has any trips
@@ -438,6 +444,13 @@ class VehicleController extends Controller
         return redirect()
             ->route('vehicles.deleted')
             ->with('success', 'Vehicle permanently deleted.');
+    }
+
+    private function authorizeAdminOnly(): void
+    {
+        if (! auth()->check() || ! auth()->user()->isAdmin()) {
+            abort(403, 'Only Admin can access deleted vehicle records.');
+        }
     }
 
     private function mediaDisk(): string

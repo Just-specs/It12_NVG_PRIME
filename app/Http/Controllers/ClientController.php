@@ -282,6 +282,8 @@ class ClientController extends Controller
      */
     public function deleted()
     {
+        $this->authorizeAdminOnly();
+
         $clients = Client::onlyTrashed()
             ->with('deletedBy')
             ->orderBy('deleted_at', 'desc')
@@ -295,6 +297,8 @@ class ClientController extends Controller
      */
     public function restore($id)
     {
+        $this->authorizeAdminOnly();
+
         $client = Client::onlyTrashed()->findOrFail($id);
         $client->restore();
         
@@ -308,6 +312,8 @@ class ClientController extends Controller
      */
     public function forceDelete($id)
     {
+        $this->authorizeAdminOnly();
+
         $client = Client::onlyTrashed()->findOrFail($id);
         
         // Check if client has any delivery requests
@@ -322,6 +328,13 @@ class ClientController extends Controller
         return redirect()
             ->route('clients.deleted')
             ->with('success', 'Client permanently deleted.');
+    }
+
+    private function authorizeAdminOnly(): void
+    {
+        if (! auth()->check() || ! auth()->user()->isAdmin()) {
+            abort(403, 'Only Admin can access deleted client records.');
+        }
     }
 }
 
